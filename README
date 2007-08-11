@@ -6,7 +6,7 @@ Environment. As its name hints, it's modelled after Amarok, but with a
 reduced set of features. In particular, it is designed to cover all the
 needs and wishes of the author, leaving everything else out.
 
-The main interface is a *tree* view of the filesystem, with a playlist
+The main interface is a *tree view of the filesystem*, with a playlist
 that can only be populated via drag and drop. There is no collection
 built from tags, so it's targetted at people whose collection is
 structured in a tree already at the filesystem level. Searches can be
