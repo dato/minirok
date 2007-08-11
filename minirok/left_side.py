@@ -76,7 +76,6 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
         util.HasConfig.__init__(self)
 
         self.setCompletionObject(kio.KURLCompletion(kio.KURLCompletion.DirCompletion)) # does not work :(
-        self.setInsertionPolicy(qt.QComboBox.AtTop)
 
         config = minirok.Globals.config(self.CONFIG_SECTION)
         urls = config.readPathListEntry(self.CONFIG_HISTORY_OPTION)
