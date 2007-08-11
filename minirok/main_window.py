@@ -48,9 +48,11 @@ class MainWindow(kdeui.KMainWindow):
         # Settings menu
         self.action_shortcuts = kdeui.KStdAction.keyBindings(
                 self.slot_configure_shortcuts, ac)
+        self.action_shortcuts.setShortcutConfigurable(False)
 
         self.action_global_shortcuts = kdeui.KStdAction.keyBindings(
                 self.slot_configure_global_shortcuts, ac, 'action_global_shortcuts')
+        self.action_global_shortcuts.setShortcutConfigurable(False)
 
         self.action_global_shortcuts.setText('Configure &Global Shortcuts...')
 
@@ -58,13 +60,16 @@ class MainWindow(kdeui.KMainWindow):
         # see pykde-bugs/xml_toolbar.py.
         # self.action_configure_toolbars = kdeui.KStdAction.configureToolbars(
         #         self.slot_configure_toolbars, ac)
+        # self.action_configure_toolbars.setShortcutConfigurable(False)
 
         self.action_preferences = kdeui.KStdAction.preferences(
                 self.slot_preferences, ac)
+        self.action_preferences.setShortcutConfigurable(False)
 
         # Help menu
         self.action_about = kdeui.KStdAction.aboutApp(
                 kdeui.KAboutApplication(self, 'about', False).show, ac)
+        self.action_about.setShortcutConfigurable(False)
 
     def init_menus(self):
         file_menu = qt.QPopupMenu(self)
