@@ -53,7 +53,6 @@ class MainWindow(kdeui.KMainWindow):
         self.action_global_shortcuts = kdeui.KStdAction.keyBindings(
                 self.slot_configure_global_shortcuts, ac, 'action_global_shortcuts')
         self.action_global_shortcuts.setShortcutConfigurable(False)
-
         self.action_global_shortcuts.setText('Configure &Global Shortcuts...')
 
         # XXX This needs the KXML framework, but it does not work in PyKDE, see
@@ -78,7 +77,7 @@ class MainWindow(kdeui.KMainWindow):
 
         settings_menu = qt.QPopupMenu(self)
         self.action_shortcuts.plug(settings_menu)
-        self.action_global_shortcuts.plug(settings_menu)
+        # self.action_global_shortcuts.plug(settings_menu)
         # self.action_configure_toolbars.plug(settings_menu)
         self.action_preferences.plug(settings_menu)
         self.menuBar().insertItem('&Settings', settings_menu)
@@ -95,12 +94,13 @@ class MainWindow(kdeui.KMainWindow):
         self.systray.show()
 
     def init_global_accel(self):
-        self.global_accel = kdecore.KGlobalAccel(self)
         # XXX Using global accels crash PyKDE applications. :-(
         # http://www.riverbankcomputing.com/pipermail/pyqt/2007-August/016865.html
+        # self.global_accel = kdecore.KGlobalAccel(self)
         # self.global_accel.insert('play', 'Play', '', kdecore.KShortcut('Ctrl+Alt+U'),
         #         kdecore.KShortcut.null(), self.engine.play)
-        self.global_accel.updateConnections()
+        # self.global_accel.updateConnections()
+        pass
 
     ##
 
