@@ -28,12 +28,11 @@ class RightSide(qt.QVBox):
 
         # populate the toolbar
         self.toolbar.setFullSize(True)
-        # XXX self.toolbar.insertWidget('spacer', 0, qt.
+        self.toolbar.insertWidget(0, 0, qt.QWidget(self.toolbar))
+        self.toolbar.setItemAutoSized(0)
         self.playlist.action_previous.plug(self.toolbar)
         self.playlist.action_play_pause.plug(self.toolbar)
         self.playlist.action_stop.plug(self.toolbar)
         self.playlist.action_next.plug(self.toolbar)
-        # self.toolbar.insertSeparator()
-        # self.toolbar.insertLineSeparator()
-        # self.toolbar.insertSeparator()
+        self.toolbar.insertLineSeparator(-1, -1)
         self.playlist.action_clear.plug(self.toolbar)
