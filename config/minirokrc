@@ -1,0 +1,3 @@
+[Playlist Columns]
+Visible=Track,Artist,Title,Length
+Order=Track,Artist,Album,Title,Length

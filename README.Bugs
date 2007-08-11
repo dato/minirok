@@ -1,0 +1,50 @@
+Minirok is buggy!
+=================
+
+Undoubtedly. It even crashes sometimes; most of those are known, but I
+don't know how to fix them. If you do, please enlighten me! The point is
+that it's stable enough for me to prefer it over Amarok, and I publicly
+released it in hope that'd be the case for other people as well.
+
+Also, since I'm not very knowledgeable in Qt/KDE programming, some parts
+of the code may be programmed in a suboptimal way, or plainly wrong even
+if they seems to work. Feel free to point out these as well.
+
+
+Reporting bugs
+==============
+
+I use Debian's Bug Tracking System to manage bugs in Minirok, so I'd
+appreciate if you could report directly there, following the instructions
+below. If you really can't, you can mail me directly, but I will probably 
+forward your report to the public BTS.
+
+To report a bug, just send a mail to <submit@bugs.debian.org>, with the
+following format for the body:
+
+    Package: minirok
+    Version: x.y.z
+
+    Here the rest of the body.
+
+That is, a mail whose first line is a line starting with "Package", then
+a second line specifying the "Version" you're using, then a *blank* line
+(don't forget this one), and then whatever you want, most likely an
+explanation of the problem. You can find more detailed instructions here:
+
+    http://www.debian.org/Bugs/Reporting
+
+If you're a Debian user, you can just use the `reportbug` program. If
+you're an Ubuntu user, please don't use reportbug, because it will send
+the bug report elsewhere and I problably won't see it.
+
+
+Known bugs
+==========
+
+Some features (notably global keybindings) do not work due to shortcomings
+in the PyKDE bindings. See pykde-bugs/README for details. Upstream is not 
+very interested in fixing them for KDE 3, hopefully version 4 won't suffer
+from them.
+
+See also the TODO file.

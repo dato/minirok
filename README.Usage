@@ -1,0 +1,32 @@
+UI hints
+========
+
+  * Enqueue tracks in the playlist with Ctrl+RightButtonClick, like in
+    Amarok.
+
+
+Regular expresions
+==================
+
+Instead of reading tags from audio files, a Python regular expression
+can be used to guess them from the filename. The full patch will be
+searched, but the regular expresion does not need to match the full path
+(for pythonistas, it'll be a re.search, not a re.match). The tags will
+be extrated from the named groups of the match, namely: "title",
+"artist", "album", and "track". An example of a simple regular expresion
+that matches "Artist - Title.mp3" would be:
+
+    '/((?P<artist>.+?) - )?(?P<title>.+)\.[^.]+$'
+
+A more elaborated one, the one I use:
+
+    '/(\(\d+\) )?(?P<album>[^/]+)/((?P<track>\d+)_)?((?P<artist>.+?) - )?(?P<title>.+)\.[^.]+$'
+
+This matches:
+
+    .../(year) Album/07_Artist - Title.mp3
+
+For more information on Python regular expresions:
+
+    http://docs.python.org/lib/module-re.html
+    http://docs.python.org/lib/re-syntax.html

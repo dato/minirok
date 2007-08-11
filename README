@@ -1,0 +1,88 @@
+Description
+===========
+
+Minirok is a small music player written in Python for the K Desktop
+Environment. As its name hints, it's modelled after Amarok, but with a
+reduced set of features. In particular, it is designed to cover all the
+needs and wishes of the author, leaving everything else out.
+
+The main interface is a *tree* view of the filesystem, with a playlist
+that can only be populated via drag and drop. There is no collection
+built from tags, so it's targetted at people whose collection is
+structured in a tree already at the filesystem level. Searches can be
+performed both in the tree view and the playlist.
+
+Other features include:
+
+  * DCOP interface for retrieving the currently played track
+
+  * alter the playing order in the playlist by queueing tracks;
+    stop after a certain track; undo and redo
+
+  * reading of tags when adding to the playlist can be disabled by
+    specifying a regex to extract them from the filename
+
+  * submission of played songs to Last.fm (with lastfmsubmitd)
+
+  * support for the classic Amarok "funky-monkey" theme
+
+  * global keybindings (but see README.Bugs)
+
+
+Audio formats
+=============
+
+
+Motivation
+==========
+
+I've been a happy Amarok user for more than three years, but after ...
+
+
+Requirements
+============
+
+Minirok is written in Python, version 2.4 or later is required. The
+following libraries are *required* for the program to run:
+
+  * PyQt and PyKDE
+    Debian and Ubuntu: python-qt3, python-kde3
+    Source: http://www.riverbankcomputing.co.uk/pyqt/download.php
+            http://www.riverbankcomputing.co.uk/pykde/download.php
+
+  * Mutagen (audio metadata library)
+    Debian and Ubuntu: python-mutagen
+    Source: http://www.sacredchao.net/quodlibet/wiki/Development/Mutagen
+
+  * The GStreamer media framework, in particular:
+
+    + The GStreamer Python bindings
+      Debian and Ubuntu: python-gst0.10
+
+    + Plugins, in all the flavours needed to cover your audio formats:
+      	- MP3: gst-plugins-ugly
+      	- Ogg Vorbis: gst-plugins-base
+      	- FLAC: gst-plugins-good
+      	- Musepack (MPC): gst-plugins-bad
+      Debian and Ubuntu: gstreamer0.10-plugins-ugly, gstreamer0.10-plugins-base,
+	gstreamer0.10-plugins-good, gstreamer0.10-plugins-bad
+
+    + A suitable audiosink, for example ALSA.
+      Debian and Ubuntu: gstreamer0.10-alsa
+
+    Source: http://gstreamer.freedesktop.org
+
+The following dependencies are optional and enhance Minirok in some way:
+
+  * lastfmsubmitd - enables submission of played tracks to Last.fm
+    Debian and Ubuntu: lastfmsubmitd
+    Source: http://www.red-bean.com/~decklin/software/lastfmsubmitd
+
+
+Author and license
+==================
+
+Adeodato Simó <dato@net.com.org.es>
+Licensed under the terms of the MIT license.
+
+vi: sw=2

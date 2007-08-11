@@ -1,0 +1,48 @@
+(This list is obviosly not complete, just here to not forget of these.)
+
+Tree View:
+  * Button/context menu to refresh the tree view? (Or be able to monitor
+    file tree with inotify instead)
+  * Double click/return to append to the playlist?
+  * Expand remaining items after search
+
+Playlist:
+  * Handle Delete and Return keys
+  * Enqueue items
+  * Stop after this/current track
+  * Undo/redo?
+  * Save playlist at quit and restore it
+  * Tabs??
+  * To be able to receive drops from eg. Konqueror, the Playlist must be
+    able to read contents of directories by itself (never needed if
+    dragging from the tree view)
+
+UI:
+  * Seek bar with elapsed --[]-- remaining.
+  * connect track change / playlist change with statusbar and caption
+  * Disable prev/next/stop/play buttons as appropriate
+  * Make pause and play/pause buttons "pressed" when pressed
+  * Make play/pause icon change icon as appropriate
+  * Make stop button pop a menu between "now" and "after current track"
+
+Options:
+  * submit tracks to Last.fm (barf if module lastfm not available)
+  * Use a regular expresion to guess tags from the filename:
+    { Tooltip: "The regex will be matched against the full path of the
+    file. The supported groups are: "artist", "title", "album", "track".
+    See README.Usage for details and an example. }
+    [ ] _____________________________________ # re.compile it on focus leave
+        (*) Use this regex to populate the playlist initially, but still
+	    read the tags in the background
+	( ) Do not read tags if the regex matches
+	( ) Never read tags from files
+
+Appearance:
+  * Amarok classic theme?
+
+Other:
+  * Write setup.py
+  * Use logging?
+  * DCOP call for nowPlaying
+
+vi: sw=2
