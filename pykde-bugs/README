@@ -10,4 +10,7 @@ plus a direct translation to Python which does not work.
     Using global shortcuts crashes the Python application. To reproduce,
     press Ctrl+Alt+U.
 
+  * xml_toolbar.cc, xml_toolbar.py, xml_toolbar.rc:
+    Subclassing KXMLGUIClient doesn't seem to work. See also kxmlguiclient.py.
+
 All files in this directory are placed in the public domain.

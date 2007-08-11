@@ -54,8 +54,10 @@ class MainWindow(kdeui.KMainWindow):
 
         self.action_global_shortcuts.setText('Configure &Global Shortcuts...')
 
-        self.action_configure_toolbars = kdeui.KStdAction.configureToolbars(
-                self.slot_configure_toolbars, ac)
+        # XXX This needs the KXML framework, but it does not work in PyKDE, see
+        # see pykde-bugs/xml_toolbar.py.
+        # self.action_configure_toolbars = kdeui.KStdAction.configureToolbars(
+        #         self.slot_configure_toolbars, ac)
 
         self.action_preferences = kdeui.KStdAction.preferences(
                 self.slot_preferences, ac)
@@ -72,7 +74,7 @@ class MainWindow(kdeui.KMainWindow):
         settings_menu = qt.QPopupMenu(self)
         self.action_shortcuts.plug(settings_menu)
         self.action_global_shortcuts.plug(settings_menu)
-        self.action_configure_toolbars.plug(settings_menu)
+        # self.action_configure_toolbars.plug(settings_menu)
         self.action_preferences.plug(settings_menu)
         self.menuBar().insertItem('&Settings', settings_menu)
 
@@ -106,10 +108,6 @@ class MainWindow(kdeui.KMainWindow):
 
     def slot_configure_global_shortcuts(self):
         kdeui.KKeyDialog.configure(self.global_accel, True, self)
-
-    def slot_configure_toolbars(self):
-        # XXX This needs XML framework!
-        pass
 
     def slot_preferences(self):
         pass

@@ -42,9 +42,9 @@ the bug report elsewhere and I problably won't see it.
 Known bugs
 ==========
 
-Some features (notably global keybindings) do not work due to shortcomings
-in the PyKDE bindings. See pykde-bugs/README for details. Upstream is not 
-very interested in fixing them for KDE 3, hopefully version 4 won't suffer
-from them.
+Some features (notably global keybindings and configuring toolbar layout)
+do not work due to shortcomings in the PyKDE bindings. See pykde-bugs/README
+for details. Upstream is not very interested in fixing them for KDE 3,
+hopefully version 4 won't suffer from them.
 
 See also the TODO file.
