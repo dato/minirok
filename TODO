@@ -5,6 +5,8 @@ Tree View:
     file tree with inotify instead)
   * Double click/return to append to the playlist?
   * Expand remaining items after search
+  * Remove artifacts in the pointer when dragging (display file count?;
+    who filters unplayable items?)
 
 Playlist:
   * Handle Delete and Return keys
