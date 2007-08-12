@@ -9,7 +9,7 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import engine, left_side, right_side
+from minirok import left_side, right_side
 
 ##
 
@@ -18,7 +18,6 @@ class MainWindow(kdeui.KMainWindow):
     def __init__ (self, *args):
         kdeui.KMainWindow.__init__(self, *args)
 
-        minirok.Globals.engine = engine.Engine() # XXX move to main.py?
         minirok.Globals.action_collection = self.actionCollection()
 
         self.main_view = qt.QSplitter(self, 'main view')

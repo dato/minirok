@@ -8,6 +8,7 @@ import sys
 import kdecore
 
 import minirok
+import minirok.engine
 import minirok.main_window
 
 ##
@@ -40,6 +41,8 @@ def main():
 
     application = kdecore.KApplication()
     main_window = minirok.main_window.MainWindow()
+
+    minirok.Globals.engine = minirok.engine.Engine()
 
     main_window.show()
     application.exec_loop()
