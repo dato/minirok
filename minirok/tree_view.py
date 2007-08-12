@@ -141,7 +141,7 @@ class FileItem(TreeViewItem):
 
     HARD_CODED_REGEX = re.compile(r'^(?:(?P<track>\d+)_)?(?:(?P<artist>.+?) - )?(?P<title>.+)\.(?P<ext>\w{3,})')
 
-    def __init__(self, parent, path):
+    def D__init__(self, parent, path):
         TreeViewItem.__init__(self, parent, path)
         m = self.HARD_CODED_REGEX.search(self.filename)
         if m:
