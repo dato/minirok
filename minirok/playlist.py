@@ -102,10 +102,12 @@ class Playlist(kdeui.KListView):
             self.action_clear.setEnabled(False)
             self.action_previous.setEnabled(False)
         else:
-            if self._current_item is None:
+            if self.current_item is None:
                 # XXX Breaks when adding items, and then adding
                 # some more before them
                 current = self._current_item = self.firstChild()
+            else:
+                current = self.current_item
             self.action_clear.setEnabled(True)
             self.action_next.setEnabled(bool(current.itemBelow()))
             self.action_previous.setEnabled(bool(current.itemAbove()))
