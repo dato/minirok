@@ -42,7 +42,7 @@ EXPORT_DIR="$TMP_DIR/$EXPORT_VERSION"
 
 bzr export "$EXPORT_DIR"
 
-( # subshell to preserv old $CWD
+( # subshell to preserve old $CWD
 cd "$EXPORT_DIR"
 rm -r $PRUNE_FROM_TARBALL
 
