@@ -39,10 +39,11 @@ def main():
 
     kdecore.KCmdLineArgs.init(sys.argv, about_data)
 
+    minirok.Globals.engine = minirok.engine.Engine()
+    minirok.Globals.engine.start()
+
     application = kdecore.KApplication()
     main_window = minirok.main_window.MainWindow()
-
-    minirok.Globals.engine = minirok.engine.Engine()
 
     main_window.show()
     application.exec_loop()

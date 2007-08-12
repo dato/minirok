@@ -12,16 +12,18 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import drag, util
+from minirok import drag, engine, util
 
 ##
 
 class Playlist(kdeui.KListView):
+    # TODO Save the playlist
 
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
 
         self.columns = Columns(self)
+        self._current_item = None # has a property() below
 
         self.setSorting(-1)
         self.setAcceptDrops(True)
@@ -34,7 +36,21 @@ class Playlist(kdeui.KListView):
         self.connect(self, qt.SIGNAL('dropped(QDropEvent *, QListViewItem *)'),
                 self.slot_accept_drop)
 
+        self.connect(self, qt.SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
+                self.slot_new_current_item)
+
+        self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
+                self.slot_new_current_item)
+
+        self.connect(self, qt.PYSIGNAL('list_changed'), self.slot_list_changed)
+
+        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+                self.slot_engine_status_changed)
+
         self.init_actions()
+
+        # TODO Read the saved playlist here
+        self.slot_list_changed()
 
     ##
 
@@ -44,10 +60,10 @@ class Playlist(kdeui.KListView):
         self.action_play = kdeui.KAction('Play', 'player_play',
                 kdecore.KShortcut.null(), self.slot_play, ac, 'action_play')
 
-        self.action_pause = kdeui.KAction('Pause', 'player_pause',
+        self.action_pause = kdeui.KToggleAction('Pause', 'player_pause',
                 kdecore.KShortcut.null(), self.slot_pause, ac, 'action_pause')
 
-        self.action_play_pause = kdeui.KAction('Play/Pause', 'player_play',
+        self.action_play_pause = kdeui.KToggleAction('Play/Pause', 'player_play',
                 kdecore.KShortcut('Ctrl+P'), self.slot_play_pause, ac, 'action_play_pause')
 
         self.action_stop = kdeui.KAction('Stop', 'player_stop',
@@ -71,31 +87,96 @@ class Playlist(kdeui.KListView):
 
     ##
 
+    def _set_current_item(self, value):
+        self._current_item = value
+        self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    current_item = property(lambda self: self._current_item, _set_current_item)
+
+    ##
+
+    def slot_list_changed(self):
+        if self.childCount() == 0:
+            self._current_item = None # can't use the property here
+            self.action_next.setEnabled(False)
+            self.action_clear.setEnabled(False)
+            self.action_previous.setEnabled(False)
+        else:
+            if self._current_item is None:
+                # XXX Breaks when adding items, and then adding
+                # some more before them
+                current = self._current_item = self.firstChild()
+            self.action_clear.setEnabled(True)
+            self.action_next.setEnabled(bool(current.itemBelow()))
+            self.action_previous.setEnabled(bool(current.itemAbove()))
+
+        self.slot_engine_status_changed(minirok.Globals.engine.status)
+
+    def slot_engine_status_changed(self, new_status):
+        if new_status == engine.State.STOPPED:
+            self.action_stop.setEnabled(False)
+            self.action_pause.setEnabled(False)
+            self.action_pause.setChecked(False)
+            self.action_play.setEnabled(bool(self.current_item))
+            self.action_play_pause.setChecked(False)
+            self.action_play_pause.setIcon('player_play')
+            self.action_play_pause.setEnabled(bool(self.current_item))
+
+        elif new_status == engine.State.PLAYING:
+            self.action_stop.setEnabled(True)
+            self.action_pause.setEnabled(True)
+            self.action_pause.setChecked(False)
+            self.action_play_pause.setChecked(False)
+            self.action_play_pause.setIcon('player_pause')
+        
+        elif new_status == engine.State.PAUSED:
+            self.action_pause.setChecked(True)
+            self.action_play_pause.setChecked(True)
+
+    ##
+
     def slot_accept_drop(self, event, prev_item):
         if event.source() != self.viewport(): # XXX
             for f in drag.FileListDrag.file_list(event):
                 prev_item = PlaylistItem(f, self, prev_item)
-
-    def slot_play(self):
-        minirok.Globals.engine.play()
-
-    def slot_pause(self):
-        minirok.Globals.engine.pause()
-
-    def slot_play_pause(self):
-        minirok.Globals.engine.play_pause()
-
-    def slot_stop(self):
-        minirok.Globals.engine.stop()
-
-    def slot_next(self):
-        minirok.Globals.engine.next()
-
-    def slot_previous(self):
-        minirok.Globals.engine.previous()
+            self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def slot_clear(self):
         self.clear()
+        self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    def slot_new_current_item(self, item):
+        self.current_item = item
+        self.slot_play()
+
+    ##
+
+    def slot_play(self):
+        if self.current_item is not None:
+            minirok.Globals.engine.play(self.current_item.path)
+
+    def slot_pause(self):
+        e = minirok.Globals.engine
+        if e.status == engine.State.PLAYING:
+            e.pause(True)
+        elif e.status == engine.State.PAUSED:
+            e.pause(False)
+
+    def slot_play_pause(self):
+        if minirok.Globals.engine.status == engine.State.STOPPED:
+            self.slot_play()
+        else:
+            self.slot_pause()
+
+    def slot_stop(self):
+        if minirok.Globals.engine.status != engine.State.STOPPED:
+            minirok.Globals.engine.stop()
+
+    def slot_next(self):
+        pass
+
+    def slot_previous(self):
+        pass
 
     ##
 
@@ -117,6 +198,14 @@ class Playlist(kdeui.KListView):
             # Creates a menu for hiding/showing columns
             self.columns.exec_popup(event.globalPos())
 
+            return True
+
+        # Play/Pause when middle-click on the current playing track
+        if (object_ == self.viewport()
+                and event.type() == qt.QEvent.MouseButtonPress
+                and event.button() == qt.QEvent.MidButton
+                and self.itemAt(event.pos()) == self.current_item):
+            self.slot_pause()
             return True
 
         return kdeui.KListView.eventFilter(self, object_, event)
