@@ -128,7 +128,7 @@ class Playlist(kdeui.KListView):
             self.action_pause.setChecked(False)
             self.action_play_pause.setChecked(False)
             self.action_play_pause.setIcon('player_pause')
-        
+
         elif new_status == engine.State.PAUSED:
             self.action_pause.setChecked(True)
             self.action_play_pause.setChecked(True)
