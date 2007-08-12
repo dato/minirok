@@ -86,8 +86,7 @@ class MainWindow(kdeui.KMainWindow):
         self.menuBar().insertItem('&Help', help_menu)
 
     def init_systray(self):
-        self.systray = kdeui.KSystemTray(self)
-        self.systray.setPixmap(self.systray.loadIcon('minirok'))
+        self.systray = Systray(self)
         self.systray.connect(self.systray, qt.SIGNAL('quitSelected()'),
             self.slot_really_quit)
         self.systray.show()
@@ -121,3 +120,22 @@ class MainWindow(kdeui.KMainWindow):
     def queryClose(self):
         self.hide()
         return self._flag_really_quit
+
+##
+
+class Systray(kdeui.KSystemTray):
+    """A KSysTray class that calls Play/Pause on middle button clicks."""
+
+    def __init__(self, *args):
+        kdeui.KSystemTray.__init__(self, *args)
+        self.setPixmap(self.loadIcon('minirok'))
+        self.installEventFilter(self)
+
+    def eventFilter(self, object_, event):
+        if (object_ == self
+                and event.type() == qt.QEvent.MouseButtonPress
+                and event.button() == qt.QEvent.MidButton):
+            minirok.Globals.action_collection.action('action_play_pause').activate()
+            return True
+
+        return kdeui.KSystemTray.eventFilter(self, object_, event)
