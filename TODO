@@ -10,7 +10,7 @@ Tree View:
   * Use a regex as well to control the appearance of file names?
 
 Playlist:
-  * Handle Delete and Return keys
+  * Handle Delete keys
   * Enqueue items
   * Stop after this/current track
   * Undo/redo?
