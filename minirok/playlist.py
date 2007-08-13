@@ -5,6 +5,7 @@
 # Licensed under the terms of the MIT license.
 
 import os
+import re
 import sys
 
 import qt
@@ -18,6 +19,16 @@ from minirok import drag, engine, tag_reader, util
 
 class Playlist(kdeui.KListView):
     # TODO Save the playlist
+
+    # If CONFIG_REGEX_OPTION exists, it will be matched against the full path
+    # and the PlaylistItem will have its tags initially filled with the
+    # resulting match groups.
+    # TODO This config options should be re-read when after updates via the
+    # Preferences dialog.
+    CONFIG_SECTION = 'Playlist'
+    CONFIG_REGEX_OPTION = 'TagRegex'
+    CONFIG_READ_TAGS_OPTION = 'ReadTags'
+    CONFIG_READ_TAGS_VALUES = [ 'Always', 'Never', 'OnRegexFail' ]
 
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
@@ -62,6 +73,7 @@ class Playlist(kdeui.KListView):
 
         # TODO Read the saved playlist here
         self.slot_list_changed()
+        self.slot_read_config()
 
     ##
 
@@ -156,10 +168,17 @@ class Playlist(kdeui.KListView):
             self.tag_reader.lock()
             try:
                 for f in drag.FileListDrag.file_list(event):
-                    prev_item = PlaylistItem(f, self, prev_item)
-                    # TODO match regex, if any
-                    # TODO do not queue depending on the regex settings
-                    self.tag_reader.queue(prev_item)
+                    tags = self.tags_from_filename(f)
+                    if len(tags) == 0 or tags.get('Title', None) is None:
+                        regex_failed = True
+                        dirname, filename = os.path.split(f)
+                        tags['Title'] = util.unicode_from_path(filename)
+                    else:
+                        regex_failed = False
+                    prev_item = PlaylistItem(f, self, prev_item, tags)
+                    if self._read_tags == 'Always' or (regex_failed
+                            and self._read_tags == 'OnRegexFail'):
+                        self.tag_reader.queue(prev_item)
             finally:
                 self.tag_reader.unlock()
             self.emit(qt.PYSIGNAL('list_changed'), ())
@@ -259,6 +278,51 @@ class Playlist(kdeui.KListView):
 
     ##
 
+    def slot_read_config(self):
+        config = minirok.Globals.config(self.CONFIG_SECTION)
+        self._regex = unicode(config.readEntry(self.CONFIG_REGEX_OPTION, '')) or None
+
+        if self._regex is not None:
+            try:
+                self._regex = re.compile(self._regex)
+            except re.error, e:
+                # XXX Can't print non-ASCII characters!
+                print >>sys.stderr, (
+                    'minirok: error: invalid regular expression %r: %s' %
+                     (self._regex, e))
+                self._read_tags = 'Always'
+            else:
+                self._read_tags = str(config.readEntry(
+                        self.CONFIG_READ_TAGS_OPTION, 'Always'))
+        else:
+            self._read_tags = 'Always'
+
+        if self._read_tags not in self.CONFIG_READ_TAGS_VALUES:
+            print >>sys.stderr, ('minirok: error: invalid value %r for %s' %
+                    (self._read_tags, self.CONFIG_READ_TAGS_OPTION))
+            self._read_tags = 'Always'
+
+    ##
+
+    def tags_from_filename(self, path):
+        if self._regex is None:
+            return {}
+        else:
+            match = self._regex.search(path)
+            if match is None:
+                return {}
+
+        tags = {}
+
+        for group, match in match.groupdict().items():
+            group = group.capitalize()
+            if group in PlaylistItem.ALLOWED_TAGS and match is not None:
+                tags[group] = util.unicode_from_path(match)
+
+        return tags
+
+    ##
+
     def setColumnWidth(self, col, width):
         self.header().setResizeEnabled(bool(width), col) # Qt does not do this for us
         return kdeui.KListView.setColumnWidth(self, col, width)
@@ -299,18 +363,46 @@ class Playlist(kdeui.KListView):
 
 class PlaylistItem(kdeui.KListViewItem):
 
-    def __init__(self, path, parent, prev_item):
+    ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
+
+    def __init__(self, path, parent, prev_item, tags={}):
+        kdeui.KListViewItem.__init__(self, parent, prev_item)
+
         self.path = path
         self.playlist = parent
 
-        kdeui.KListViewItem.__init__(self, parent, prev_item)
+        self._tags = dict((tag, None) for tag in self.ALLOWED_TAGS)
+        self.update_tags(tags)
+        self.update_display()
 
-        dirname, filename = os.path.split(path)
-        self.set_text_by_name('Title', util.unicode_from_path(filename))
+    def update_tags(self, tags):
+        for tag, value in tags.items():
+            if tag not in self._tags:
+                print >>sys.stderr, 'minirok: warning: unknown tag %s' % tag
+                continue
+            if tag == 'Track':
+                try:
+                    # remove leading zeroes
+                    value = str(int(value))
+                except ValueError:
+                    pass
+            elif tag == 'Length':
+                try:
+                    value = int(value)
+                except ValueError:
+                    print >>sys.stderr, \
+                        'minirok: warning: invalid length: %r' % value
+                    continue
+            self._tags[tag] = value
 
-    def set_text_by_name(self, col_name, text):
-        index = self.playlist.column_index(col_name)
-        return kdeui.KListViewItem.setText(self, index, text)
+    def update_display(self):
+        for column in Columns.DEFAULT_ORDER:
+            text = self._tags[column]
+            if text is not None:
+                if column == 'Length':
+                    text = '%d:%02d' % (value/60, value%60)
+                index = self.playlist.column_index(column)
+                self.setText(index, text)
 
 ##
 
