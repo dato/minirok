@@ -20,11 +20,14 @@ that matches "Artist - Title.mp3" would be:
 
 A more elaborated one, the one I use:
 
-    '/(\(\d+\) )?(?P<album>[^/]+)/((?P<track>\d+)_)?((?P<artist>.+?) - )?(?P<title>.+)\.[^.]+$'
+    '(?i).*?/(\(\d+\) )?(?P<album>[^/]+(/(CD|vol|disco) *\d+)?)/((?P<track>\d+)_)?((?P<artist>[^/]+?) - )?(?P<title>[^/]+)\.[^.]+$'
 
-This matches:
+This matches, case insensitively:
 
+    .../Album/Artist - Title.mp3
+    .../Album/07_Artist - Title.mp3
     .../(year) Album/07_Artist - Title.mp3
+    .../(year) Album/cd 1/07_Artist - Title.mp3
 
 For more information on Python regular expresions:
 
