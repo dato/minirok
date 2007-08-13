@@ -12,7 +12,7 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import drag, engine, util
+from minirok import drag, engine, tag_reader, util
 
 ##
 
@@ -29,6 +29,9 @@ class Playlist(kdeui.KListView):
 
         self.columns = Columns(self)
         self._current_item = None # has a property() below
+
+        self.tag_reader = tag_reader.TagReader()
+        self.tag_reader.start()
 
         self.setSorting(-1)
         self.setAcceptDrops(True)
@@ -148,11 +151,24 @@ class Playlist(kdeui.KListView):
 
     def slot_accept_drop(self, event, prev_item):
         if event.source() != self.viewport(): # XXX
-            for f in drag.FileListDrag.file_list(event):
-                prev_item = PlaylistItem(f, self, prev_item)
+            self.tag_reader.lock()
+            try:
+                for f in drag.FileListDrag.file_list(event):
+                    prev_item = PlaylistItem(f, self, prev_item)
+                    # TODO match regex, if any
+                    # TODO do not queue depending on the regex settings
+                    self.tag_reader.queue(prev_item)
+            finally:
+                self.tag_reader.unlock()
             self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def slot_clear(self):
+        if not self.tag_reader.queue_empty():
+            self.tag_reader.lock()
+            try:
+                self.tag_reader.clear_queue()
+            finally:
+                self.tag_reader.unlock()
         self.clear()
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
