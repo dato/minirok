@@ -12,7 +12,7 @@ Instead of reading tags from audio files, a Python regular expression
 can be used to guess them from the filename. The full patch will be
 searched, but the regular expresion does not need to match the full path
 (for pythonistas, it'll be a re.search, not a re.match). The tags will
-be extrated from the named groups of the match, namely: "title",
+be extracted from the named groups of the match, namely: "title",
 "artist", "album", and "track". An example of a simple regular expresion
 that matches "Artist - Title.mp3" would be:
 
