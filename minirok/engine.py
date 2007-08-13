@@ -92,12 +92,9 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         self.emit(qt.PYSIGNAL('end_of_stream'), (self.uri,))
 
     def _message_error(self, bus, message):
-        self.bin.set_state(gst.STATE_NULL)
-        self.status = State.STOPPED
-        self.emit(qt.PYSIGNAL('end_of_stream'), (self.uri,))
-
         error, debug_info = message.parse_error()
         print >>sys.stderr, 'minirok: error: %s (%s)' % (error, self.uri)
+        self._message_eos(bus, message)
 
 ##
 
