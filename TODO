@@ -27,7 +27,7 @@ UI:
 
 Options:
   * submit tracks to Last.fm (barf if module lastfm not available)
-  * Use a regular expresion to guess tags from the filename:
+  * Use a regular expression to guess tags from the filename:
     { Tooltip: "The regex will be matched against the full path of the
     file. The supported groups are: "artist", "title", "album", "track".
     See README.Usage for details and an example. }

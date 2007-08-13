@@ -5,23 +5,23 @@ UI hints
     Amarok.
 
 
-Regular expresions
-==================
+Regular expressions
+===================
 
 Instead of reading tags from audio files, a Python regular expression
 can be used to guess them from the filename. The full patch will be
-searched, but the regular expresion does not need to match the full path
-(for pythonistas, it'll be a re.search, not a re.match). The tags will
-be extracted from the named groups of the match, namely: "title",
+searched, but the regular expression does not need to match the full
+path (for pythonistas, it'll be a re.search, not a re.match). The tags
+will be extracted from the named groups of the match, namely: "title",
 "artist", "album", and "track".
 
-Even if a regular expresion is configured, tags will still be read from
+Even if a regular expression is configured, tags will still be read from
 the files in the background. This can be configured in the Preferences
-dialog so that they are never read, or only if the regular expresion did
-not match. A regular expresion match with an empty "title" group is
+dialog so that they are never read, or only if the regular expression
+did not match. A regular expression match with an empty "title" group is
 considered as failure to match.
 
-An example of a simple regular expresion that matches "Artist - Title.mp3"
+An example of a simple regular expression that matches "Artist - Title.mp3"
 would be:
 
     '/((?P<artist>.+?) - )?(?P<title>.+)\.[^.]+$'
@@ -37,7 +37,7 @@ This matches, case insensitively:
     .../(year) Album/07_Artist - Title.mp3
     .../(year) Album/cd 1/07_Artist - Title.mp3
 
-For more information on Python regular expresions:
+For more information on Python regular expression:
 
     http://docs.python.org/lib/module-re.html
     http://docs.python.org/lib/re-syntax.html
