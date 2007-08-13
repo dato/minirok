@@ -34,7 +34,7 @@ class TagReader(threading.Thread):
         self._queue.insert(0, item)
 
     def queue_empty(self):
-        return not bool(self._queue)
+        return len(self._queue) == 0
 
     def dequeue(self, item):
         try:
