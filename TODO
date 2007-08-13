@@ -24,9 +24,6 @@ Playlist:
 UI:
   * Seek bar with elapsed --[]-- remaining.
   * connect track change / playlist change with statusbar and caption
-  * Disable prev/next/stop/play buttons as appropriate
-  * Make pause and play/pause buttons "pressed" when pressed
-  * Make play/pause icon change icon as appropriate
   * Make stop button pop a menu between "now" and "after current track"
 
 Options:
