@@ -11,7 +11,6 @@ Tree View:
   * Do not make UI calls in the PopulateTree threads.
 
 Playlist:
-  * Handle Delete keys
   * Enqueue items
   * Stop after this/current track
   * Undo/redo?

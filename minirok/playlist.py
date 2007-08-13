@@ -101,6 +101,8 @@ class Playlist(kdeui.KListView):
     def _set_current_item(self, value):
         if not (value is self.FIRST_ITEM and self.childCount() == 0):
             self._current_item = value
+        else:
+            self._current_item = None
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     current_item = property(lambda self: self._current_item, _set_current_item)
@@ -170,6 +172,33 @@ class Playlist(kdeui.KListView):
             finally:
                 self.tag_reader.unlock()
         self.clear()
+        self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    def slot_remove_selected(self): # not connected, but hey
+        iterator = qt.QListViewItemIterator(self,
+                qt.QListViewItemIterator.Selected)
+
+        # Iterating through the iterator, calling takeItem() on each
+        # iterator.current() does not work: not all items get removed.
+        # Make a list of the selected items first, and iterate over it.
+        items = []
+        while iterator.current():
+            items.append(iterator.current())
+            iterator += 1
+
+        if not items:
+            return
+
+        self.tag_reader.lock()
+        try:
+            for item in items:
+                self.tag_reader.dequeue(item)
+                self.takeItem(item)
+                if item == self.current_item:
+                    self.current_item = self.FIRST_ITEM
+        finally:
+            self.tag_reader.unlock()
+
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def slot_new_current_item(self, item):
@@ -259,6 +288,12 @@ class Playlist(kdeui.KListView):
             return True
 
         return kdeui.KListView.eventFilter(self, object_, event)
+
+    def keyPressEvent(self, event):
+        if event.key() == qt.QEvent.Key_Delete:
+            self.slot_remove_selected()
+        else:
+            return kdeui.KListView.keyPressEvent(self, event)
 
 ##
 
