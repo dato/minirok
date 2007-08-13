@@ -19,6 +19,11 @@ from minirok import drag, engine, util
 class Playlist(kdeui.KListView):
     # TODO Save the playlist
 
+    # This is the value self.current_item has whenver just the first item on
+    # the playlist should be used. Only set to this value when the playlist
+    # contains items!
+    FIRST_ITEM = object()
+
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
 
@@ -46,6 +51,9 @@ class Playlist(kdeui.KListView):
 
         self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
                 self.slot_engine_status_changed)
+
+        self.connect(minirok.Globals.engine, qt.PYSIGNAL('end_of_stream'),
+                self.slot_engine_end_of_stream)
 
         self.init_actions()
 
@@ -88,7 +96,8 @@ class Playlist(kdeui.KListView):
     ##
 
     def _set_current_item(self, value):
-        self._current_item = value
+        if not (value is self.FIRST_ITEM and self.childCount() == 0):
+            self._current_item = value
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     current_item = property(lambda self: self._current_item, _set_current_item)
@@ -103,9 +112,9 @@ class Playlist(kdeui.KListView):
             self.action_previous.setEnabled(False)
         else:
             if self.current_item is None:
-                # XXX Breaks when adding items, and then adding
-                # some more before them
-                current = self._current_item = self.firstChild()
+                self._current_item = self.FIRST_ITEM
+            if self.current_item is self.FIRST_ITEM:
+                current = self.firstChild()
             else:
                 current = self.current_item
             self.action_clear.setEnabled(True)
@@ -155,6 +164,8 @@ class Playlist(kdeui.KListView):
 
     def slot_play(self):
         if self.current_item is not None:
+            if self.current_item is self.FIRST_ITEM:
+                self.current_item = self.firstChild()
             minirok.Globals.engine.play(self.current_item.path)
 
     def slot_pause(self):
@@ -174,11 +185,32 @@ class Playlist(kdeui.KListView):
         if minirok.Globals.engine.status != engine.State.STOPPED:
             minirok.Globals.engine.stop()
 
-    def slot_next(self):
-        pass
+    def slot_next(self, force_play=False):
+        if self.current_item is not None:
+            if self.current_item is self.FIRST_ITEM:
+                next = self.firstChild()
+            else:
+                next = self.current_item.itemBelow()
+            if next is None:
+                self.current_item = self.FIRST_ITEM
+            else:
+                self.current_item = next
+                if (force_play
+                    or minirok.Globals.engine.status != engine.State.STOPPED):
+                    self.slot_play()
 
     def slot_previous(self):
-        pass
+        if (self.current_item is not None 
+                and self.current_item is not self.FIRST_ITEM):
+            previous = self.current_item.itemAbove()
+            if previous is not None:
+                self.current_item = previous
+                if minirok.Globals.engine.status != engine.State.STOPPED:
+                    self.slot_play()
+
+    def slot_engine_end_of_stream(self, *args):
+        # TODO Check stop after track
+        self.slot_next(force_play=True)
 
     ##
 
