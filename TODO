@@ -19,6 +19,8 @@ Playlist:
   * To be able to receive drops from eg. Konqueror, the Playlist must be
     able to read contents of directories by itself (never needed if
     dragging from the tree view)
+  * If while playing the list gets cleared, and then the currently
+    playing file gets added again, the current item should be set to it.
 
 UI:
   * Seek bar with elapsed --[]-- remaining.
