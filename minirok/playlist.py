@@ -181,17 +181,7 @@ class Playlist(kdeui.KListView):
             self.tag_reader.lock()
             try:
                 for f in drag.FileListDrag.file_list(event):
-                    tags = self.tags_from_filename(f)
-                    if len(tags) == 0 or tags.get('Title', None) is None:
-                        regex_failed = True
-                        dirname, filename = os.path.split(f)
-                        tags['Title'] = util.unicode_from_path(filename)
-                    else:
-                        regex_failed = False
-                    prev_item = PlaylistItem(f, self, prev_item, tags)
-                    if self._read_tags == 'Always' or (regex_failed
-                            and self._read_tags == 'OnRegexFail'):
-                        self.tag_reader.queue(prev_item)
+                    prev_item = self.add_file(f, prev_item)
             finally:
                 self.tag_reader.unlock()
             self.emit(qt.PYSIGNAL('list_changed'), ())
@@ -331,6 +321,23 @@ class Playlist(kdeui.KListView):
                 tags[group] = util.unicode_from_path(match)
 
         return tags
+
+    def add_file(self, file_, prev_item):
+        tags = self.tags_from_filename(file_)
+        if len(tags) == 0 or tags.get('Title', None) is None:
+            regex_failed = True
+            dirname, filename = os.path.split(file_)
+            tags['Title'] = util.unicode_from_path(filename)
+        else:
+            regex_failed = False
+
+        item = PlaylistItem(file_, self, prev_item, tags)
+
+        if self._read_tags == 'Always' or (regex_failed
+                and self._read_tags == 'OnRegexFail'):
+            self.tag_reader.queue(prev_item)
+
+        return item
 
     ##
 
