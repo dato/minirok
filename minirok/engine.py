@@ -28,10 +28,22 @@ class State:
 class GStreamerEngine(qt.QObject, threading.Thread):
     SINK = 'alsasink'
 
+    PLUGINS = {
+            'flac': [ '.flac' ],
+            'mad': [ '.mp3', ],
+            'musepack': [ '.mpc', '.mp+', ],
+            'vorbis': [ '.ogg' ],
+    }
+
     def __init__(self):
         qt.QObject.__init__(self)
         threading.Thread.__init__(self)
         self.setDaemon(True)
+
+        self.supported_extensions = []
+        for plugin, extensions in self.PLUGINS.items():
+            if gst.registry_get_default().find_plugin(plugin) is not None:
+                self.supported_extensions.extend(extensions)
 
         self.uri = None
         self._status = State.STOPPED

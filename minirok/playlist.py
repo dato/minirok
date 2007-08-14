@@ -323,6 +323,12 @@ class Playlist(kdeui.KListView):
         return tags
 
     def add_file(self, file_, prev_item):
+        prefix, extension = os.path.splitext(file_)
+        if extension.lower() \
+                not in minirok.Globals.engine.supported_extensions:
+            # minirok.logger.debug('skipping unsupported file format %s', file_)
+            return
+
         tags = self.tags_from_filename(file_)
         if len(tags) == 0 or tags.get('Title', None) is None:
             regex_failed = True
