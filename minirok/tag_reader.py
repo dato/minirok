@@ -19,30 +19,36 @@ class TagReader(threading.Thread):
         self._queue = []
         self._lock = threading.Lock()
         self._pending = threading.Event()
+        self._locked = False
 
     ##
 
     def lock(self):
         self._pending.clear() # prevents stagnation
         self._lock.acquire()
+        self._locked = True
 
     def unlock(self):
         self._lock.release()
         self._pending.set()
+        self._locked = False
 
     def queue(self, item):
+        assert self._locked
         self._queue.insert(0, item)
 
     def queue_empty(self):
         return len(self._queue) == 0
 
     def dequeue(self, item):
+        assert self._locked
         try:
             self._queue.remove(item)
         except ValueError:
             pass
 
     def clear_queue(self):
+        assert self._locked
         self._queue[:] = []
 
     ##
