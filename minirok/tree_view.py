@@ -6,12 +6,12 @@
 
 import os
 import re
-import sys
 import threading
 
 import qt
 import kdeui
 
+import minirok
 from minirok import drag, util
 
 ##
@@ -251,8 +251,7 @@ def _populate_tree(parent, directory):
     try:
         files = os.listdir(directory)
     except OSError, e:
-        # XXX Use logging?
-        print >>sys.stderr, 'minirok: error: could not list directory: %s' % e
+        minirok.logger.warn('could not list directory: %s', e)
         return
 
     for filename in files:

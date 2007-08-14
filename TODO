@@ -42,8 +42,9 @@ Appearance:
 
 Other:
   * Write setup.py
-  * Use logging?
   * DCOP call for nowPlaying
   * Configured shortcut keys seems not to get used
+  * It'd be nice to have module and line numbers in logging output, but
+    it doesn't seem to work.
 
 vi: sw=2

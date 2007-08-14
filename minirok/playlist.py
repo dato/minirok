@@ -105,7 +105,7 @@ class Playlist(kdeui.KListView):
         try:
             return self.columns.index(col_name)
         except Columns.NoSuchColumn:
-            print >>sys.stderr, 'minirok: BUG: column %r not found' % col_name
+            minirok.logger.critical('column %r not found', col_name)
             sys.exit(1)
 
     ##
@@ -286,10 +286,8 @@ class Playlist(kdeui.KListView):
             try:
                 self._regex = re.compile(self._regex)
             except re.error, e:
-                # XXX Can't print non-ASCII characters!
-                print >>sys.stderr, (
-                    'minirok: error: invalid regular expression %r: %s' %
-                     (self._regex, e))
+                minirok.logger.error('invalid regular expresion %s: %s',
+                        self._regex, e)
                 self._read_tags = 'Always'
             else:
                 self._read_tags = str(config.readEntry(
@@ -298,8 +296,8 @@ class Playlist(kdeui.KListView):
             self._read_tags = 'Always'
 
         if self._read_tags not in self.CONFIG_READ_TAGS_VALUES:
-            print >>sys.stderr, ('minirok: error: invalid value %r for %s' %
-                    (self._read_tags, self.CONFIG_READ_TAGS_OPTION))
+            minirok.logger.error('invalid value %r for %s', self._read_tags,
+                    self.CONFIG_READ_TAGS_OPTION)
             self._read_tags = 'Always'
 
     ##
@@ -378,7 +376,7 @@ class PlaylistItem(kdeui.KListViewItem):
     def update_tags(self, tags):
         for tag, value in tags.items():
             if tag not in self._tags:
-                print >>sys.stderr, 'minirok: warning: unknown tag %s' % tag
+                minirok.logger.warn('unknown tag %s', tag)
                 continue
             if tag == 'Track':
                 try:
@@ -390,8 +388,7 @@ class PlaylistItem(kdeui.KListViewItem):
                 try:
                     value = int(value)
                 except ValueError:
-                    print >>sys.stderr, \
-                        'minirok: warning: invalid length: %r' % value
+                    minirok.logger.warn('invalid length: %r', value)
                     continue
             self._tags[tag] = value
 
@@ -470,8 +467,8 @@ class Columns(util.HasConfig):
                 try:
                     width = int(width)
                 except ValueError:
-                    print >>sys.stderr, \
-                        'minirok: error: invalid width %r for column %s' % (width, name)
+                    minirok.logger.error('invalid width %r for column %s',
+                            width, name)
                 else:
                     if width != 0:
                         configured_width[name] = width
@@ -532,4 +529,4 @@ class Columns(util.HasConfig):
         config.writeEntry(self.CONFIG_ORDER_OPTION, order)
         config.writeEntry(self.CONFIG_WIDTH_OPTION, width)
         config.writeEntry(self.CONFIG_VISIBLE_OPTION, visible)
-        print >>sys.stderr, 'minirok: debug: finished Columns.slot_save_config'
+        minirok.logger.debug('finished Columns.slot_save_config')

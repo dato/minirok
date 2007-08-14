@@ -4,8 +4,8 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import sys
 import threading
+import minirok
 
 ##
 
@@ -58,7 +58,7 @@ class TagReader(threading.Thread):
                 item = self._queue.pop()
                 # TODO do something with item
             except Exception, e:
-                print >>sys.stderr, 'minirok: error: TagReader thread: %s' % e
+                minirok.logger.error('unexpected exception: %s', e)
                 self._lock.release()
                 continue
             self._lock.release()

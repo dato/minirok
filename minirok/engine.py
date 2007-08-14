@@ -5,12 +5,13 @@
 # Licensed under the terms of the MIT license.
 
 import os
-import sys
 import threading
 
 import qt
 import gst
 import gobject
+
+import minirok
 
 gobject.threads_init()
 
@@ -93,7 +94,7 @@ class GStreamerEngine(qt.QObject, threading.Thread):
 
     def _message_error(self, bus, message):
         error, debug_info = message.parse_error()
-        print >>sys.stderr, 'minirok: error: %s (%s)' % (error, self.uri)
+        minirok.logger.warning('engine error: %s (%s)', error, self.uri)
         self._message_eos(bus, message)
 
 ##

@@ -4,8 +4,6 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import sys
-
 import qt
 import kdecore
 
@@ -31,9 +29,8 @@ def unicode_from_path(path):
         try:
             return unicode(path, minirok.filesystem_encoding)
         except UnicodeDecodeError:
-            # XXX use logging?
-            print >>sys.stderr, ('minirok: warning: cannot convert %r to %s' %
-                    (path, minirok.filesystem_encoding))
+            minirok.logger.warning('cannot convert %r to %s', path,
+                    minirok.filesystem_encoding)
             return unicode(path, minirok.filesystem_encoding, 'replace')
 
 ##

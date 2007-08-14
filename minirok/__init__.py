@@ -4,7 +4,9 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import os
 import sys
+import logging
 
 ##
 
@@ -51,6 +53,35 @@ terms of the MIT license:
   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'''
 
+##
+
+def _minirok_logger():
+    levelname = os.environ.get('MINIROK_DEBUG_LEVEL', 'warning')
+    level = getattr(logging, levelname.upper(), None)
+
+    if not isinstance(level, int):
+        bogus_debug_level = True
+        level = logging.WARNING
+    else:
+        bogus_debug_level = False
+
+    fmt = 'minirok: %(levelname)s: %(message)s'
+
+    stderr = logging.StreamHandler(sys.stderr)
+    stderr.setFormatter(logging.Formatter(fmt))
+
+    logger = logging.getLogger('minirok')
+    logger.setLevel(level)
+    logger.addHandler(stderr)
+
+    if bogus_debug_level:
+        logger.warn('invalid value for MINIROK_DEBUG_LEVEL: %r', levelname)
+
+    return logger
+
+logger = _minirok_logger()
+
+del _minirok_logger
 
 ##
 
