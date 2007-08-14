@@ -111,13 +111,26 @@ class Playlist(kdeui.KListView):
     ##
 
     def _set_current_item(self, value):
+        self.__current_track_marker(self.current_item, unset=True)
         if not (value is self.FIRST_ITEM and self.childCount() == 0):
             self._current_item = value
         else:
             self._current_item = None
+        self.__current_track_marker(self.current_item, unset=False)
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     current_item = property(lambda self: self._current_item, _set_current_item)
+
+    # XXX This is a gross hack until I code something better
+    def __current_track_marker(self, item, unset=False):
+        if item in (self.FIRST_ITEM, None):
+            return
+        text = str(item.text(self.column_index('Track')))
+        if not unset:
+            text = '%s >>' % text
+        else:
+            text = re.sub(r' \>\>$', '', text)
+        item.setText(self.column_index('Track'), text)
 
     ##
 
