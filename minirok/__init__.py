@@ -99,6 +99,7 @@ try:
     import kfile
     import kdeui
     import kdecore # used below
+    import dcopext
 except ImportError:
     _do_exit = True
     _not_found.append('PyKDE')

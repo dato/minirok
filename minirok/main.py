@@ -8,6 +8,7 @@ import sys
 import kdecore
 
 import minirok
+import minirok.dcop
 import minirok.engine
 import minirok.main_window
 
@@ -44,6 +45,9 @@ def main():
 
     application = kdecore.KApplication()
     main_window = minirok.main_window.MainWindow()
+
+    application.dcopClient().registerAs('minirok', False) # False: do not add PID
+    player = minirok.dcop.Player()
 
     main_window.show()
     application.exec_loop()
