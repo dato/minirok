@@ -14,7 +14,8 @@ performed both in the tree view and the playlist.
 
 Other features include:
 
-  * DCOP interface for retrieving the currently played track
+  * DCOP interface for controlling the player and retrieving the
+    currently played track
 
   * alter the playing order in the playlist by queueing tracks;
     stop after a certain track; undo and redo
