@@ -40,6 +40,7 @@ class Playlist(kdeui.KListView):
 
         self.columns = Columns(self)
         self._current_item = None # has a property() below
+        self._currently_playing = None # ditto.
 
         self.tag_reader = tag_reader.TagReader()
         self.tag_reader.start()
@@ -109,6 +110,14 @@ class Playlist(kdeui.KListView):
             sys.exit(1)
 
     ##
+
+    @property
+    def currently_playing(self):
+        """Return a dict of the tags of the currently played track, or None."""
+        if self._currently_playing is not None:
+            return self._currently_playing._tags # XXX Private member!
+        else:
+            return None
 
     def _set_current_item(self, value):
         self.__current_track_marker(self.current_item, unset=True)
@@ -233,6 +242,7 @@ class Playlist(kdeui.KListView):
         if self.current_item is not None:
             if self.current_item is self.FIRST_ITEM:
                 self.current_item = self.firstChild()
+            self._currently_playing = self.current_item
             minirok.Globals.engine.play(self.current_item.path)
 
     def slot_pause(self):
@@ -250,6 +260,7 @@ class Playlist(kdeui.KListView):
 
     def slot_stop(self):
         if minirok.Globals.engine.status != engine.State.STOPPED:
+            self._currently_playing = None
             minirok.Globals.engine.stop()
 
     def slot_next(self, force_play=False):

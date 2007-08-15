@@ -25,9 +25,30 @@ class Player(dcopexport.DCOPExObj):
         ]:
             self.addMethod('void %s()' % method, self.get_action(action))
 
-        self.addMethod('QString nowPlaying()', lambda: qt.QString('FIXME'))
+        self.addMethod('QString nowPlaying()', self.formatted_now_playing)
+        self.addMethod('QString nowPlaying(QString)', self.formatted_now_playing)
 
         # TODO Stop after current
+
+    def formatted_now_playing(self, format=None):
+        currently_playing = minirok.Globals.playlist.currently_playing
+        if currently_playing is None:
+            formatted = ''
+        else:
+            if format is not None:
+                try:
+                    formatted = str(format) % currently_playing
+                except (KeyError, ValueError, TypeError), e:
+                    formatted = '>> Error when formatting string: %s' % e
+            else:
+                title = currently_playing['Title']
+                artist = currently_playing['Artist']
+                if artist is not None:
+                    formatted = '%s - %s' % (artist, title)
+                else:
+                    formatted = title
+
+        return qt.QString(formatted)
 
     @staticmethod
     def get_action(action_name):

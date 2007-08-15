@@ -7,6 +7,7 @@
 import qt
 import kdeui
 
+import minirok
 from minirok import playlist
 
 ##
@@ -36,3 +37,5 @@ class RightSide(qt.QVBox):
         self.playlist.action_next.plug(self.toolbar)
         self.toolbar.insertLineSeparator(-1, -1)
         self.playlist.action_clear.plug(self.toolbar)
+
+        minirok.Globals.playlist = self.playlist
