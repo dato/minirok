@@ -21,6 +21,7 @@ Playlist:
     dragging from the tree view)
   * If while playing the list gets cleared, and then the currently
     playing file gets added again, the current item should be set to it.
+  * Scroll automatically so that the current track is always visible.
 
 UI:
   * Seek bar with elapsed --[]-- remaining.
