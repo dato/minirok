@@ -288,6 +288,7 @@ class Playlist(kdeui.KListView):
 
     def slot_engine_end_of_stream(self, *args):
         # TODO Check stop after track
+        self._currently_playing = None
         self.slot_next(force_play=True)
 
     ##
