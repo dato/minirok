@@ -327,7 +327,7 @@ class Playlist(kdeui.KListView):
         if extension.lower() \
                 not in minirok.Globals.engine.supported_extensions:
             # minirok.logger.debug('skipping unsupported file format %s', file_)
-            return
+            return prev_item
 
         tags = self.tags_from_filename(file_)
         if len(tags) == 0 or tags.get('Title', None) is None:
