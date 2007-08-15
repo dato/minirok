@@ -40,7 +40,7 @@ Description: a small music player written in Python and inspired by Amarok
  .
   * support for the classic Amarok "funky-monkey" theme
  .
-  * global keybindings (but see README.Bugs)
+  * global keybindings (see README.Usage for details)
  .
  Minirok is written using the PyKDE bindings and the GStreamer media
  framework.

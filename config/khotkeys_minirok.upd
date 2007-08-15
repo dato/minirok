@@ -1,0 +1,9 @@
+# This file makes minirok.khotkeys get automatically merged into the
+# user's khotkeysrc file. Since the group is disabled by default, this
+# is reasonable.
+Id=minirok
+File=khotkeys_update
+Group=Dummy
+Options=overwrite
+ScriptArguments=--id minirok
+Script=khotkeys_update
