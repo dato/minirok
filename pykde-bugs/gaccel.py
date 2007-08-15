@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+"""http://www.riverbankcomputing.com/pipermail/pyqt/2007-August/016865.html"""
+
 import sys
 
 import qt
