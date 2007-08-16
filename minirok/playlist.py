@@ -250,6 +250,7 @@ class Playlist(kdeui.KListView):
             self.current_item.update_display()
 
             self._currently_playing = self.current_item
+            self.emit(qt.PYSIGNAL('new_track'), ())
 
     def slot_pause(self):
         e = minirok.Globals.engine
