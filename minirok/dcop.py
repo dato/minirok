@@ -12,6 +12,7 @@ import minirok
 ##
 
 class Player(dcopexport.DCOPExObj):
+
     def __init__(self):
         dcopexport.DCOPExObj.__init__(self, 'player')
 
