@@ -243,8 +243,13 @@ class Playlist(kdeui.KListView):
             if self.current_item is self.FIRST_ITEM:
                 # somebody else ensures firstChild() is not None
                 self.current_item = self.firstChild()
+
+            length = minirok.Globals.engine.play(self.current_item.path)
+            # XXX Only update the Length if it's None?
+            self.current_item.update_tags({'Length': length})
+            self.current_item.update_display()
+
             self._currently_playing = self.current_item
-            minirok.Globals.engine.play(self.current_item.path)
 
     def slot_pause(self):
         e = minirok.Globals.engine

@@ -5,6 +5,7 @@
 # Licensed under the terms of the MIT license.
 
 import os
+import time
 import threading
 
 import qt
@@ -79,11 +80,22 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     ##
 
     def play(self, path):
+        """Start playing "path", returning its length in seconds."""
         self.uri = 'file://' + os.path.abspath(path)
         self.bin.set_property('uri', self.uri)
         self.bin.set_state(gst.STATE_NULL)
         self.bin.set_state(gst.STATE_PLAYING)
         self.status = State.PLAYING
+
+        count = 0
+        while count < 5:
+            try:
+                nsecs = self.bin.query_duration(gst.Format(gst.FORMAT_TIME))[0]
+            except gst.QueryError:
+                count += 1
+                time.sleep(0.2)
+            else:
+                return int(nsecs/1000000000)
 
     def pause(self, paused=True):
         if paused:
