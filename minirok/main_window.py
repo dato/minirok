@@ -69,6 +69,11 @@ class MainWindow(kdeui.KMainWindow):
                 kdeui.KAboutApplication(self, 'about', False).show, ac)
         self.action_about.setShortcutConfigurable(False)
 
+        # Other
+        self.action_toggle_window = kdeui.KAction('Show/Hide window',
+                kdecore.KShortcut.null(), self.slot_toggle_window, ac,
+                'action_toggle_window')
+
     def init_menus(self):
         file_menu = qt.QPopupMenu(self)
         self.action_quit.plug(file_menu)
@@ -114,6 +119,18 @@ class MainWindow(kdeui.KMainWindow):
 
     def slot_preferences(self):
         pass
+
+    def slot_toggle_window(self):
+        w_id = self.winId()
+        w_info = kdecore.KWin.windowInfo(w_id)
+        current_desktop = kdecore.KWin.currentDesktop()
+
+        if not w_info.isOnDesktop(current_desktop) or w_info.isMinimized():
+            kdecore.KWin.setOnDesktop(w_id, current_desktop)
+            kdecore.KWin.activateWindow(w_id)
+            self.setShown(True)
+        else:
+            self.setShown(not self.isShown())
 
     ##
 

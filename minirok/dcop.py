@@ -22,6 +22,7 @@ class Player(dcopexport.DCOPExObj):
                 ('stop', 'action_stop'),
                 ('next', 'action_next'),
                 ('previous', 'action_previous'),
+                ('toggleWindow', 'action_toggle_window'),
         ]:
             self.addMethod('void %s()' % method, self.get_action(action))
 
