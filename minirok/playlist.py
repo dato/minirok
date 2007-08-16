@@ -523,6 +523,8 @@ class Columns(util.HasConfig):
                 playlist.setColumnWidth(index, 0)
             if name == 'Track':
                 playlist.setColumnAlignment(index, qt.Qt.AlignHCenter)
+            elif name == 'Length':
+                playlist.setColumnAlignment(index, qt.Qt.AlignRight)
 
         self.playlist = playlist
 
