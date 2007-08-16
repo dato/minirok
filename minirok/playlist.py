@@ -241,6 +241,7 @@ class Playlist(kdeui.KListView):
     def slot_play(self):
         if self.current_item is not None:
             if self.current_item is self.FIRST_ITEM:
+                # somebody else ensures firstChild() is not None
                 self.current_item = self.firstChild()
             self._currently_playing = self.current_item
             minirok.Globals.engine.play(self.current_item.path)
