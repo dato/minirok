@@ -6,7 +6,7 @@ Tree View:
   * Double click/return to append to the playlist?
   * Expand remaining items after search
   * Remove artifacts in the pointer when dragging (display file count?;
-    who filters unplayable items?)
+    who filters unplayable items? --> Playlist ATM, tree view should too?)
   * Use a regex as well to control the appearance of file names?
 
 Playlist:
