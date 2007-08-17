@@ -79,7 +79,7 @@ class TreeView(kdeui.KListView):
     def slot_populate_one(self):
         if self.iterator is None:
             self.setUpdatesEnabled(False)
-            self.emit(qt.PYSIGNAL('scanInProgress'), (True,))
+            self.emit(qt.PYSIGNAL('scan_in_progress'), (True,))
             self.iterator = qt.QListViewItemIterator(self)
 
         item = self.iterator.current()
@@ -92,7 +92,7 @@ class TreeView(kdeui.KListView):
             self.iterator = None
             self.setUpdatesEnabled(True)
             self.repaint()
-            self.emit(qt.PYSIGNAL('scanInProgress'), (False,))
+            self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
 
     ##
 

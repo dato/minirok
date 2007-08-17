@@ -39,7 +39,7 @@ class LeftSide(qt.QVBox):
 
         ##
 
-        self.connect(self.tree_view, qt.PYSIGNAL('scanInProgress'),
+        self.connect(self.tree_view, qt.PYSIGNAL('scan_in_progress'),
                 self.tree_search.slot_scan_in_progress)
 
         self.connect(self.path_combo, qt.SIGNAL('urlActivated(const KURL &)'),
