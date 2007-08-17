@@ -8,7 +8,6 @@ Tree View:
   * Remove artifacts in the pointer when dragging (display file count?;
     who filters unplayable items?)
   * Use a regex as well to control the appearance of file names?
-  * Do not make UI calls in the PopulateTree threads.
 
 Playlist:
   * Enqueue items

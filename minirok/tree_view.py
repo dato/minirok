@@ -21,7 +21,8 @@ class TreeView(kdeui.KListView):
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
         self.root = None
-        self.thread = None
+        self.timer = qt.QTimer(self, 'tree_view_timer')
+        self.iterator = None
 
         self.addColumn('')
         self.header().hide()
@@ -29,6 +30,15 @@ class TreeView(kdeui.KListView):
         self.setDragEnabled(True)
         self.setRootIsDecorated(True)
         self.setSelectionModeExt(kdeui.KListView.Extended)
+
+        # Initially the tree view was populated in a separated thread, but
+        # that didn't work out nicely because you cannot do UI calls in
+        # threads other than the main thread. Now, we use a QTimer object to
+        # periodically call a function that just reads one directory and
+        # creates its KListViewItems. The timer starts with 0 msecs, which
+        # means it will get called whenever there are no pending events to
+        # process.
+        self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_populate_one)
 
     ##
 
@@ -60,16 +70,29 @@ class TreeView(kdeui.KListView):
 
     def slot_show_directory(self, directory):
         """Changes the TreeView root to the specified directory."""
-        if self.thread is not None:
-            self.thread.join() # thread terminates immediately, see below
-
         self.clear()
+        self.setUpdatesEnabled(True) # can be unset if not finished populating
         self.root = util.kurl_to_path(directory)
         _populate_tree(self, self.root)
+        self.timer.start(0, False) # False: not one-shot
 
-        # TODO Have an option to not run this thread?
-        self.thread = PopulateTreeThread(self)
-        self.thread.start()
+    def slot_populate_one(self):
+        if self.iterator is None:
+            self.setUpdatesEnabled(False)
+            self.emit(qt.PYSIGNAL('scanInProgress'), (True,))
+            self.iterator = qt.QListViewItemIterator(self)
+
+        item = self.iterator.current()
+
+        if item is not None:
+            item.populate()
+            self.iterator += 1
+        else:
+            self.timer.stop()
+            self.iterator = None
+            self.setUpdatesEnabled(True)
+            self.repaint()
+            self.emit(qt.PYSIGNAL('scanInProgress'), (False,))
 
     ##
 
@@ -79,42 +102,6 @@ class TreeView(kdeui.KListView):
         # things go very bad (crash or double-free from libc).
         self.drag_obj = drag.FileListDrag(self.selected_files(), self)
         self.drag_obj.dragCopy()
-
-##
-
-class PopulateTreeThread(threading.Thread):
-    """A thread that walks a TreeView, calling populate() on its items.
-
-    The thread will terminate immediately if its join() method is called, which
-    can be convinient.
-    """
-    def __init__(self, tree_view):
-        threading.Thread.__init__(self)
-        self.tree_view = tree_view
-        self.stop = threading.Event()
-    
-    def run(self):
-        self.tree_view.setUpdatesEnabled(False)
-        self.tree_view.emit(qt.PYSIGNAL('scanInProgress'), (True,))
-
-        iterator = qt.QListViewItemIterator(self.tree_view)
-        while iterator.current():
-            if self.stop.isSet():
-                break
-            try:
-                iterator.current().populate()
-            except RuntimeError:
-                # "underlying C/C++ object has been deleted" at quit
-                return
-            iterator += 1
-
-        self.tree_view.setUpdatesEnabled(True)
-        self.tree_view.repaint()
-        self.tree_view.emit(qt.PYSIGNAL('scanInProgress'), (False,))
-
-    def join(self, timeout=None):
-        self.stop.set()
-        threading.Thread.join(self, timeout)
 
 ##
 
@@ -155,20 +142,13 @@ class DirectoryItem(TreeViewItem):
     def __init__(self, parent, path):
         TreeViewItem.__init__(self, parent, path)
         self._populated = False
-        self._lock = threading.Lock()
         self.setExpandable(True)
 
     def populate(self):
-        """Populate the entry with children, one level deep.
-
-        This function acquires an internal lock so it's safe to call it
-        concurrently.
-        """
-        self._lock.acquire()
+        """Populate the entry with children, one level deep."""
         if not self._populated:
             _populate_tree(self, self.path)
             self._populated = True
-        self._lock.release()
 
     ##
 
