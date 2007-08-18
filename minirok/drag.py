@@ -4,6 +4,7 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import os
 import kdecore
 
 import minirok
@@ -29,6 +30,8 @@ class FileListDrag(kdecore.KURLDrag):
         Files that the engine can't play will not be included; if the event is
         an instance of FileListDrag, though, the list will be assumed to be
         filtered already.
+
+        Directories will be read and all its files included.
         """
         files = []
         all_playable = isinstance(event, FileListDrag)
@@ -36,11 +39,19 @@ class FileListDrag(kdecore.KURLDrag):
         urls = kdecore.KURL.List()
         kdecore.KURLDrag.decode(event, urls)
 
-        for url in urls:
-            path = util.kurl_to_path(url)
-            if not (all_playable or minirok.Globals.engine.can_play(path)):
-                continue
-            else:
+        def append_path(path):
+            if os.path.isdir(path):
+                try:
+                    contents = sorted(os.listdir(path))
+                except OSError, e:
+                    minirok.logger.warn('could not list directory: %s', e)
+                else:
+                    for file_ in contents:
+                        append_path(os.path.join(path, file_))
+            elif all_playable or minirok.Globals.engine.can_play(path):
                 files.append(path)
+
+        for url in urls:
+            append_path(util.kurl_to_path(url))
 
         return files
