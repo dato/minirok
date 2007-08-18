@@ -187,13 +187,8 @@ class Playlist(kdeui.KListView):
 
     def slot_accept_drop(self, event, prev_item):
         if event.source() != self.viewport(): # XXX
-            self.tag_reader.lock()
-            try:
-                for f in drag.FileListDrag.file_list(event):
-                    prev_item = self.add_file(f, prev_item)
-            finally:
-                self.tag_reader.unlock()
-            self.emit(qt.PYSIGNAL('list_changed'), ())
+            files = drag.FileListDrag.file_list(event)
+            self.add_files(files, prev_item)
 
     def slot_clear(self):
         if not self.tag_reader.queue_empty():
@@ -340,6 +335,15 @@ class Playlist(kdeui.KListView):
                 tags[group] = util.unicode_from_path(match)
 
         return tags
+
+    def add_files(self, files, prev_item=None):
+            self.tag_reader.lock()
+            try:
+                for f in files:
+                    prev_item = self.add_file(f, prev_item)
+            finally:
+                self.tag_reader.unlock()
+            self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def add_file(self, file_, prev_item):
         tags = self.tags_from_filename(file_)
