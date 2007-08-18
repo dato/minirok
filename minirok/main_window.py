@@ -119,7 +119,7 @@ class MainWindow(kdeui.KMainWindow):
             blue = qt.QColor(32, 32, 80) # 0x202050
             grey = qt.QColor(215, 215, 239) # 0xD7D7EF
             alternate_bg_color = qt.QColor(57, 64, 98)
-            group = qt.QApplication.palette().active()
+            group = qt.QColorGroup(qt.QApplication.palette().active())
 
             group.setColor(qt.QColorGroup.Base, blue)
             group.setColor(qt.QColorGroup.Text, qt.Qt.white)
