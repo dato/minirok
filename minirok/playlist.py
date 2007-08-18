@@ -7,6 +7,7 @@
 import os
 import re
 import sys
+import errno
 
 import qt
 import kdeui
@@ -17,9 +18,7 @@ from minirok import drag, engine, tag_reader, util
 
 ##
 
-class Playlist(kdeui.KListView):
-    # TODO Save the playlist
-
+class Playlist(kdeui.KListView, util.HasConfig):
     # If CONFIG_REGEX_OPTION exists, it will be matched against the full path
     # and the PlaylistItem will have its tags initially filled with the
     # resulting match groups.
@@ -37,6 +36,7 @@ class Playlist(kdeui.KListView):
 
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
+        util.HasConfig.__init__(self)
 
         self.columns = Columns(self)
         self._current_item = None # has a property() below
@@ -71,10 +71,8 @@ class Playlist(kdeui.KListView):
                 self.slot_engine_end_of_stream)
 
         self.init_actions()
-
-        # TODO Read the saved playlist here
-        self.slot_list_changed()
         self.slot_read_config()
+        self.load_saved_playlist()
 
     ##
 
@@ -316,6 +314,45 @@ class Playlist(kdeui.KListView):
             minirok.logger.error('invalid value %r for %s', self._read_tags,
                     self.CONFIG_READ_TAGS_OPTION)
             self._read_tags = 'Always'
+
+    ##
+
+    def slot_save_config(self):
+        """Saves the current playlist."""
+        items = []
+        item = self.firstChild()
+
+        while item:
+            items.append(item.path)
+            item = item.nextSibling()
+
+        try:
+            playlist = file(self.saved_playlist_path(), 'w')
+        except IOError, e:
+            minirok.logger.error('could not save playlist: %s', e)
+        else:
+            playlist.write('\0'.join(items))
+            playlist.close()
+
+    def load_saved_playlist(self):
+        try:
+            playlist = file(self.saved_playlist_path())
+        except IOError, e:
+            if e.errno == errno.ENOENT:
+                pass
+            else:
+                minirok.logger.warning('error opening saved playlist: %s', e)
+        else:
+            files = re.split(r'\0+', playlist.read())
+            if files != ['']: # empty saved playlist
+                self.add_files(files)
+
+        self.slot_list_changed()
+
+    @staticmethod
+    def saved_playlist_path():
+        appdata = str(kdecore.KGlobal.dirs().saveLocation('appdata'))
+        return os.path.join(appdata, 'saved_playlist.txt')
 
     ##
 

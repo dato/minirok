@@ -12,7 +12,6 @@ Playlist:
   * Enqueue items
   * Stop after this/current track
   * Undo/redo?
-  * Save playlist at quit and restore it
   * Tabs??
   * If while playing the list gets cleared, and then the currently
     playing file gets added again, the current item should be set to it.
