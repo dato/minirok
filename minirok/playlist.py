@@ -319,23 +319,6 @@ class Playlist(kdeui.KListView):
 
     ##
 
-    def tags_from_filename(self, path):
-        if self._regex is None:
-            return {}
-        else:
-            match = self._regex.search(path)
-            if match is None:
-                return {}
-
-        tags = {}
-
-        for group, match in match.groupdict().items():
-            group = group.capitalize()
-            if group in PlaylistItem.ALLOWED_TAGS and match is not None:
-                tags[group] = util.unicode_from_path(match)
-
-        return tags
-
     def add_files(self, files, prev_item=None):
             self.tag_reader.lock()
             try:
@@ -361,6 +344,23 @@ class Playlist(kdeui.KListView):
             self.tag_reader.queue(prev_item)
 
         return item
+
+    def tags_from_filename(self, path):
+        if self._regex is None:
+            return {}
+        else:
+            match = self._regex.search(path)
+            if match is None:
+                return {}
+
+        tags = {}
+
+        for group, match in match.groupdict().items():
+            group = group.capitalize()
+            if group in PlaylistItem.ALLOWED_TAGS and match is not None:
+                tags[group] = util.unicode_from_path(match)
+
+        return tags
 
     ##
 
