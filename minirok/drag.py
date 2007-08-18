@@ -6,6 +6,7 @@
 
 import kdecore
 
+import minirok
 from minirok import util
 
 ##
@@ -23,10 +24,23 @@ class FileListDrag(kdecore.KURLDrag):
 
     @staticmethod
     def file_list(event):
-        """Return a list of the file paths encoded in this event."""
+        """Return a list of the file paths encoded in this event.
+        
+        Files that the engine can't play will not be included; if the event is
+        an instance of FileListDrag, though, the list will be assumed to be
+        filtered already.
+        """
         files = []
+        all_playable = isinstance(event, FileListDrag)
+
         urls = kdecore.KURL.List()
         kdecore.KURLDrag.decode(event, urls)
+
         for url in urls:
-            files.append(util.kurl_to_path(url))
+            path = util.kurl_to_path(url)
+            if not (all_playable or minirok.Globals.engine.can_play(path)):
+                continue
+            else:
+                files.append(path)
+
         return files
