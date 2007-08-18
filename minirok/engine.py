@@ -41,10 +41,10 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         threading.Thread.__init__(self)
         self.setDaemon(True)
 
-        self.supported_extensions = []
+        self._supported_extensions = []
         for plugin, extensions in self.PLUGINS.items():
             if gst.registry_get_default().find_plugin(plugin) is not None:
-                self.supported_extensions.extend(extensions)
+                self._supported_extensions.extend(extensions)
 
         self.uri = None
         self._status = State.STOPPED
@@ -76,6 +76,16 @@ class GStreamerEngine(qt.QObject, threading.Thread):
             self.emit(qt.PYSIGNAL('status_changed'), (value,))
 
     status = property(lambda self: self._status, _set_status)
+
+    ##
+
+    def can_play(self, path):
+        """Return True if the engine can play the given file.
+
+        This is done by looking at the extension of the file.
+        """
+        prefix, extension = os.path.splitext(path)
+        return extension.lower() in self._supported_extensions
 
     ##
 

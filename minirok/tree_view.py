@@ -238,5 +238,5 @@ def _populate_tree(parent, directory):
         path = os.path.join(directory, filename)
         if os.path.isdir(path):
             DirectoryItem(parent, path)
-        else:
+        elif minirok.Globals.engine.can_play(path):
             FileItem(parent, path)
