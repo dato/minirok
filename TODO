@@ -42,7 +42,7 @@ Options:
 	( ) Never read tags from files
 
 Appearance:
-  * Draw column separators in the playlist? (But I don't know how to do this.)
+  * Draw column separators in the playlist? (HOWTO: playlistitem.cpp:595)
     And, only in the Amarok classic theme, or always?
 
 Other:
