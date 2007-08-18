@@ -15,6 +15,8 @@ from minirok import left_side, right_side
 
 class MainWindow(kdeui.KMainWindow):
 
+    USE_AMAROK_FUNKY_THEME = True # XXX Use config option.
+
     def __init__ (self, *args):
         kdeui.KMainWindow.__init__(self, *args)
 
@@ -30,6 +32,7 @@ class MainWindow(kdeui.KMainWindow):
         self.init_menus()
         self.init_systray()
         self.init_global_accel()
+        self.init_color_scheme()
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
@@ -104,6 +107,37 @@ class MainWindow(kdeui.KMainWindow):
         #         kdecore.KShortcut.null(), self.engine.play)
         # self.global_accel.updateConnections()
         pass
+
+    def init_color_scheme(self):
+        if not self.USE_AMAROK_FUNKY_THEME:
+            alternate_bg_color = \
+                    kdecore.KGlobalSettings.alternateBackgroundColor()
+            self.unsetPalette()
+        else:
+            # This comes from amarok/App::applyColorScheme().
+            # QColor(0xRRGGBB) does not seem to work, though.
+            blue = qt.QColor(32, 32, 80) # 0x202050
+            grey = qt.QColor(215, 215, 239) # 0xD7D7EF
+            alternate_bg_color = qt.QColor(57, 64, 98)
+            group = qt.QApplication.palette().active()
+
+            group.setColor(qt.QColorGroup.Base, blue)
+            group.setColor(qt.QColorGroup.Text, qt.Qt.white)
+            group.setColor(qt.QColorGroup.Foreground, grey)
+            group.setColor(qt.QColorGroup.Background, alternate_bg_color)
+
+            group.setColor(qt.QColorGroup.Button, alternate_bg_color)
+            group.setColor(qt.QColorGroup.ButtonText, grey)
+            group.setColor(qt.QColorGroup.Highlight, qt.Qt.white)
+            group.setColor(qt.QColorGroup.HighlightedText, blue)
+
+            # this one is for the disabled "Search" test in the tree_search
+            group.setColor(qt.QColorGroup.Light, qt.Qt.black)
+
+            self.setPalette(qt.QPalette(group, group, group))
+
+        for lv in self.queryList('KListView'):
+            lv.setAlternateBackground(alternate_bg_color)
 
     ##
 
