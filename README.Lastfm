@@ -1,0 +1,17 @@
+Submitting played tracks to Last.fm
+===================================
+
+Minirok can submit played tracks to Last.fm if the program "lastfmsubmitd"
+is installed. If you get stuck configuring it, here's a simple recipe to
+have it running in one minute:
+
+    % mkdir -p ~/.lastfm/spool
+    % ln -s /usr/bin/lastfmsubmitd ~/.kde/Autostart
+    % cat >~/.lastfmsubmitd.conf
+[account]
+user = you
+password = XXX
+
+[paths]
+log = /home/you/.lastfm/log
+spool = /home/you/.lastfm/spool

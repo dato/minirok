@@ -84,6 +84,8 @@ The following dependencies are optional and enhance Minirok in some way:
     Debian and Ubuntu: lastfmsubmitd
     Source: http://www.red-bean.com/~decklin/software/lastfmsubmitd
 
+    (See README.Lastfm for tips on configuring it.)
+
 
 Author and license
 ==================
