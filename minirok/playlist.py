@@ -320,13 +320,13 @@ class Playlist(kdeui.KListView):
     ##
 
     def add_files(self, files, prev_item=None):
-            self.tag_reader.lock()
-            try:
-                for f in files:
-                    prev_item = self.add_file(f, prev_item)
-            finally:
-                self.tag_reader.unlock()
-            self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.tag_reader.lock()
+        try:
+            for f in files:
+                prev_item = self.add_file(f, prev_item)
+        finally:
+            self.tag_reader.unlock()
+        self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def add_file(self, file_, prev_item):
         tags = self.tags_from_filename(file_)
