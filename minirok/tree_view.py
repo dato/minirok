@@ -173,10 +173,6 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
     to match *in the same order*, as happes in the standard KListViewSearchLine.
     """
 
-    # XXX The regex matches are done in unicode, that is, the rel_path of
-    # FileItem objects is converted with util.unicode_from_path. Would it be
-    # better (more efficient?) to encode string_ to filesystem_encoding instead?
-
     # TODO I think it would be nice to automatically open all search results,
     # or something similar (to recursively open clicked top level items).
 
@@ -189,16 +185,17 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
         string_ = unicode(string_).strip()
         if string_:
             if string_ != self.string:
+                encoded = util.kurl_to_path(string_)
                 self.string = string_
                 self.regexes = [ re.compile(re.escape(pat), re.I)
-                                               for pat in string_.split() ]
+                                               for pat in encoded.split() ]
         else:
             return True
 
         try:
-            item_text = util.unicode_from_path(item.rel_path)
+            item_text = item.rel_path
         except AttributeError:
-            item_text = unicode(item.text(0))
+            item_text = util.kurl_to_path(item.text(0))
 
         for regex in self.regexes:
             if not regex.search(item_text):
