@@ -27,7 +27,7 @@ KCONF_UPDATE="$APPS/kconf_update"
 
 install_file () {
     # path/file path/dir -> path/dir/file
-    install -D -m `mode $1` "$1" "${DEBIAN_PREFIX%%/}/${2##/}/`basename $1`"
+    install_file2 "$1" "$2/`basename $1`"
 }
 
 install_file2 () {
