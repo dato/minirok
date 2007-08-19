@@ -2,7 +2,7 @@ Source: minirok
 Section: kde
 Priority: optional
 Maintainer: Adeodato Simó <dato@net.com.org.es>
-Build-Depends: debhelper, python
+Build-Depends: debhelper, python, kdelibs4c2a
 Standards-Version: 3.7.2
 
 Package: minirok
