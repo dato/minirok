@@ -13,10 +13,11 @@ from minirok import left_side, preferences, right_side, util
 
 ##
 
-class MainWindow(kdeui.KMainWindow):
+class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
     def __init__ (self, *args):
         kdeui.KMainWindow.__init__(self, *args)
+        util.HasGUIConfig.__init__(self)
 
         minirok.Globals.action_collection = self.actionCollection()
         minirok.Globals.preferences = preferences.Preferences()
@@ -31,7 +32,7 @@ class MainWindow(kdeui.KMainWindow):
         self.init_menus()
         self.init_systray()
         self.init_global_accel()
-        self.init_color_scheme()
+        self.apply_settings()
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
@@ -107,7 +108,9 @@ class MainWindow(kdeui.KMainWindow):
         # self.global_accel.updateConnections()
         pass
 
-    def init_color_scheme(self):
+    ##
+
+    def apply_settings(self):
         if not minirok.Globals.preferences.use_amarok_classic_theme:
             alternate_bg_color = \
                     kdecore.KGlobalSettings.alternateBackgroundColor()
