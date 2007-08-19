@@ -94,6 +94,15 @@ class TreeView(kdeui.KListView):
             self.repaint()
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
 
+    def slot_search_finished(self):
+        """Open the visible items."""
+        iterator = qt.QListViewItemIterator(
+                       self, qt.QListViewItemIterator.Visible)
+
+        while iterator.current():
+            iterator.current().setOpen(True)
+            iterator += 1
+
     ##
 
     def startDrag(self):
@@ -172,14 +181,17 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
     plus the patter is split in words and all have to match (instead of having
     to match *in the same order*, as happes in the standard KListViewSearchLine.
     """
-
-    # TODO I think it would be nice to automatically open all search results,
-    # or something similar (to recursively open clicked top level items).
-
     def __init__(self, *args):
         kdeui.KListViewSearchLine.__init__(self, *args)
         self.string = None
         self.regexes = []
+        self.timer = qt.QTimer(self, 'tree search line timer')
+
+        self.connect(self.timer, qt.SIGNAL('timeout()'),
+                self.slot_emit_search_finished)
+
+    def slot_emit_search_finished(self):
+        self.emit(qt.PYSIGNAL('search_finished'), ())
 
     def itemMatches(self, item, string_):
         string_ = unicode(string_).strip()
@@ -202,6 +214,10 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
                 return False
         else:
             return True
+
+    def updateSearch(self, string_):
+        kdeui.KListViewSearchLine.updateSearch(self, string_)
+        self.timer.start(400, True) # True: single-shot
 
 class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
     """Same as super class, but with a TreeViewSearchLine widget."""

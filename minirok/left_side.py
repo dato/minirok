@@ -54,6 +54,11 @@ class LeftSide(qt.QVBox):
         self.connect(self.path_combo, qt.SIGNAL('returnPressed(const QString &)'),
                 self.path_combo.slot_url_changed)
 
+        # same comment as above applies
+        qt.QTimer.singleShot(0, lambda:
+                self.connect(self.tree_search.searchLine(),
+                qt.PYSIGNAL('search_finished'), self.tree_view.slot_search_finished))
+
         ##
 
         if self.path_combo.currentText():
