@@ -1,4 +1,31 @@
 #! /usr/bin/make -f
 
-clean:
+build:
 	@true
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+binary-arch:
+	@true
+
+binary-indep:
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	env DEBIAN_PREFIX=$(CURDIR)/debian/minirok ./setup.sh install
+	dh_installchangelogs
+	dh_installdocs
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+
+.PHONY: build clean binary binary-arch binary-indep
