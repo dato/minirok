@@ -23,8 +23,6 @@ UI:
   * Make stop button pop a menu between "now" and "after current track"
 
 Options:
-  * submit tracks to Last.fm (barf if module lastfm not available)
-  * [X] Use Amarok classic "funky-monkey" theme
   * Use a regular expression to guess tags from the filename:
     { Tooltip: "The regex will be matched against the full path of the
     file. The supported groups are: "artist", "title", "album", "track".

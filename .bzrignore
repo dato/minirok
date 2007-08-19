@@ -1,2 +1,3 @@
 ./debian/files
 ./debian/minirok
+./minirok/ui/*.py

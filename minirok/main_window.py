@@ -9,18 +9,17 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import left_side, right_side
+from minirok import left_side, preferences, right_side
 
 ##
 
 class MainWindow(kdeui.KMainWindow):
 
-    USE_AMAROK_FUNKY_THEME = True # XXX Use config option.
-
     def __init__ (self, *args):
         kdeui.KMainWindow.__init__(self, *args)
 
         minirok.Globals.action_collection = self.actionCollection()
+        minirok.Globals.preferences = preferences.Preferences()
 
         self.main_view = qt.QSplitter(self, 'main view')
         self.left_side = left_side.LeftSide(self.main_view, 'left side')
@@ -109,7 +108,7 @@ class MainWindow(kdeui.KMainWindow):
         pass
 
     def init_color_scheme(self):
-        if not self.USE_AMAROK_FUNKY_THEME:
+        if not minirok.Globals.preferences.use_amarok_classic_theme:
             alternate_bg_color = \
                     kdecore.KGlobalSettings.alternateBackgroundColor()
             self.unsetPalette()
@@ -152,7 +151,14 @@ class MainWindow(kdeui.KMainWindow):
         kdeui.KKeyDialog.configure(self.global_accel, True, self)
 
     def slot_preferences(self):
-        pass
+        if kdeui.KConfigDialog.showDialog('preferences dialog'):
+            return
+        else:
+            dialog = preferences.Dialog(self, 'preferences dialog',
+                minirok.Globals.preferences, kdeui.KDialogBase.IconList,
+                kdeui.KDialogBase.Ok | kdeui.KDialogBase.Apply |
+                kdeui.KDialogBase.Cancel)
+            dialog.show()
 
     def slot_toggle_window(self):
         w_id = self.winId()

@@ -50,8 +50,8 @@ def main():
     application.dcopClient().registerAs('minirok', False) # False: do not add PID
     player = minirok.dcop.Player()
 
-    if minirok._has_lastfm:
-        # TODO Should only start if configured, not only if lastfm is available
+    if minirok.Globals.preferences.enable_lastfm:
+        # TODO Need to kill this when the preference is changed in the dialog?!
         lastfm_submitter = minirok.lastfm_submit.LastfmSubmitter()
 
     main_window.show()

@@ -51,7 +51,7 @@ install_icons () {
 }
 
 install_package () {
-    for p in minirok.py minirok/*.py; do
+    for p in minirok.py minirok/*.py minirok/ui/*.py; do
     	install_file "$p" "$PREFIX/share/minirok/`dirname $p`"
     done
 }
