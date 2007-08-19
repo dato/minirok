@@ -45,3 +45,10 @@ class Dialog(kdeui.KConfigDialog):
 class GeneralPage(options1.Page):
     def __init__(self, *args):
         options1.Page.__init__(self, *args)
+
+        if not minirok._has_lastfm:
+            qt.QToolTip.add(self.kcfg_EnableLastfm,
+                    'Feature disabled because lastfmsubmitd is not installed')
+
+        self.kcfg_EnableLastfm.setEnabled(minirok._has_lastfm)
+
