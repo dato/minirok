@@ -95,6 +95,7 @@ class TreeView(kdeui.KListView):
 
     def slot_search_finished(self):
         """Open the visible items."""
+        # TODO Be smart and determine opening level from the number of items?
         iterator = qt.QListViewItemIterator(
                        self, qt.QListViewItemIterator.Visible)
 
