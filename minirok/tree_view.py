@@ -6,7 +6,6 @@
 
 import os
 import re
-import threading
 
 import qt
 import kdeui
