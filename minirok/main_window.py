@@ -9,7 +9,7 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import left_side, preferences, right_side
+from minirok import left_side, preferences, right_side, util
 
 ##
 
@@ -158,6 +158,8 @@ class MainWindow(kdeui.KMainWindow):
                 minirok.Globals.preferences, kdeui.KDialogBase.IconList,
                 kdeui.KDialogBase.Ok | kdeui.KDialogBase.Apply |
                 kdeui.KDialogBase.Cancel)
+            self.connect(dialog, qt.SIGNAL('settingsChanged()'),
+                    util.HasGUIConfig.settings_changed)
             dialog.show()
 
     def slot_toggle_window(self):

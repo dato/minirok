@@ -10,11 +10,11 @@ import qt
 import lastfm
 
 import minirok
-from minirok import engine
+from minirok import engine, util
 
 ##
 
-class LastfmSubmitter(qt.QObject):
+class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
     """An object that takes care of submiting played tracks to Last.fm.
 
     It relies on the Playlist.new_track signal. Upon receiving it, it starts a
@@ -23,18 +23,28 @@ class LastfmSubmitter(qt.QObject):
     """
     def __init__(self):
         qt.QObject.__init__(self)
+        util.HasGUIConfig.__init__(self)
 
         self.data = None
         self.timer = QTimerWithPause(self, 'lastfm_timer')
         self.config = lastfm.config.Config('lastfmsubmitd')
 
-        self.connect(minirok.Globals.playlist,
-                qt.PYSIGNAL('new_track'), self.slot_new_track)
+        self.apply_settings()
 
-        self.connect(minirok.Globals.engine,
-                qt.PYSIGNAL('status_changed'), self.slot_engine_status_changed)
+    def apply_settings(self):
+        if minirok.Globals.preferences.enable_lastfm:
+            func = self.connect
+        else:
+            # Grrr, self.disconnect() without arguments does not work
+            func = self.disconnect
 
-        self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_submit)
+        func(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
+                self.slot_new_track)
+
+        func(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+                self.slot_engine_status_changed)
+
+        func(self.timer, qt.SIGNAL('timeout()'), self.slot_submit)
 
     def slot_new_track(self):
         all_tags = minirok.Globals.playlist.currently_playing

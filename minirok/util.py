@@ -45,3 +45,21 @@ class HasConfig(object):
     def slot_save_config(self):
         raise NotImplementedError, \
             "slot_save_config must be reimplemented in %s" % self.__class__
+
+##
+
+class HasGUIConfig(object):
+    """Class to keep track of objects that should re-read its config after
+       changes in the preferences dialog. Their apply_settings() method is
+       called.
+    """
+
+    OBJECTS = []
+
+    def __init__(self):
+        self.OBJECTS.append(self)
+
+    @staticmethod
+    def settings_changed():
+        for object_ in HasGUIConfig.OBJECTS:
+            object_.apply_settings()
