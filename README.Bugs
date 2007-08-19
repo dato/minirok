@@ -19,8 +19,13 @@ appreciate if you could report directly there, following the instructions
 below. If you really can't, you can mail me directly, but I will probably 
 forward your report to the public BTS.
 
-To report a bug, just send a mail to <submit@bugs.debian.org>, with the
-following format for the body:
+The list of already reported bugs is at http://bugs.debian.org/minirok.
+You may want to check it before submitting a new report. If you'd like
+to make a comment to an existing bug, just send mail to <nnn@bugs.debian.org>,
+where nnn is obviously the bug number.
+
+To report a new bug, just send a mail to <submit@bugs.debian.org>, with
+the following format for the body:
 
     Package: minirok
     Version: x.y.z
