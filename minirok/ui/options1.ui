@@ -92,10 +92,10 @@
                     <string>Alt+L</string>
                 </property>
                 <property name="toolTip" stdset="0">
-                    <string>If checked, Amarok saves the current playlist on quit and restores it when restarted.&lt;br&gt;</string>
+                    <string></string>
                 </property>
                 <property name="whatsThis" stdset="0">
-                    <string>If checked, Amarok saves the current playlist on quit and restores it when restarted.</string>
+                    <string></string>
                 </property>
             </widget>
         </widget>
