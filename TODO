@@ -40,7 +40,6 @@ Appearance:
     And, only in the Amarok classic theme, or always?
 
 Other:
-  * Write setup.py
   * Configured shortcut keys seems not to get used
   * It'd be nice to have module and line numbers in logging output, but
     it doesn't seem to work.
