@@ -11,7 +11,6 @@ import minirok
 import minirok.dcop
 import minirok.engine
 import minirok.main_window
-import minirok.lastfm_submit
 
 ##
 
@@ -50,7 +49,9 @@ def main():
     application.dcopClient().registerAs('minirok', False) # False: do not add PID
     player = minirok.dcop.Player()
 
-    lastfm_submitter = minirok.lastfm_submit.LastfmSubmitter()
+    if minirok._has_lastfm:
+        from minirok import lastfm_submit
+        lastfm_submitter = lastfm_submit.LastfmSubmitter()
 
     main_window.show()
     application.exec_loop()
