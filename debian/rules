@@ -16,6 +16,8 @@ binary-indep:
 	dh_testroot
 	dh_installdirs
 	env DEBIAN_PREFIX=$(CURDIR)/debian/minirok ./setup.sh install
+	install -D -m 644 debian/minirok.lintian \
+	    $(CURDIR)/debian/minirok/usr/share/lintian/overrides/minirok
 	dh_installchangelogs
 	dh_installdocs
 	dh_link
