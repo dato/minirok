@@ -20,7 +20,7 @@ class TreeView(kdeui.KListView):
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
         self.root = None
-        self.timer = qt.QTimer(self, 'tree_view_timer')
+        self.timer = qt.QTimer(self, 'tree view timer')
         self.iterator = None
 
         self.addColumn('')
