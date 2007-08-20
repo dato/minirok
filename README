@@ -43,7 +43,33 @@ Mutagen support them (which they'll probably will).
 Motivation
 ==========
 
-I've been a happy Amarok user for more than three years, but after ...
+Let me start by saying that I've been a happy Amarok user for more than
+three years, and that I think it's a terrific player which deserves all
+the success it can get. That said, I've always wished some things were
+different... who doesn't? :)
+
+In particular, I always missed a tree view of the filesystem, because my
+music collection is highly structured, and it would've been enough. The
+collection seemed an overkill to me, though it worked very nicely for me
+until:
+
+  (1) they "fixed" Bug#116127. Read the bug log for details, and my
+      comment #10 in particular. The bottom line is that my collection
+      became uselessly cluttered, because I have a lot of different
+      artists in my collection, but a high percentage with only one song
+      coming from compilation albums.
+
+  (2) I got a laptop. I discovered that despite mounting desktop:/mnt/mp3
+      via sshfs at laptop:/mnt/mp3, I could not share the collection.db
+      file (Debian's Bug#437873, I think). Plus I could not have two
+      collections, one eg. for the mounted /mnt/mp3, and another for a
+      local ~/mp3 archive.
+
+So on summer 2007 I found myself with much spare time, and one night
+the idea of writing a player tailored to my needs popped up: I'd get
+a personalized player, get rid of my free time, and learn PyKDE as a
+bonus. A win-win-win situation! I also like having Python projects to
+hack on, so that too.
 
 
 Requirements
