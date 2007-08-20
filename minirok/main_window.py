@@ -26,13 +26,14 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         self.left_side = left_side.LeftSide(self.main_view, 'left side')
         self.right_side = right_side.RightSide(self.main_view, 'right side')
 
-        self.setCentralWidget(self.main_view)
-
         self.init_actions()
         self.init_menus()
         self.init_systray()
         self.init_global_accel()
         self.apply_preferences()
+
+        self.setCentralWidget(self.main_view)
+        self.setAutoSaveSettings()
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
