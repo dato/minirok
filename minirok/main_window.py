@@ -32,7 +32,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         self.init_menus()
         self.init_systray()
         self.init_global_accel()
-        self.apply_settings()
+        self.apply_preferences()
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
@@ -110,7 +110,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
     ##
 
-    def apply_settings(self):
+    def apply_preferences(self):
         if not minirok.Globals.preferences.use_amarok_classic_theme:
             alternate_bg_color = \
                     kdecore.KGlobalSettings.alternateBackgroundColor()

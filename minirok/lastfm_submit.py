@@ -29,9 +29,9 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
         self.timer = QTimerWithPause(self, 'lastfm_timer')
         self.config = lastfm.config.Config('lastfmsubmitd')
 
-        self.apply_settings()
+        self.apply_preferences()
 
-    def apply_settings(self):
+    def apply_preferences(self):
         if minirok.Globals.preferences.enable_lastfm:
             func = self.connect
         else:

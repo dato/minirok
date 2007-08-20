@@ -62,7 +62,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 self.slot_engine_end_of_stream)
 
         self.init_actions()
-        self.apply_settings()
+        self.apply_preferences()
         self.load_saved_playlist()
 
     ##
@@ -284,7 +284,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     ##
 
-    def apply_settings(self):
+    def apply_preferences(self):
         prefs = minirok.Globals.preferences
 
         if prefs.tags_from_regex:

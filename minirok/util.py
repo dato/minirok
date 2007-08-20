@@ -50,8 +50,8 @@ class HasConfig(object):
 
 class HasGUIConfig(object):
     """Class to keep track of objects that should re-read its config after
-       changes in the preferences dialog. Their apply_settings() method is
-       called.
+       changes in the preferences dialog. Their apply_preferences() method
+       is called.
     """
 
     OBJECTS = []
@@ -62,4 +62,4 @@ class HasGUIConfig(object):
     @staticmethod
     def settings_changed():
         for object_ in HasGUIConfig.OBJECTS:
-            object_.apply_settings()
+            object_.apply_preferences()
