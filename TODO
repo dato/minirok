@@ -25,6 +25,7 @@ UI:
 
 Options:
   * First radio button properly vertically aligned
+  * Save window size and position, and use a meaningful size the first time
 
 Appearance:
   * Draw column separators in the playlist? (HOWTO: playlistitem.cpp:595)
