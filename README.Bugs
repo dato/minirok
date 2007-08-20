@@ -41,7 +41,7 @@ explanation of the problem. You can find more detailed instructions here:
 
 If you're a Debian user, you can just use the `reportbug` program. If
 you're an Ubuntu user, please don't use reportbug, because it will send
-the bug report elsewhere and I problably won't see it.
+the bug report elsewhere and I probably won't see it.
 
 
 Known bugs

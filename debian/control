@@ -24,7 +24,7 @@ Description: a small music player written in Python and inspired by Amarok
  .
  The main interface is a *tree view of the filesystem*, with a playlist
  that can only be populated via drag and drop. There is no collection
- built from tags, so it's targetted at people whose collection is
+ built from tags, so it's targeted at people whose collection is
  structured in a tree already at the filesystem level. Searches can be
  performed both in the tree view and the playlist.
  .
