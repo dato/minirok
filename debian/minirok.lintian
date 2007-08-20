@@ -7,6 +7,7 @@ minirok: script-not-executable ./usr/share/minirok/minirok/left_side.py
 minirok: script-not-executable ./usr/share/minirok/minirok/main.py
 minirok: script-not-executable ./usr/share/minirok/minirok/main_window.py
 minirok: script-not-executable ./usr/share/minirok/minirok/playlist.py
+minirok: script-not-executable ./usr/share/minirok/minirok/preferences.py
 minirok: script-not-executable ./usr/share/minirok/minirok/right_side.py
 minirok: script-not-executable ./usr/share/minirok/minirok/tag_reader.py
 minirok: script-not-executable ./usr/share/minirok/minirok/tree_view.py
