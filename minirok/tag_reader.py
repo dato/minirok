@@ -5,6 +5,10 @@
 # Licensed under the terms of the MIT license.
 
 import qt
+import mutagen
+import mutagen.mp3
+import mutagen.easyid3
+
 import minirok
 
 ##
@@ -46,4 +50,39 @@ class TagReader(qt.QObject):
         item = self._queue.pop(0)
         if len(self._queue) == 0:
             self.timer.stop()
-        # do something with item
+
+        try:
+            info = mutagen.File(item.path)
+            if isinstance(info, mutagen.mp3.MP3):
+                info = mutagen.easyid3.EasyID3(item.path)
+            if info is None:
+                raise Exception, 'mutagen.File() returned None'
+        except Exception, e:
+            minirok.logger.warning('could not read tags from %s: %s',
+                    item.path, e)
+            return
+
+        tags = self.tags(info)
+
+        if tags:
+            item.update_tags(tags)
+            item.update_display()
+
+    @staticmethod
+    def tags(info):
+        tags = {}
+        for column in [ 'Track', 'Artist', 'Album', 'Title' ]:
+            if column == 'Track':
+                tag = 'tracknumber'
+            else:
+                tag = column.lower()
+
+            try:
+                tags[column] = info[tag][0]
+            except ValueError:
+                minirok.logger.warn('invalid tag %r for %s', tag, type(info))
+            except KeyError:
+                # tag is not present
+                pass
+
+        return tags
