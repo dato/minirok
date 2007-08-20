@@ -94,14 +94,29 @@ class TreeView(kdeui.KListView):
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
 
     def slot_search_finished(self):
-        """Open the visible items."""
-        # TODO Be smart and determine opening level from the number of items?
-        iterator = qt.QListViewItemIterator(
-                       self, qt.QListViewItemIterator.Visible)
+        """Open the visible items.
+        
+        Non-toplevel items with more than 5 children will not be opened.
+        """
+        def _visible_children(toplevel):
+            visible_children = []
+            item = toplevel.firstChild()
+            while item:
+                if item.isVisible():
+                    visible_children.append(item)
+                item = item.nextSibling()
+            return visible_children
 
-        while iterator.current():
-            iterator.current().setOpen(True)
-            iterator += 1
+        pending = _visible_children(self)
+        toplevel_count = len(pending)
+        i = 0
+        while pending:
+            i += 1
+            item = pending.pop(0)
+            visible_children = _visible_children(item)
+            if i <= toplevel_count or len(visible_children) <= 5:
+                item.setOpen(True)
+            pending.extend(x for x in visible_children if x.isExpandable())
 
     ##
 
