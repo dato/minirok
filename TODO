@@ -25,7 +25,6 @@ UI:
 
 Options:
   * First radio button properly vertically aligned
-  * re.compile() the regex on Ok/Apply press
 
 Appearance:
   * Draw column separators in the playlist? (HOWTO: playlistitem.cpp:595)

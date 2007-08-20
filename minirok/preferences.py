@@ -4,6 +4,8 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import re
+
 import qt
 import kdeui
 import kdecore
@@ -79,7 +81,33 @@ class Dialog(kdeui.KConfigDialog):
         kdeui.KConfigDialog.__init__(self, parent, name, preferences,
                 kdeui.KDialogBase.IconList, kdeui.KDialogBase.Ok |
                 kdeui.KDialogBase.Apply | kdeui.KDialogBase.Cancel)
-        self.addPage(GeneralPage(self, preferences), 'General', 'minirok')
+        self.general_page = GeneralPage(self, preferences)
+        self.addPage(self.general_page, 'General', 'minirok')
+
+    def check_valid_regex(self):
+        regex = util.kurl_to_path(self.general_page.kcfg_TagRegex.text())
+        try:
+            re.compile(regex)
+            return True
+        except re.error, e:
+            msg = 'The introduced regular expression is not valid:\n%s' % e
+            dialog = kdeui.KDialogBase(self, 'bad regex dialog', True, # modal
+                        'Invalid regular expression', kdeui.KDialogBase.Ok,
+                         kdeui.KDialogBase.Ok, False) # False: no separator
+            page = dialog.makeVBoxMainWidget()
+            label = qt.QLabel(msg, page)
+            dialog.show()
+            return False
+
+    ##
+
+    def slotOk(self):
+        if self.check_valid_regex():
+            return kdeui.KConfigDialog.slotOk(self)
+
+    def slotApply(self):
+        if self.check_valid_regex():
+            return kdeui.KConfigDialog.slotApply(self)
 
 ##
 
