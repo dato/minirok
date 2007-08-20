@@ -44,7 +44,7 @@ bzr export "$EXPORT_DIR"
 
 ( # subshell to preserve old $CWD
 cd "$EXPORT_DIR"
-make -s -C minirok/ui
+make -s -C minirok/ui >/dev/null
 rm -r $PRUNE_FROM_TARBALL
 
 cd ..
