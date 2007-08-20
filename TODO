@@ -22,17 +22,6 @@ UI:
   * connect track change / playlist change with statusbar and caption
   * Make stop button pop a menu between "now" and "after current track"
 
-Options:
-  * Use a regular expression to guess tags from the filename:
-    { Tooltip: "The regex will be matched against the full path of the
-    file. The supported groups are: "artist", "title", "album", "track".
-    See README.Usage for details and an example. }
-    [ ] _____________________________________ # re.compile it on focus leave
-        (*) Use this regex to populate the playlist initially, but still
-	    read the tags in the background
-	( ) Do not read tags if the regex matches
-	( ) Never read tags from files
-
 Appearance:
   * Draw column separators in the playlist? (HOWTO: playlistitem.cpp:595)
     And, only in the Amarok classic theme, or always?

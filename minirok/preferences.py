@@ -9,6 +9,7 @@ import kdeui
 import kdecore
 
 import minirok
+from minirok import util
 try:
     from minirok.ui import options1
 except ImportError:
@@ -33,6 +34,12 @@ class Preferences(kdecore.KConfigSkeleton):
         self.setCurrentGroup('General')
         self._enable_lastfm = self.addItemBool('EnableLastfm', minirok._has_lastfm)
 
+        self.setCurrentGroup('Playlist')
+        self._tag_regex_value = qt.QString()
+        self._tags_from_regex = self.addItemBool('TagsFromRegex', False)
+        self._tag_regex = self.addItemString('TagRegex', self._tag_regex_value, '')
+        self._tag_regex_mode = self.addItemInt('TagRegexMode', 0)
+
         self.readConfig()
 
     @property
@@ -43,6 +50,28 @@ class Preferences(kdecore.KConfigSkeleton):
     def enable_lastfm(self):
         return self._enable_lastfm[0].value()
 
+    @property
+    def tags_from_regex(self):
+        return self._tags_from_regex[0].value()
+
+    @property
+    def tag_regex(self):
+        return util.kurl_to_path(self._tag_regex_value)
+
+    @property
+    def tag_regex_mode(self):
+        _dict = {
+                0: 'Always',
+                1: 'OnRegexFail',
+                2: 'Never',
+        }
+        key = self._tag_regex_mode[0].value()
+        try:
+            return _dict[key]
+        except KeyError:
+            minirok.logger.error('invalid value for TagRegexMode: %d', key)
+            return _dict[0]
+
 ##
 
 class Dialog(kdeui.KConfigDialog):
@@ -50,13 +79,22 @@ class Dialog(kdeui.KConfigDialog):
         kdeui.KConfigDialog.__init__(self, parent, name, preferences,
                 kdeui.KDialogBase.IconList, kdeui.KDialogBase.Ok |
                 kdeui.KDialogBase.Apply | kdeui.KDialogBase.Cancel)
-        self.addPage(GeneralPage(self), 'General', 'minirok')
+        self.addPage(GeneralPage(self, preferences), 'General', 'minirok')
 
 ##
 
 class GeneralPage(options1.Page):
-    def __init__(self, *args):
-        options1.Page.__init__(self, *args)
+    def __init__(self, parent, preferences):
+        options1.Page.__init__(self, parent)
+
+        ##
+        
+        self.connect(self.kcfg_TagsFromRegex, qt.SIGNAL('toggled(bool)'),
+                self.slot_tags_from_regex_toggled)
+
+        self.slot_tags_from_regex_toggled(preferences.tags_from_regex)
+
+        ##
 
         if not minirok._has_lastfm:
             qt.QToolTip.add(self.kcfg_EnableLastfm,
@@ -64,3 +102,5 @@ class GeneralPage(options1.Page):
 
         self.kcfg_EnableLastfm.setEnabled(minirok._has_lastfm)
 
+    def slot_tags_from_regex_toggled(self, checked):
+        self.regexInfoGroup.setEnabled(checked)

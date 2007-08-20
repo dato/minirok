@@ -18,17 +18,7 @@ from minirok import drag, engine, tag_reader, util
 
 ##
 
-class Playlist(kdeui.KListView, util.HasConfig):
-    # If CONFIG_REGEX_OPTION exists, it will be matched against the full path
-    # and the PlaylistItem will have its tags initially filled with the
-    # resulting match groups.
-    # TODO This config options should be re-read when after updates via the
-    # Preferences dialog.
-    CONFIG_SECTION = 'Playlist'
-    CONFIG_REGEX_OPTION = 'TagRegex'
-    CONFIG_READ_TAGS_OPTION = 'ReadTags'
-    CONFIG_READ_TAGS_VALUES = [ 'Always', 'Never', 'OnRegexFail' ]
-
+class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
@@ -37,6 +27,7 @@ class Playlist(kdeui.KListView, util.HasConfig):
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
         util.HasConfig.__init__(self)
+        util.HasGUIConfig.__init__(self)
 
         self.columns = Columns(self)
         self._current_item = None # has a property() below
@@ -71,7 +62,7 @@ class Playlist(kdeui.KListView, util.HasConfig):
                 self.slot_engine_end_of_stream)
 
         self.init_actions()
-        self.slot_read_config()
+        self.apply_settings()
         self.load_saved_playlist()
 
     ##
@@ -293,27 +284,22 @@ class Playlist(kdeui.KListView, util.HasConfig):
 
     ##
 
-    def slot_read_config(self):
-        config = minirok.Globals.config(self.CONFIG_SECTION)
-        self._regex = unicode(config.readEntry(self.CONFIG_REGEX_OPTION, '')) or None
+    def apply_settings(self):
+        prefs = minirok.Globals.preferences
 
-        if self._regex is not None:
+        if prefs.tags_from_regex:
             try:
-                self._regex = re.compile(self._regex)
+                self._regex = re.compile(prefs.tag_regex)
             except re.error, e:
                 minirok.logger.error('invalid regular expresion %s: %s',
-                        self._regex, e)
-                self._read_tags = 'Always'
+                        prefs.tag_regex, e)
+                self._regex = None
+                self._regex_mode = 'Always'
             else:
-                self._read_tags = str(config.readEntry(
-                        self.CONFIG_READ_TAGS_OPTION, 'Always'))
+                self._regex_mode = prefs.tag_regex_mode
         else:
-            self._read_tags = 'Always'
-
-        if self._read_tags not in self.CONFIG_READ_TAGS_VALUES:
-            minirok.logger.error('invalid value %r for %s', self._read_tags,
-                    self.CONFIG_READ_TAGS_OPTION)
-            self._read_tags = 'Always'
+            self._regex = None
+            self._regex_mode = 'Always'
 
     ##
 
@@ -376,8 +362,10 @@ class Playlist(kdeui.KListView, util.HasConfig):
 
         item = PlaylistItem(file_, self, prev_item, tags)
 
-        if self._read_tags == 'Always' or (regex_failed
-                and self._read_tags == 'OnRegexFail'):
+        assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
+
+        if self._regex_mode == 'Always' or (regex_failed
+                and self._regex_mode == 'OnRegexFail'):
             self.tag_reader.queue(prev_item)
 
         return item
