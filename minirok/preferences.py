@@ -91,12 +91,7 @@ class Dialog(kdeui.KConfigDialog):
             return True
         except re.error, e:
             msg = 'The introduced regular expression is not valid:\n%s' % e
-            dialog = kdeui.KDialogBase(self, 'bad regex dialog', True, # modal
-                        'Invalid regular expression', kdeui.KDialogBase.Ok,
-                         kdeui.KDialogBase.Ok, False) # False: no separator
-            page = dialog.makeVBoxMainWidget()
-            label = qt.QLabel(msg, page)
-            dialog.show()
+            kdeui.KMessageBox.error(self, msg, 'Invalid regular expression')
             return False
 
     ##
