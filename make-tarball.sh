@@ -2,7 +2,7 @@
 
 set -e
 
-PRUNE_FROM_TARBALL="debian make-tarball.sh"
+PRUNE_FROM_TARBALL="debian make-tarball.sh web"
 
 ##
 
