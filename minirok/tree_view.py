@@ -193,7 +193,9 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
     def slot_emit_search_finished(self):
         self.emit(qt.PYSIGNAL('search_finished'), ())
 
-    def itemMatches(self, item, string_):
+    ##
+
+    def updateSearch(self, string_):
         string_ = unicode(string_).strip()
         if string_:
             if string_ != self.string:
@@ -202,6 +204,17 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
                 self.regexes = [ re.compile(re.escape(pat), re.I)
                                                for pat in encoded.split() ]
         else:
+            self.string = None
+
+        kdeui.KListViewSearchLine.updateSearch(self, string_)
+
+        if self.string is not None:
+            self.timer.start(400, True) # True: single-shot
+
+    def itemMatches(self, item, string_):
+        # We don't need to do anything with the string_ parameter here because
+        # self.string and self.regexes are always set in updateSearch() above.
+        if self.string is None:
             return True
 
         try:
@@ -214,10 +227,6 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
                 return False
         else:
             return True
-
-    def updateSearch(self, string_):
-        kdeui.KListViewSearchLine.updateSearch(self, string_)
-        self.timer.start(400, True) # True: single-shot
 
 class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
     """Same as super class, but with a TreeViewSearchLine widget."""
