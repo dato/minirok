@@ -219,9 +219,12 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 self.current_item = self.firstChild()
 
             length = minirok.Globals.engine.play(self.current_item.path)
-            # XXX Only update the Length if it's None?
-            self.current_item.update_tags({'Length': length})
-            self.current_item.update_display()
+            if length is not None:
+                self.current_item.update_tags({'Length': length})
+                self.current_item.update_display()
+            else:
+                minirok.logger.warn('could not obtain length for %s',
+                        self.current_item.path)
 
             self._currently_playing = self.current_item
             self.emit(qt.PYSIGNAL('new_track'), ())
