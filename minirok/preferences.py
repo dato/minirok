@@ -9,7 +9,17 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok.ui import options1
+try:
+    from minirok.ui import options1
+except ImportError:
+    import sys
+    class options1:
+        class Page:
+            pass
+    print >>sys.stderr, '''\
+You are running Minirok from the source branch without having compiled the UI
+files: the preferences dialog will not work. You can compile them by running
+`make -C minirok/ui` (you will need kdepyuic, from the python-kde3-dev package.'''
 
 ##
 
