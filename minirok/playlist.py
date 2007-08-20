@@ -366,7 +366,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         if self._regex_mode == 'Always' or (regex_failed
                 and self._regex_mode == 'OnRegexFail'):
-            self.tag_reader.queue(prev_item)
+            self.tag_reader.queue(item)
 
         return item
 
