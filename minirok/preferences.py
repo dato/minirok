@@ -46,8 +46,10 @@ class Preferences(kdecore.KConfigSkeleton):
 ##
 
 class Dialog(kdeui.KConfigDialog):
-    def __init__(self, *args):
-        kdeui.KConfigDialog.__init__(self, *args)
+    def __init__(self, parent, name, preferences):
+        kdeui.KConfigDialog.__init__(self, parent, name, preferences,
+                kdeui.KDialogBase.IconList, kdeui.KDialogBase.Ok |
+                kdeui.KDialogBase.Apply | kdeui.KDialogBase.Cancel)
         self.addPage(GeneralPage(self), 'General', 'minirok')
 
 ##

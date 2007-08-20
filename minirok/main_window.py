@@ -158,9 +158,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
             return
         else:
             dialog = preferences.Dialog(self, 'preferences dialog',
-                minirok.Globals.preferences, kdeui.KDialogBase.IconList,
-                kdeui.KDialogBase.Ok | kdeui.KDialogBase.Apply |
-                kdeui.KDialogBase.Cancel)
+                minirok.Globals.preferences)
             self.connect(dialog, qt.SIGNAL('settingsChanged()'),
                     util.HasGUIConfig.settings_changed)
             dialog.show()
