@@ -4,67 +4,46 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import threading
+import qt
 import minirok
 
 ##
 
-class TagReader(threading.Thread):
+class TagReader(qt.QObject):
     """Reads tags from files in a pending queue."""
 
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
+        qt.QObject.__init__(self)
+
+        self.timer = qt.QTimer(self, 'tag reader timer')
+        self.connect(self.timer, qt.SIGNAL('timeout()'), self.update_one)
 
         self._queue = []
-        self._lock = threading.Lock()
-        self._pending = threading.Event()
-        self._locked = False
 
     ##
 
-    def lock(self):
-        self._pending.clear() # prevents stagnation
-        self._lock.acquire()
-        self._locked = True
-
-    def unlock(self):
-        self._lock.release()
-        self._pending.set()
-        self._locked = False
-
     def queue(self, item):
-        assert self._locked
-        self._queue.insert(0, item)
-
-    def queue_empty(self):
-        return len(self._queue) == 0
+        self._queue.append(item)
+        if len(self._queue) == 1:
+            self.timer.start(0, False) # False: not one-shot
 
     def dequeue(self, item):
-        assert self._locked
         try:
             self._queue.remove(item)
         except ValueError:
             pass
 
+        if len(self._queue) == 0:
+            self.timer.stop()
+
     def clear_queue(self):
-        assert self._locked
         self._queue[:] = []
+        self.timer.stop()
 
     ##
 
-    def run(self):
-        while True:
-            self._pending.wait()
-            if len(self._queue) == 0:
-                self._pending.clear()
-                continue
-            self._lock.acquire()
-            try:
-                item = self._queue.pop()
-                # TODO do something with item
-            except Exception, e:
-                minirok.logger.error('unexpected exception: %s', e)
-                self._lock.release()
-                continue
-            self._lock.release()
+    def update_one(self):
+        item = self._queue.pop(0)
+        if len(self._queue) == 0:
+            self.timer.stop()
+        # do something with item

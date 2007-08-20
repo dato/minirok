@@ -34,7 +34,6 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self._currently_playing = None # ditto.
 
         self.tag_reader = tag_reader.TagReader()
-        self.tag_reader.start()
 
         self.setSorting(-1)
         self.setAcceptDrops(True)
@@ -180,12 +179,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.add_files(files, prev_item)
 
     def slot_clear(self):
-        if not self.tag_reader.queue_empty():
-            self.tag_reader.lock()
-            try:
-                self.tag_reader.clear_queue()
-            finally:
-                self.tag_reader.unlock()
+        self.tag_reader.clear_queue()
         self.clear()
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
@@ -204,15 +198,11 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         if not items:
             return
 
-        self.tag_reader.lock()
-        try:
-            for item in items:
-                self.tag_reader.dequeue(item)
-                self.takeItem(item)
-                if item == self.current_item:
-                    self.current_item = self.FIRST_ITEM
-        finally:
-            self.tag_reader.unlock()
+        for item in items:
+            self.tag_reader.dequeue(item)
+            self.takeItem(item)
+            if item == self.current_item:
+                self.current_item = self.FIRST_ITEM
 
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
@@ -343,12 +333,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     ##
 
     def add_files(self, files, prev_item=None):
-        self.tag_reader.lock()
-        try:
-            for f in files:
-                prev_item = self.add_file(f, prev_item)
-        finally:
-            self.tag_reader.unlock()
+        for f in files:
+            prev_item = self.add_file(f, prev_item)
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def add_file(self, file_, prev_item):
