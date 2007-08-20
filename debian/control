@@ -16,9 +16,11 @@ Depends: python (>= 2.4),
 Recommends: gstreamer0.10-plugins-good
 Suggests: lastfmsubmitd, gstreamer0.10-plugins-bad
 Description: a small music player written in Python and inspired by Amarok
- Minirok is a small music player for KDE which is designed after Amarok,
- but with a very reduced set of features: those the author can't live
- without.
+ Minirok is a small music player written in Python for the K Desktop
+ Environment. As its name hints, it's modelled after Amarok, but with a
+ reduced set of features. In particular, it is designed to cover all the
+ needs and wishes of the author, leaving everything else out. The look
+ and feel is almost identical to Amarok's, though.
  .
  The main interface is a *tree view of the filesystem*, with a playlist
  that can only be populated via drag and drop. There is no collection
