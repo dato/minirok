@@ -31,7 +31,7 @@ class Preferences(kdecore.KConfigSkeleton):
         kdecore.KConfigSkeleton.__init__(self, *args)
 
         self.setCurrentGroup('Appearance')
-        self._use_amarok_classic_theme = self.addItemBool('UseAmarokClassicTheme', True)
+        self._use_amarok_classic_theme = self.addItemBool('UseAmarokClassicTheme', False)
 
         self.setCurrentGroup('General')
         self._enable_lastfm = self.addItemBool('EnableLastfm', minirok._has_lastfm)
