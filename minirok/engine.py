@@ -97,6 +97,9 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         self.bin.set_state(gst.STATE_PLAYING)
         self.status = State.PLAYING
 
+        if self.bin.get_state()[0] == gst.STATE_CHANGE_FAILURE:
+            return
+
         count = 0
         while count < 5:
             try:
