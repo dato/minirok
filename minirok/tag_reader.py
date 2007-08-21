@@ -58,8 +58,11 @@ class TagReader(qt.QObject):
             if info is None:
                 raise Exception, 'mutagen.File() returned None'
         except Exception, e:
-            minirok.logger.warning('could not read tags from %s: %s',
-                    item.path, e)
+            if item.path in str(e): # mutagen normally includes the path itself
+                msg = 'could not read tags: %s' % e
+            else:
+                msg = 'could not read tags from %s: %s' % (item.path, e)
+            minirok.logger.warning(msg)
             return
 
         tags = self.tags(info)
