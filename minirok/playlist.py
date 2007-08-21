@@ -99,35 +99,42 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     ##
 
-    @property
-    def currently_playing(self):
+    def _set_current_item(self, value):
+        def set_current(value):
+            if self.current_item not in (self.FIRST_ITEM, None):
+                self.current_item.set_current(value)
+                self.current_item.repaint()
+
+        set_current(False)
+
+        if not (value is self.FIRST_ITEM and self.childCount() == 0):
+            self._current_item = value
+        else:
+            self._current_item = None
+
+        set_current(True)
+        self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    current_item = property(lambda self: self._current_item, _set_current_item)
+
+    def get_currently_playing(self):
         """Return a dict of the tags of the currently played track, or None."""
         if self._currently_playing is not None:
             return self._currently_playing._tags # XXX Private member!
         else:
             return None
 
-    def _set_current_item(self, value):
-        self.__current_track_marker(self.current_item, unset=True)
-        if not (value is self.FIRST_ITEM and self.childCount() == 0):
-            self._current_item = value
-        else:
-            self._current_item = None
-        self.__current_track_marker(self.current_item, unset=False)
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+    def set_currently_playing(self, item):
+        def set_playing(value):
+            if self._currently_playing not in (self.FIRST_ITEM, None):
+                self._currently_playing.set_playing(value)
+                self._currently_playing.repaint()
 
-    current_item = property(lambda self: self._current_item, _set_current_item)
+        set_playing(False)
+        self._currently_playing = item
+        set_playing(True)
 
-    # XXX This is a gross hack until I code something better
-    def __current_track_marker(self, item, unset=False):
-        if item in (self.FIRST_ITEM, None):
-            return
-        text = str(item.text(self.column_index('Track')))
-        if not unset:
-            text = '%s >>' % text
-        else:
-            text = re.sub(r' \>\>$', '', text)
-        item.setText(self.column_index('Track'), text)
+    currently_playing = property(get_currently_playing, set_currently_playing)
 
     ##
 
@@ -226,7 +233,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 minirok.logger.warn('could not obtain length for %s',
                         self.current_item.path)
 
-            self._currently_playing = self.current_item
+            self.currently_playing = self.current_item
             self.emit(qt.PYSIGNAL('new_track'), ())
 
     def slot_pause(self):
@@ -244,7 +251,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def slot_stop(self):
         if minirok.Globals.engine.status != engine.State.STOPPED:
-            self._currently_playing = None
+            self.currently_playing = None
             minirok.Globals.engine.stop()
 
     def slot_next(self, force_play=False):
@@ -272,7 +279,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def slot_engine_end_of_stream(self, *args):
         # TODO Check stop after track
-        self._currently_playing = None
+        self.currently_playing = None
         self.slot_next(force_play=True)
 
     ##
@@ -426,9 +433,20 @@ class PlaylistItem(kdeui.KListViewItem):
         self.path = path
         self.playlist = parent
 
+        self._is_current = False
+        self._is_playing = False
+
         self._tags = dict((tag, None) for tag in self.ALLOWED_TAGS)
         self.update_tags(tags)
         self.update_display()
+
+    def set_current(self, value=True):
+        self._is_current = bool(value)
+
+    def set_playing(self, value=True):
+        self._is_playing = bool(value)
+
+    ##
 
     def update_tags(self, tags):
         for tag, value in tags.items():
@@ -457,6 +475,18 @@ class PlaylistItem(kdeui.KListViewItem):
                     text = '%d:%02d' % (text/60, text%60)
                 index = self.playlist.column_index(column)
                 self.setText(index, text)
+
+    ##
+
+    def paintCell(self, painter, colorgrp, column, width, align):
+        if self._is_current:
+            painter.font().setBold(True)
+
+        if self._is_playing:
+            painter.font().setItalic(True)
+
+        return kdeui.KListViewItem.paintCell(
+                self, painter, colorgrp, column, width, align)
 
 ##
 
