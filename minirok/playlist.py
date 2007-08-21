@@ -479,14 +479,35 @@ class PlaylistItem(kdeui.KListViewItem):
     ##
 
     def paintCell(self, painter, colorgrp, column, width, align):
-        if self._is_current:
-            painter.font().setBold(True)
-
+        """Draws a border for the current item, and the playing item in italics."""
         if self._is_playing:
             painter.font().setItalic(True)
 
-        return kdeui.KListViewItem.paintCell(
+        kdeui.KListViewItem.paintCell(
                 self, painter, colorgrp, column, width, align)
+
+        if self._is_current:
+            # We use the superclass method here because Playlist.columns
+            # is something else.
+            num_columns = kdeui.KListView.columns(self.playlist)
+            prev_width = 0
+            full_width = 0
+            for c in range(num_columns):
+                w = self.playlist.columnWidth(c)
+                full_width += w
+                if c < column:
+                    prev_width += w
+
+            self.paintFocus(painter, colorgrp,
+                    qt.QRect(qt.QPoint(-prev_width, 0),
+                    qt.QSize(full_width, self.height())))
+
+    def paintFocus(self, painter, colorgrp, qrect):
+        """Only allows focus to be painted in the current item."""
+        if not self._is_current:
+            return
+        else:
+            kdeui.KListViewItem.paintFocus(self, painter, colorgrp, qrect)
 
 ##
 
