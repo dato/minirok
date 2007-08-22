@@ -504,8 +504,8 @@ class PlaylistItem(kdeui.KListViewItem):
                     prev_width += w
 
             self.paintFocus(painter, colorgrp,
-                    qt.QRect(qt.QPoint(-prev_width, 0),
-                    qt.QSize(full_width, self.height())))
+                            qt.QRect(qt.QPoint(-prev_width, 0),
+                                     qt.QSize(full_width, self.height())))
 
     def paintFocus(self, painter, colorgrp, qrect):
         """Only allows focus to be painted in the current item."""
