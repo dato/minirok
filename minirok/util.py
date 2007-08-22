@@ -73,20 +73,31 @@ class QTimerWithPause(qt.QTimer):
 
     Idea taken from:
         http://www.riverbankcomputing.com/pipermail/pyqt/2004-July/008325.html
+
+    Note that, unlike in QTimer, the single_shot argument of start() defaults
+    to True.
     """
     def __init__(self, *args):
         qt.QTimer.__init__(self, *args)
         self.duration = 0
         self.finished = True
+        self.recur_time = None
         self.start_time = 0
 
         self.connect(self, qt.SIGNAL('timeout()'), self.slot_timer_finished)
 
-    def start(self, msecs):
+    def start(self, msecs, single_shot=True):
         self.finished = False
         self.duration = msecs
+        if not single_shot:
+            self.recur_time = msecs
+        else:
+            self.recur_time = None
         self.start_time = time.time()
-        qt.QTimer.start(self, msecs, True) # True: single-shot
+        # We always start ourselves in single-shot mode, and restart if
+        # necessary in slot_timer_finished()
+        qt.QTimer.start(self, msecs, True)
+
 
     def pause(self):
         if self.isActive():
@@ -100,5 +111,8 @@ class QTimerWithPause(qt.QTimer):
             self.start(self.duration)
 
     def slot_timer_finished(self):
-        # This prevents resume() on a finished timer from restarting it
-        self.finished = True
+        if self.recur_time is not None:
+            self.start(self.recur_time)
+        else:
+            # This prevents resume() on a finished timer from restarting it
+            self.finished = True
