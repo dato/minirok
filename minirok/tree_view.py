@@ -22,6 +22,7 @@ class TreeView(kdeui.KListView):
         self.root = None
         self.timer = qt.QTimer(self, 'tree view timer')
         self.iterator = None
+        self.automatically_opened = set()
 
         self.addColumn('')
         self.header().hide()
@@ -93,11 +94,37 @@ class TreeView(kdeui.KListView):
             self.repaint()
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
 
-    def slot_search_finished(self):
-        """Open the visible items.
+    def slot_search_finished(self, null_search):
+        """Open the visible items, closing items opened in the previous search.
         
         Non-toplevel items with more than 5 children will not be opened.
+        If null_search is True, no items will be opened at all.
         """
+        # make a list of selected and its parents, in order not to close them
+        selected = set()
+        iterator = qt.QListViewItemIterator(self,
+                                            qt.QListViewItemIterator.Selected)
+        item = first_selected = iterator.current()
+        while item:
+            selected.add(item)
+            parent = item.parent()
+            while parent:
+                selected.add(parent)
+                parent = parent.parent()
+            iterator += 1
+            item = iterator.current()
+
+        for item in self.automatically_opened - selected:
+            item.setOpen(False)
+
+        self.automatically_opened &= selected # not sure this is a good idea
+
+        if null_search:
+            self.ensureItemVisible(first_selected)
+            return
+
+        ##
+
         def _visible_children(toplevel):
             visible_children = []
             item = toplevel.firstChild()
@@ -114,8 +141,10 @@ class TreeView(kdeui.KListView):
             i += 1
             item = pending.pop(0)
             visible_children = _visible_children(item)
-            if i <= toplevel_count or len(visible_children) <= 5:
+            if ((i <= toplevel_count or len(visible_children) <= 5)
+                    and not item.isOpen()):
                 item.setOpen(True)
+                self.automatically_opened.add(item)
             pending.extend(x for x in visible_children if x.isExpandable())
 
     ##
@@ -206,7 +235,7 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
                 self.slot_emit_search_finished)
 
     def slot_emit_search_finished(self):
-        self.emit(qt.PYSIGNAL('search_finished'), ())
+        self.emit(qt.PYSIGNAL('search_finished'), (self.string is None,))
 
     ##
 
@@ -222,9 +251,7 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
             self.string = None
 
         kdeui.KListViewSearchLine.updateSearch(self, string_)
-
-        if self.string is not None:
-            self.timer.start(400, True) # True: single-shot
+        self.timer.start(400, True) # True: single-shot
 
     def itemMatches(self, item, string_):
         # We don't need to do anything with the string_ parameter here because

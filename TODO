@@ -6,7 +6,6 @@ Tree View:
   * Double click/return to append to the playlist?
   * Remove artifacts in the pointer when dragging (display file count?)
   * Use a regex as well to control the appearance of file names?
-  * Smartly close items which we opened in updateSearch()
 
 Playlist:
   * Enqueue items
