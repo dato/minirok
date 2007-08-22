@@ -229,6 +229,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 # somebody else ensures firstChild() is not None
                 self.current_item = self.firstChild()
 
+            self.currently_playing = self.current_item
+
             length = minirok.Globals.engine.play(self.current_item.path)
             if length is not None:
                 self.current_item.update_tags({'Length': length})
@@ -237,7 +239,6 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 minirok.logger.warn('could not obtain length for %s',
                         self.current_item.path)
 
-            self.currently_playing = self.current_item
             self.emit(qt.PYSIGNAL('new_track'), ())
 
     def slot_pause(self):
