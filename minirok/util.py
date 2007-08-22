@@ -4,6 +4,8 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import time
+
 import qt
 import kdecore
 
@@ -63,3 +65,40 @@ class HasGUIConfig(object):
     def settings_changed():
         for object_ in HasGUIConfig.OBJECTS:
             object_.apply_preferences()
+
+##
+
+class QTimerWithPause(qt.QTimer):
+    """A QTimer with pause() and resume() methods.
+
+    Idea taken from:
+        http://www.riverbankcomputing.com/pipermail/pyqt/2004-July/008325.html
+    """
+    def __init__(self, *args):
+        qt.QTimer.__init__(self, *args)
+        self.duration = 0
+        self.finished = True
+        self.start_time = 0
+
+        self.connect(self, qt.SIGNAL('timeout()'), self.slot_timer_finished)
+
+    def start(self, msecs):
+        self.finished = False
+        self.duration = msecs
+        self.start_time = time.time()
+        qt.QTimer.start(self, msecs, True) # True: single-shot
+
+    def pause(self):
+        if self.isActive():
+            self.stop()
+            elapsed = time.time() - self.start_time
+            self.start_time -= elapsed
+            self.duration -= int(elapsed*1000)
+
+    def resume(self):
+        if not self.finished and not self.isActive():
+            self.start(self.duration)
+
+    def slot_timer_finished(self):
+        # This prevents resume() on a finished timer from restarting it
+        self.finished = True
