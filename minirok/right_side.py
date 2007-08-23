@@ -29,6 +29,7 @@ class RightSide(qt.QVBox):
 
         # populate the toolbar
         self.toolbar.setFullSize(True)
+        self.toolbar.setMovingEnabled(False) # this erases the border...
         self.toolbar.insertWidget(0, 0, qt.QWidget(self.toolbar))
         self.toolbar.setItemAutoSized(0)
         self.playlist.action_previous.plug(self.toolbar)
