@@ -115,7 +115,7 @@ class QTimerWithPause(qt.QTimer):
 
     def resume(self):
         if not self.finished and not self.isActive():
-            self.start(self.duration)
+            self._start(self.duration)
 
     ##
 
