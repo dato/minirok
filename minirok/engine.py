@@ -62,6 +62,8 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         bus.connect('message::eos', self._message_eos)
         bus.connect('message::error', self._message_error)
 
+        self.time_fmt = gst.Format(gst.FORMAT_TIME)
+
     def run(self):
         loop = gobject.MainLoop()
         context = loop.get_context()
@@ -103,7 +105,7 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         count = 0
         while count < 5:
             try:
-                nsecs = self.bin.query_duration(gst.Format(gst.FORMAT_TIME))[0]
+                nsecs = self.bin.query_duration(self.time_fmt)[0]
             except gst.QueryError:
                 count += 1
                 time.sleep(0.2)
@@ -121,6 +123,10 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def stop(self):
         self.bin.set_state(gst.STATE_NULL)
         self.status = State.STOPPED
+
+    def get_position(self):
+        """Returns the current position as an int in seconds."""
+        return int(round(self.bin.query_position(self.time_fmt)[0] / 1000000000))
 
     ##
 
