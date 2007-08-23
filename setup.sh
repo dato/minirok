@@ -46,7 +46,7 @@ install_symlink () {
 install_icons () {
     for size in 16 22 32 48 64 128; do
     	install_file2 icons/hi${size}-app-minirok.png \
-		      "$ICONS/hicolor/${size}x${size}/minirok.png"
+		      "$ICONS/hicolor/${size}x${size}/apps/minirok.png"
     done
 }
 
