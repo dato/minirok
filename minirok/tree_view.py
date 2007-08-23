@@ -40,6 +40,12 @@ class TreeView(kdeui.KListView):
         # process.
         self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_populate_one)
 
+        self.connect(self, qt.SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
+                self.slot_append_selected)
+
+        self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
+                self.slot_append_selected)
+
     ##
 
     def selected_files(self):
@@ -67,6 +73,9 @@ class TreeView(kdeui.KListView):
         return files
 
     ##
+
+    def slot_append_selected(self, item):
+        minirok.Globals.playlist.add_files(self.selected_files())
 
     def slot_show_directory(self, directory):
         """Changes the TreeView root to the specified directory."""
