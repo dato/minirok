@@ -93,7 +93,7 @@ following libraries are *required* for the program to run:
       Debian and Ubuntu: python-gst0.10
 
     + Plugins, in all the flavours needed to cover your audio formats:
-      	- MP3: gst-plugins-ugly
+      	- MP3: gst-plugins-ugly *and* gst-plugins-good
       	- Ogg Vorbis: gst-plugins-base
       	- FLAC: gst-plugins-good
       	- Musepack (MPC): gst-plugins-bad

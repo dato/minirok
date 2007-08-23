@@ -11,9 +11,8 @@ Depends: python (>= 2.4),
  python-qt3, python-kde3,
  python-mutagen,
  python-gst0.10, gstreamer0.10-alsa | gstreamer0.10-audiosink,
- gstreamer0.10-plugins-base, gstreamer0.10-plugins-ugly,
+ gstreamer0.10-plugins-base, gstreamer0.10-plugins-good, gstreamer0.10-plugins-ugly,
  ${misc:Depends}, ${python:Depends}
-Recommends: gstreamer0.10-plugins-good
 Suggests: lastfmsubmitd, gstreamer0.10-plugins-bad
 Description: a small music player written in Python and inspired by Amarok
  Minirok is a small music player written in Python for the K Desktop
