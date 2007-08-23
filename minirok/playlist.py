@@ -348,6 +348,12 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     ##
 
     def add_files(self, files, prev_item=None):
+        """Add the given files to the playlist, after prev_item.
+
+        If prev_item is None, files will be added at the end of the playlist.
+        """
+        if prev_item is None:
+            prev_item = self.lastItem()
         for f in files:
             prev_item = self.add_file(f, prev_item)
         self.emit(qt.PYSIGNAL('list_changed'), ())
