@@ -36,7 +36,7 @@ Description: a small music player written in Python and inspired by Amarok
     stop after a certain track; undo and redo
  .
   * reading of tags when adding to the playlist can be disabled by
-    specifying a regex to extract them from the filename
+    specifying a regular expression to extract them from the filename
  .
   * submission of played songs to Last.fm (with lastfmsubmitd)
  .
