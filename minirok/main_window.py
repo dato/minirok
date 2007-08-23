@@ -9,7 +9,7 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import left_side, preferences, right_side, util
+from minirok import left_side, preferences, right_side, statusbar, util
 
 ##
 
@@ -25,6 +25,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         self.main_view = qt.QSplitter(self, 'main view')
         self.left_side = left_side.LeftSide(self.main_view, 'left side')
         self.right_side = right_side.RightSide(self.main_view, 'right side')
+        self.statusbar = statusbar.StatusBar(self, 'statusbar')
 
         self.init_actions()
         self.init_menus()

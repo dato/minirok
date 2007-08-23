@@ -17,10 +17,13 @@ Playlist:
     (QListView.ensureItemVisible()).
 
 UI:
-  * Seek bar with elapsed --[]-- remaining.
   * connect track change / playlist change with statusbar and caption
   * Make stop button pop a menu between "now", "after current track",
     and "after queue".
+
+Statusbar:
+  * Make the slider able to seek
+  * Blink labels while paused?
 
 Options:
   * First radio button properly vertically aligned
