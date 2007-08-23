@@ -35,6 +35,19 @@ def unicode_from_path(path):
                     minirok.filesystem_encoding)
             return unicode(path, minirok.filesystem_encoding, 'replace')
 
+def fmt_seconds(seconds):
+    """Convert a number of seconds to m:ss or h:mm:ss notation."""
+    try:
+        seconds = int(seconds)
+    except ValueError:
+        minirok.logger.warn('invalid int passed to fmt_seconds(): %r', seconds)
+        return seconds
+
+    if seconds < 3600:
+        return '%d:%02d' % (seconds/60, seconds%60)
+    else:
+        return '%d:%02d:%02d' % (seconds/3600, (seconds%3600)/60, seconds%60)
+
 ##
 
 class HasConfig(object):

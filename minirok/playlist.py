@@ -483,7 +483,7 @@ class PlaylistItem(kdeui.KListViewItem):
             text = self._tags[column]
             if text is not None:
                 if column == 'Length':
-                    text = '%d:%02d' % (text/60, text%60)
+                    text = util.fmt_seconds(text)
                 index = self.playlist.column_index(column)
                 self.setText(index, text)
 
