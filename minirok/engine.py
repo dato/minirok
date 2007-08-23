@@ -126,7 +126,10 @@ class GStreamerEngine(qt.QObject, threading.Thread):
 
     def get_position(self):
         """Returns the current position as an int in seconds."""
-        return int(round(self.bin.query_position(self.time_fmt)[0] / 1000000000))
+        try:
+            return int(round(self.bin.query_position(self.time_fmt)[0] / 1000000000))
+        except gst.QueryError:
+            return 0
 
     ##
 
