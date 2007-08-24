@@ -4,6 +4,8 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import os
+import re
 import time
 
 import qt
@@ -47,6 +49,31 @@ def fmt_seconds(seconds):
         return '%d:%02d' % (seconds/60, seconds%60)
     else:
         return '%d:%02d:%02d' % (seconds/3600, (seconds%3600)/60, seconds%60)
+
+def get_png(name):
+    """Return a QPixmap of the named PNG file under $APPDATA/images.
+    
+    If it does not exist in $APPDATA/images, it will be assumed Minirok is
+    running from source, and it'll be searched in `dirname __file__`/../images.
+
+    Pixmaps are cached.
+    """
+    if not re.search(r'\.png$', name):
+        name += '.png'
+
+    try:
+        return _png_cache[name]
+    except KeyError:
+        pass
+
+    for path in [ str(kdecore.locate('appdata', os.path.join('images', name))),
+            os.path.join(os.path.dirname(__file__), '..', 'images', name) ]:
+        if os.path.exists(path):
+            break
+
+    return _png_cache.setdefault(name, qt.QPixmap(path, 'PNG'))
+
+_png_cache = {}
 
 ##
 
