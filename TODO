@@ -15,6 +15,7 @@ Playlist:
     playing file gets added again, the current item should be set to it.
   * Scroll automatically so that the current track is always visible
     (QListView.ensureItemVisible()).
+  * agi wants random play
 
 UI:
   * connect track change / playlist change with statusbar and caption
