@@ -9,8 +9,9 @@ DCOP interface
 ==============
 
 Minirok exports a DCOP interface containing functions to perform
-Playlist actions (play, pause, playPause, stop, next, previous), and a
-function to retrieve the currently playing track, "nowPlaying".
+Playlist actions (play, pause, playPause, stop, next, previous,
+stopAfterCurrent), and a function to retrieve the currently playing
+track, "nowPlaying".
 
 This last functions comes in two flavours: without an argument, it will
 return a string like "Artist - Title", or just "Title" if there's no

@@ -20,6 +20,7 @@ APPS=`kde-config --expandvars --install data`
 ICONS=`kde-config --expandvars --install icon`
 CONFIG=`kde-config --expandvars --install config`
 DESKTOP=`kde-config --expandvars --install xdgdata-apps`
+MINIROK="$APPS/minirok"
 KHOTKEYS="$APPS/khotkeys"
 KCONF_UPDATE="$APPS/kconf_update"
 
@@ -50,6 +51,12 @@ install_icons () {
     done
 }
 
+install_images () {
+    for img in images/*.png; do
+    	install_file "$img" "$MINIROK/images"
+    done
+}
+
 install_package () {
     for p in minirok.py minirok/*.py minirok/ui/*.py; do
     	install_file "$p" "$PREFIX/share/minirok/`dirname $p`"
@@ -71,6 +78,7 @@ mode () {
 case "$1" in
     install)
 	install_icons
+	install_images
 	install_package
 	install_file config/minirokrc "$CONFIG"
 	install_file config/minirok.desktop "$DESKTOP"

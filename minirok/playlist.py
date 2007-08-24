@@ -30,10 +30,13 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         util.HasGUIConfig.__init__(self)
 
         self.columns = Columns(self)
-        self._current_item = None # has a property() below
-        self._currently_playing = None # ditto.
-
+        self.stop_mode = StopMode.NONE
         self.tag_reader = tag_reader.TagReader()
+
+        # these have a property() below
+        self._stop_after = None
+        self._current_item = None
+        self._currently_playing = None
 
         self.setSorting(-1)
         self.setAcceptDrops(True)
@@ -46,11 +49,14 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.connect(self, qt.SIGNAL('dropped(QDropEvent *, QListViewItem *)'),
                 self.slot_accept_drop)
 
+        self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
+                self.slot_new_current_item)
+
         self.connect(self, qt.SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
                 self.slot_new_current_item)
 
-        self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
-                self.slot_new_current_item)
+        self.connect(self, qt.SIGNAL('mouseButtonPressed(int, QListViewItem *, const QPoint &, int)'),
+                self.slot_mouse_button_pressed)
 
         self.connect(self, qt.PYSIGNAL('list_changed'), self.slot_list_changed)
 
@@ -90,6 +96,10 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.action_clear = kdeui.KAction('Clear playlist', 'view_remove',
                 kdecore.KShortcut('Ctrl+L'), self.slot_clear, ac, 'action_clear_playlist')
 
+        self.action_toggle_stop_after_current = kdeui.KAction('Stop after current',
+                'player_stop', kdecore.KShortcut('Ctrl+K'),
+                self.slot_toggle_stop_after_current, ac, 'action_toggle_stop_after_current')
+
     def column_index(self, col_name):
         try:
             return self.columns.index(col_name)
@@ -98,6 +108,20 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             sys.exit(1)
 
     ##
+
+    def _set_stop_after(self, value):
+        # TODO Have to set to None in slot_clear() and slot_remove_selected()?
+        update = lambda: \
+                self._stop_after is not None and self._stop_after.repaint()
+
+        update()
+        self._stop_after = value
+        update()
+
+        if value is None:
+            self.stop_mode = StopMode.NONE
+
+    stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
     def _set_current_item(self, value):
         def set_current(value):
@@ -282,10 +306,51 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 if minirok.Globals.engine.status != engine.State.STOPPED:
                     self.slot_play()
 
-    def slot_engine_end_of_stream(self, *args):
-        # TODO Check stop after track
+    def slot_engine_end_of_stream(self, uri):
         self.currently_playing = None
+
+        if self.stop_mode != StopMode.NONE:
+            if self.stop_after is not None:
+                if self.stop_after.path == re.sub('^file://', '', uri):
+                    self.stop_after = None
+                    return
+            elif self.stop_mode == StopMode.AFTER_ONE: # AFTER_QUEUE is ok
+                minirok.logger.warn(
+                        'BUG: stop_after is None with stop_mode = AFTER_ONE')
+
         self.slot_next(force_play=True)
+
+    ##
+
+    def slot_mouse_button_pressed(self, button, item, qpoint, column):
+        if button != qt.Qt.RightButton or not item:
+            return
+
+        stop_after_selected = bool(item == self.stop_after)
+
+        popup = kdeui.KPopupMenu()
+        popup.setCheckable(True)
+
+        popup.insertItem('Stop playing after this track', 0)
+        popup.setItemChecked(0, stop_after_selected)
+
+        selected = popup.exec_loop(qt.QCursor.pos())
+
+        if selected == 0:
+            self.toggle_stop_after(item)
+
+    def slot_toggle_stop_after_current(self):
+        self.toggle_stop_after(self.current_item)
+
+    def toggle_stop_after(self, item):
+        if item in (self.FIRST_ITEM, None):
+            return
+
+        if item == self.stop_after:
+            self.stop_after = None
+        else:
+            self.stop_after = item
+            self.stop_mode = StopMode.AFTER_ONE
 
     ##
 
@@ -436,6 +501,13 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
 ##
 
+class StopMode:
+    NONE = object()
+    AFTER_ONE = object()
+    AFTER_QUEUE = object()
+
+##
+
 class PlaylistItem(kdeui.KListViewItem):
 
     ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
@@ -514,6 +586,50 @@ class PlaylistItem(kdeui.KListViewItem):
             self.paintFocus(painter, colorgrp,
                             qt.QRect(qt.QPoint(-prev_width, 0),
                                      qt.QSize(full_width, self.height())))
+
+        # Now draw an ellipse with the stop after track icon and queue
+        # position. Code comes from Amarok's PlaylistItem::paintCell().
+        draw_stop = bool(self == self.playlist.stop_after)
+        queue_pos = None
+
+        if ((draw_stop or queue_pos)
+                and self.playlist.header().mapToIndex(column) == 0):
+
+            e_width = 16
+            e_margin = 2
+            e_height = self.height() - e_margin*2
+
+            if draw_stop:
+                stop_pixmap = util.get_png('black_tiny_stop')
+                s_width = stop_pixmap.width()
+                s_height = stop_pixmap.height()
+            else:
+                s_width = s_height = 0
+
+            if queue_pos:
+                q_width = painter.fontMetrics().width(queue_pos)
+                q_height = painter.fontMetrics().height()
+            else:
+                q_width = q_height = 0
+
+            items_width = s_width + q_width
+
+            painter.setBrush(colorgrp.highlight())
+            painter.setPen(colorgrp.highlight().dark())
+            painter.drawEllipse(width - items_width - e_width/2, e_margin, e_width, e_height)
+            painter.drawRect(width - items_width, e_margin, items_width, e_height)
+            painter.setPen(colorgrp.highlight())
+            painter.drawLine(width - items_width, e_margin+1, width - items_width, e_height)
+
+            x = width - items_width - e_margin
+
+            if draw_stop:
+                y = e_height / 2 - s_height / 2 + e_margin
+                painter.drawPixmap(x, y, stop_pixmap)
+                x += s_width + e_margin/2
+
+            if queue_pos:
+                pass
 
     def paintFocus(self, painter, colorgrp, qrect):
         """Only allows focus to be painted in the current item."""
