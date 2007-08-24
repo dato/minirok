@@ -407,6 +407,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             return kdeui.KListView.acceptDrag(self, event)
 
     def eventFilter(self, object_, event):
+        # TODO Avoid so many calls to viewport(), type(), button(), ... ?
+
         if (object_ == self.header()
                 and event.type() == qt.QEvent.MouseButtonPress
                 and event.button() == qt.QEvent.RightButton):
