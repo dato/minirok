@@ -768,4 +768,3 @@ class Columns(util.HasConfig):
         config.writeEntry(self.CONFIG_ORDER_OPTION, order)
         config.writeEntry(self.CONFIG_WIDTH_OPTION, width)
         config.writeEntry(self.CONFIG_VISIBLE_OPTION, visible)
-        minirok.logger.debug('finished Columns.slot_save_config')
