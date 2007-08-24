@@ -117,14 +117,14 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
-    def get_currently_playing(self):
+    def _get_currently_playing(self):
         """Return a dict of the tags of the currently played track, or None."""
         if self._currently_playing is not None:
             return self._currently_playing._tags # XXX Private member!
         else:
             return None
 
-    def set_currently_playing(self, item):
+    def _set_currently_playing(self, item):
         def set_playing(value):
             if self._currently_playing not in (self.FIRST_ITEM, None):
                 self._currently_playing.set_playing(value)
@@ -134,7 +134,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self._currently_playing = item
         set_playing(True)
 
-    currently_playing = property(get_currently_playing, set_currently_playing)
+    currently_playing = property(_get_currently_playing, _set_currently_playing)
 
     ##
 
