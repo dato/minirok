@@ -25,6 +25,9 @@ UI:
 Statusbar:
   * Make the slider able to seek
   * Blink labels while paused?
+  * <Ganneff> is it possible to get a "you have XXX songs in this
+    playlist" info somewhere in the display? maybe with an added "this is
+    5 hours of noise"
 
 Options:
   * First radio button properly vertically aligned
