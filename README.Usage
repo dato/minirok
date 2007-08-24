@@ -22,6 +22,8 @@ example:
 
 Do not forget the "s" after the brackets, it's needed by Python.
 
+Finally, there is also a toggleWindow function.
+
 
 Global shortcuts
 ================
