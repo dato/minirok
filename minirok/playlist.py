@@ -378,7 +378,11 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             item = self.queue_pop(index)
             if (index == len(self.queue) # not len-1, 'coz we already popped()
                     and self.stop_mode == StopMode.AFTER_QUEUE):
-                self.stop_after = self.queue[-1]
+                try:
+                    self.stop_after = self.queue[-1]
+                except IndexError:
+                    self.stop_after = None
+                    self.stop_mode = StopMode.AFTER_QUEUE
 
     def queue_pop(self, index):
         """Pops an item from self.queue, and repaints the necessary items."""
