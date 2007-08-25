@@ -121,7 +121,7 @@ class GeneralPage(options1.Page):
 
         if not minirok._has_lastfm:
             qt.QToolTip.add(self.kcfg_EnableLastfm,
-                    'Feature disabled because lastfmsubmitd is not installed')
+                    'Feature disabled because lastfmsubmitd is not available')
 
         self.kcfg_EnableLastfm.setEnabled(minirok._has_lastfm)
 

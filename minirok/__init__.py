@@ -118,7 +118,13 @@ except ImportError:
 
 try:
     import lastfm
-    _has_lastfm = True
+    try:
+        lastfm.config.Config('lastfmsubmitd')
+    except lastfm.config.NoConfError:
+        logger.warn('lastfmsubmitd is installed but not configured, disabling')
+        _has_lastfm = False
+    else:
+        _has_lastfm = True
 except ImportError:
     _has_lastfm = False
 
