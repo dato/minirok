@@ -16,7 +16,7 @@ filesystem_encoding = sys.getfilesystemencoding()
 
 __appname__     = 'minirok'
 __progname__    = 'Minirok'
-__version__     = '0.5'
+__version__     = '0.5.1'
 __description__ = 'A small music player written in Python'
 __copyright__   = 'Copyright (c) 2007 Adeodato Simó'
 __homepage__    = 'http://chistera.yi.org/~adeodato/code/minirok'
@@ -118,7 +118,13 @@ except ImportError:
 
 try:
     import lastfm
-    _has_lastfm = True
+    try:
+        lastfm.config.Config('lastfmsubmitd')
+    except lastfm.config.NoConfError:
+        logger.warn('lastfmsubmitd is installed but not configured, disabling')
+        _has_lastfm = False
+    else:
+        _has_lastfm = True
 except ImportError:
     _has_lastfm = False
 

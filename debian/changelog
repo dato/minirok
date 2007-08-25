@@ -1,3 +1,10 @@
+minirok (0.5.1-1) unstable; urgency=low
+
+  * New upstream bugfix release:
+    + handle lastfmsubmitd being installed but not configured.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Sat, 25 Aug 2007 21:34:43 +0200
+
 minirok (0.5-1) unstable; urgency=low
 
   * Initial release. (Closes: #439228)
