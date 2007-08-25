@@ -85,7 +85,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.action_play_pause = kdeui.KToggleAction('Play/Pause', 'player_play',
                 kdecore.KShortcut('Ctrl+P'), self.slot_play_pause, ac, 'action_play_pause')
 
-        self.action_stop = kdeui.KAction('Stop', 'player_stop',
+        self.action_stop = StopAction('Stop', 'player_stop',
                 kdecore.KShortcut('Ctrl+O'), self.slot_stop, ac, 'action_stop')
 
         self.action_next = kdeui.KAction('Next', 'player_end',
@@ -557,6 +557,61 @@ class StopMode:
     NONE = object()
     AFTER_ONE = object()
     AFTER_QUEUE = object()
+
+class StopAction(kdeui.KAction):
+    """A normal KAction with a StopActionMenu delayed popup."""
+
+    def __init__(self, *args):
+        kdeui.KAction.__init__(self, *args)
+        self.popup_menu = StopActionMenu(None, 'stop popup menu')
+
+    def plug(self, toolbar):
+        kdeui.KAction.plug(self, toolbar)
+        id_ = kdeui.KAction.getToolButtonID() + 1 # gross...
+        toolbar.getButton(id_).setDelayedPopup(self.popup_menu)
+
+class StopActionMenu(kdeui.KPopupMenu):
+
+    NOW = 0
+    AFTER_CURRENT = 1
+    AFTER_QUEUE = 2
+
+    def __init__(self, *args):
+        kdeui.KPopupMenu.__init__(self, *args)
+        self.insertTitle('Stop')
+        self.insertItem('Now', self.NOW)
+        self.insertItem('After current', self.AFTER_CURRENT)
+        self.insertItem('After queue', self.AFTER_QUEUE)
+
+        self.connect(self, qt.SIGNAL('aboutToShow()'), self.slot_prepare)
+        self.connect(self, qt.SIGNAL('activated(int)'), self.slot_activated)
+
+    def slot_prepare(self):
+        playlist = minirok.Globals.playlist
+
+        self.setItemChecked(self.AFTER_CURRENT,
+                playlist.stop_mode == StopMode.AFTER_ONE and
+                playlist.stop_after == playlist._currently_playing)
+        self.setItemChecked(self.AFTER_QUEUE,
+                playlist.stop_mode == StopMode.AFTER_QUEUE)
+
+    def slot_activated(self, selected):
+        playlist = minirok.Globals.playlist
+
+        if selected == self.NOW:
+            minirok.Globals.action_collection.action('action_stop').activate()
+
+        elif selected == self.AFTER_CURRENT:
+            playlist.slot_toggle_stop_after_current()
+
+        elif selected == self.AFTER_QUEUE:
+            if playlist.stop_mode == StopMode.AFTER_QUEUE:
+                playlist.stop_after = None
+            else:
+                playlist.stop_after = None # clear possible AFTER_ONE mode
+                playlist.stop_mode = StopMode.AFTER_QUEUE
+                if playlist.queue:
+                    playlist.stop_after = playlist.queue[-1]
 
 ##
 
