@@ -66,6 +66,11 @@ class LeftSide(qt.QVBox):
             # does not exist yet.
             self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
                     (self.path_combo.currentText(),))
+        else:
+            text = 'Enter a directory here'
+            width = self.path_combo.fontMetrics().width(text)
+            self.path_combo.setCurrentText(text)
+            self.path_combo.setMinimumWidth(width + 30) # add pixels for arrow
 
 ##
 
