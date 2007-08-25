@@ -334,17 +334,20 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         if button != qt.Qt.RightButton or not item:
             return
 
-        stop_after_selected = bool(item == self.stop_after)
-
         popup = kdeui.KPopupMenu()
         popup.setCheckable(True)
 
-        popup.insertItem('Stop playing after this track', 0)
-        popup.setItemChecked(0, stop_after_selected)
+        popup.insertItem('Enqueue track', 0)
+        popup.setItemChecked(0, bool(item in self.queue))
+
+        popup.insertItem('Stop playing after this track', 1)
+        popup.setItemChecked(1, bool(item == self.stop_after))
 
         selected = popup.exec_loop(qt.QCursor.pos())
 
         if selected == 0:
+            self.toggle_enqueued(item)
+        elif selected == 1:
             self.toggle_stop_after(item)
 
     def slot_toggle_stop_after_current(self):
