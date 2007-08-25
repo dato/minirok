@@ -527,14 +527,6 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
             return True
 
-        # Play/Pause when middle-click on the current playing track
-        if (object_ == self.viewport()
-                and event.type() == qt.QEvent.MouseButtonPress
-                and event.button() == qt.QEvent.MidButton
-                and self.itemAt(event.pos()) == self.current_item):
-            self.slot_pause()
-            return True
-
         # Handle Ctrl+MouseClick: RightButton: enqueue, MidButton: stop after
         if (object_ == self.viewport()
                 and event.type() == qt.QEvent.MouseButtonPress
@@ -545,6 +537,14 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                     self.toggle_stop_after(item)
                 elif event.button() == qt.QEvent.RightButton:
                     self.toggle_enqueued(item)
+            return True
+
+        # Play/Pause when middle-click on the current playing track
+        if (object_ == self.viewport()
+                and event.type() == qt.QEvent.MouseButtonPress
+                and event.button() == qt.QEvent.MidButton
+                and self.itemAt(event.pos()) == self.current_item):
+            self.slot_pause()
             return True
 
         return kdeui.KListView.eventFilter(self, object_, event)
