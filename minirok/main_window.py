@@ -79,6 +79,8 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
                 kdecore.KShortcut.null(), self.slot_toggle_window, ac,
                 'action_toggle_window')
 
+        self.actionCollection().readShortcutSettings()
+
     def init_menus(self):
         file_menu = qt.QPopupMenu(self)
         self.action_quit.plug(file_menu)
