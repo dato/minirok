@@ -29,6 +29,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         util.HasConfig.__init__(self)
         util.HasGUIConfig.__init__(self)
 
+        self.queue = []
         self.columns = Columns(self)
         self.stop_mode = StopMode.NONE
         self.tag_reader = tag_reader.TagReader()
@@ -210,6 +211,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.add_files(files, prev_item)
 
     def slot_clear(self):
+        self.queue[:] = []
         self.tag_reader.clear_queue()
         if self._currently_playing not in (self.FIRST_ITEM, None):
             # We don't want the currently playing item to be deleted, because
@@ -234,8 +236,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             return
 
         for item in items:
-            self.tag_reader.dequeue(item)
             self.takeItem(item)
+            self.tag_reader.dequeue(item)
+            self.toggle_enqueued(item, only_dequeue=True)
             if item == self.current_item:
                 self.current_item = self.FIRST_ITEM
 
@@ -250,8 +253,11 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     def slot_play(self):
         if self.current_item is not None:
             if self.current_item is self.FIRST_ITEM:
-                # somebody else ensures firstChild() is not None
-                self.current_item = self.firstChild()
+                if self.queue:
+                    self.current_item = self.queue_pop(0)
+                else:
+                    # somebody else ensures firstChild() is not None
+                    self.current_item = self.firstChild()
 
             self.currently_playing = self.current_item
 
@@ -285,7 +291,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def slot_next(self, force_play=False):
         if self.current_item is not None:
-            if self.current_item is self.FIRST_ITEM:
+            if self.queue:
+                next = self.queue_pop(0)
+            elif self.current_item is self.FIRST_ITEM:
                 next = self.firstChild()
             else:
                 next = self.current_item.itemBelow()
@@ -351,6 +359,35 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         else:
             self.stop_after = item
             self.stop_mode = StopMode.AFTER_ONE
+
+    def toggle_enqueued(self, item, only_dequeue=False):
+        try:
+            index = self.queue.index(item)
+        except ValueError:
+            if only_dequeue:
+                return
+            self.queue.append(item)
+            if self.stop_mode == StopMode.AFTER_QUEUE:
+                self.stop_after = item # this repaints
+            else:
+                item.repaint()
+        else:
+            item = self.queue_pop(index)
+            if (index == len(self.queue) # not len-1, 'coz we already popped()
+                    and self.stop_mode == StopMode.AFTER_QUEUE):
+                self.stop_after = self.queue[-1]
+
+    def queue_pop(self, index):
+        """Pops an item from self.queue, and repaints the necessary items."""
+        try:
+            popped = self.queue.pop(index)
+        except IndexError:
+            minirok.logger.warn('invalid index %r in queue_pop()', index)
+        else:
+            for item in [ popped ] + self.queue[index:]:
+                item.repaint()
+
+            return popped
 
     ##
 
@@ -491,6 +528,16 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.slot_pause()
             return True
 
+        # Enqueue item with Ctrl+RightButton click
+        if (object_ == self.viewport()
+                and event.type() == qt.QEvent.MouseButtonPress
+                and event.button() == qt.QEvent.RightButton
+                and event.state() == qt.Qt.ControlButton):
+            item = self.itemAt(event.pos())
+            if item is not None:
+                self.toggle_enqueued(item)
+            return True
+
         return kdeui.KListView.eventFilter(self, object_, event)
 
     def keyPressEvent(self, event):
@@ -590,7 +637,10 @@ class PlaylistItem(kdeui.KListViewItem):
         # Now draw an ellipse with the stop after track icon and queue
         # position. Code comes from Amarok's PlaylistItem::paintCell().
         draw_stop = bool(self == self.playlist.stop_after)
-        queue_pos = None
+        try:
+            queue_pos = str(self.playlist.queue.index(self) + 1)
+        except ValueError:
+            queue_pos = None
 
         if ((draw_stop or queue_pos)
                 and self.playlist.header().mapToIndex(column) == 0):
@@ -629,7 +679,8 @@ class PlaylistItem(kdeui.KListViewItem):
                 x += s_width + e_margin/2
 
             if queue_pos:
-                pass
+                painter.setPen(colorgrp.highlightedText())
+                painter.drawText(x, 0, width-x, q_height, qt.Qt.AlignCenter, queue_pos)
 
     def paintFocus(self, painter, colorgrp, qrect):
         """Only allows focus to be painted in the current item."""

@@ -7,7 +7,6 @@ Tree View:
   * Use a regex as well to control the appearance of file names?
 
 Playlist:
-  * Enqueue items
   * Undo/redo?
   * Tabs??
   * If while playing the list gets cleared, and then the currently
