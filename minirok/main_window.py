@@ -150,7 +150,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         self.close()
 
     def slot_configure_shortcuts(self):
-        kdeui.KKeyDialog.configure(self.actionCollection())
+        kdeui.KKeyDialog.configure(self.actionCollection(), self)
 
     def slot_configure_global_shortcuts(self):
         kdeui.KKeyDialog.configure(self.global_accel, True, self)
