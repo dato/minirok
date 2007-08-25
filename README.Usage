@@ -3,6 +3,8 @@ UI hints
 
   * Enqueue tracks in the playlist with Ctrl+RightButtonClick, like in
     Amarok.
+  
+  * Mark a track as "stop after this track" with Ctrl+MiddleButtonClick.
 
 
 DCOP interface
