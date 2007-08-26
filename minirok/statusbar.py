@@ -98,7 +98,7 @@ class NegativeTimeLabel(TimeLabel):
 
 class MultiIconLabel(qt.QLabel):
     """A clickable label that shows a series of icons.
-    
+
     The label automatically changes the icon on click, and then emits a
     qt.PYSIGNAL('clicked(int)').
     """
