@@ -1,5 +1,10 @@
 0.6	UNRELEASED
 
+  BUGFIXES
+
+    * Searching in the tree view handles non-ASCII characters case
+      insensitivity. Formerly case insensitiveness only coped with ASCII.
+
 
 0.5.1	2007-08-25
 
@@ -12,4 +17,4 @@
 
   * First public release.
 
-vi: sw=2
+vi: sw=2:comments+=fb\:*
