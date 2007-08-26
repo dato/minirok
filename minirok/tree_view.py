@@ -175,6 +175,9 @@ class TreeViewItem(kdeui.KListViewItem):
         self.path = path
         self.root = parent.root
         self.rel_path = re.sub('^%s/*' % re.escape(self.root), '', path)
+        # optimization for TreeViewSearchLine.itemMatches() below
+        self.unicode_rel_path = util.unicode_from_path(self.rel_path)
+
         self.dirname, self.filename = os.path.split(path)
         kdeui.KListViewItem.__init__(self, parent,
                 util.unicode_from_path(self.filename))
@@ -252,10 +255,9 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
         string_ = unicode(string_).strip()
         if string_:
             if string_ != self.string:
-                encoded = util.kurl_to_path(string_)
                 self.string = string_
-                self.regexes = [ re.compile(re.escape(pat), re.I)
-                                               for pat in encoded.split() ]
+                self.regexes = [ re.compile(re.escape(pat), re.I | re.U)
+                                               for pat in string_.split() ]
         else:
             self.string = None
 
@@ -269,9 +271,9 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
             return True
 
         try:
-            item_text = item.rel_path
+            item_text = item.unicode_rel_path
         except AttributeError:
-            item_text = util.kurl_to_path(item.text(0))
+            item_text = unicode(item.text(0))
 
         for regex in self.regexes:
             if not regex.search(item_text):
