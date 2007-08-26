@@ -33,7 +33,7 @@ Description: a small music player written in Python and inspired by Amarok
     currently played track
  .
   * alter the playing order in the playlist by queueing tracks;
-    stop after a certain track; undo and redo
+    stop after a certain track; repeat track or playlist; undo and redo
  .
   * reading of tags when adding to the playlist can be disabled by
     specifying a regular expression to extract them from the filename
