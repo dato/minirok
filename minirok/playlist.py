@@ -306,8 +306,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                     self.slot_play()
 
     def slot_previous(self):
-        if (self.current_item is not None 
-                and self.current_item is not self.FIRST_ITEM):
+        if self.current_item not in (self.FIRST_ITEM, None):
             previous = self.current_item.itemAbove()
             if previous is not None:
                 self.current_item = previous
