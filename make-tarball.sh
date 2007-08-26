@@ -49,6 +49,10 @@ rm -r $PRUNE_FROM_TARBALL
 
 cd ..
 tar czf "../$EXPORT_VERSION.tar.gz" "$EXPORT_VERSION"
+
+if [ -z "$FORCE" ]; then
+    gpg --sign --armor --detach-sign "../$EXPORT_VERSION.tar.gz"
+fi
 )
 
 ##
