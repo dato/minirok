@@ -177,8 +177,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             else:
                 current = self.current_item
             self.action_clear.setEnabled(True)
-            self.action_next.setEnabled(bool(current.itemBelow()))
             self.action_previous.setEnabled(bool(current.itemAbove()))
+            self.action_next.setEnabled(bool(self.queue or current.itemBelow()))
 
         self.slot_engine_status_changed(minirok.Globals.engine.status)
 

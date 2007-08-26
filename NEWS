@@ -9,6 +9,9 @@
       track", playing stops but the current track jumps to the next track.
       Formerly it would stay at the just played track.
 
+    * The Next button is enabled when at the last item in the playlist,
+      but there are items left in the queue.
+
 
 0.5.1	2007-08-25
 
