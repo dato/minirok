@@ -4,6 +4,8 @@
 
     * Repeat mode: repeat track or repeat playlist.
 
+    * Random mode.
+
   BUGFIXES
 
     * Searching in the tree view handles non-ASCII characters case

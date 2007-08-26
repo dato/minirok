@@ -7,6 +7,7 @@
 import os
 import re
 import time
+import random
 
 import qt
 import kdecore
@@ -160,3 +161,11 @@ class QTimerWithPause(qt.QTimer):
         else:
             # This prevents resume() on a finished timer from restarting it
             self.finished = True
+
+##
+
+class RandomOrderedList(list):
+    """A list where append() inserts items at a random position."""
+
+    def append(self, item):
+        self.insert(random.randrange(len(self)+1), item)

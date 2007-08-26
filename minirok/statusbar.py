@@ -22,6 +22,7 @@ class StatusBar(kdeui.KStatusBar):
         self.timer = util.QTimerWithPause(self, 'statusbar timer')
 
         self.repeat = RepeatLabel(self)
+        self.random = RandomLabel(self)
         self.slider = qt.QSlider(qt.Qt.Horizontal, self, 'track position')
         self.label1 = TimeLabel(self, 'left statusbar label')
         self.label2 = NegativeTimeLabel(self, 'right statusbar label')
@@ -161,3 +162,19 @@ class RepeatLabel(MultiIconLabel):
 
     def slot_clicked(self, state):
         minirok.Globals.playlist.repeat_mode = self.STATES[state]
+
+class RandomLabel(MultiIconLabel):
+    def __init__(self, parent):
+        icons = [
+                kdecore.SmallIcon('forward'),
+                util.get_png('random_small'),
+        ]
+        tooltips = [
+                'Random mode: Off',
+                'Random mode: On',
+        ]
+        MultiIconLabel.__init__(self, parent, icons, tooltips)
+        self.connect(self, qt.PYSIGNAL('clicked(int)'), self.slot_clicked)
+
+    def slot_clicked(self, state):
+        minirok.Globals.playlist.random_mode = bool(state)

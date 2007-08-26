@@ -33,6 +33,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.columns = Columns(self)
         self.stop_mode = StopMode.NONE
         self.repeat_mode = RepeatMode.NONE
+        self.random_mode = False
+        self.random_queue = util.RandomOrderedList()
         self.tag_reader = tag_reader.TagReader()
 
         # these have a property() below
@@ -135,6 +137,10 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         if not (value is self.FIRST_ITEM and self.childCount() == 0):
             self._current_item = value
+            try:
+                self.random_queue.remove(value)
+            except ValueError:
+                pass
         else:
             self._current_item = None
 
@@ -174,14 +180,15 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             if self.current_item is None:
                 self._current_item = self.FIRST_ITEM
             if self.current_item is self.FIRST_ITEM:
-                current = self.firstChild()
+                current = self.my_first_child()
             else:
                 current = self.current_item
             self.action_clear.setEnabled(True)
             self.action_previous.setEnabled(bool(current.itemAbove()))
             self.action_next.setEnabled(bool(self.queue
                     or self.repeat_mode == RepeatMode.PLAYLIST
-                    or current.itemBelow()))
+                    or ((self.random_mode and self.random_queue)
+                        or (not self.random_mode and current.itemBelow()))))
 
         self.slot_engine_status_changed(minirok.Globals.engine.status)
 
@@ -215,6 +222,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def slot_clear(self):
         self.queue[:] = []
+        self.random_queue[:] = []
         self.tag_reader.clear_queue()
         if self._currently_playing not in (self.FIRST_ITEM, None):
             # We don't want the currently playing item to be deleted, because
@@ -242,12 +250,17 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.takeItem(item)
             self.tag_reader.dequeue(item)
             self.toggle_enqueued(item, only_dequeue=True)
+            try:
+                self.random_queue.remove(item)
+            except ValueError:
+                pass
             if item == self.current_item:
                 self.current_item = self.FIRST_ITEM
 
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def slot_new_current_item(self, item):
+        self.maybe_populate_random_queue()
         self.current_item = item
         self.slot_play()
 
@@ -259,8 +272,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 if self.queue:
                     self.current_item = self.queue_pop(0)
                 else:
-                    # somebody else ensures firstChild() is not None
-                    self.current_item = self.firstChild()
+                    self.current_item = self.my_first_child()
 
             self.currently_playing = self.current_item
 
@@ -296,14 +308,25 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         if self.current_item is not None:
             if self.queue:
                 next = self.queue_pop(0)
+            elif self.random_mode:
+                try:
+                    next = self.random_queue.pop(0)
+                except IndexError:
+                    next = None
+                    self.maybe_populate_random_queue()
             elif self.current_item is self.FIRST_ITEM:
-                next = self.firstChild()
+                next = self.my_first_child()
             else:
                 next = self.current_item.itemBelow()
-                if next is None and self.repeat_mode is RepeatMode.PLAYLIST:
-                    next = self.firstChild()
+
+            if next is None and self.repeat_mode is RepeatMode.PLAYLIST:
+                next = self.my_first_child()
+
             if next is None:
-                self.current_item = self.FIRST_ITEM
+                if self.random_mode:
+                    self.current_item = self.random_queue[0]
+                else:
+                    self.current_item = self.FIRST_ITEM
             else:
                 self.current_item = next
                 if (force_play
@@ -406,6 +429,22 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
             return popped
 
+    def my_first_child(self):
+        """Return the first item to be played, honouring random_mode."""
+        if self.random_mode:
+            if not self.random_queue:
+                self.maybe_populate_random_queue()
+            return self.random_queue.pop(0)
+        else:
+            return self.firstChild()
+
+    def maybe_populate_random_queue(self):
+        if not self.random_queue:
+            item = self.firstChild()
+            while item:
+                self.random_queue.append(item)
+                item = item.nextSibling()
+
     ##
 
     def apply_preferences(self):
@@ -487,6 +526,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             regex_failed = False
 
         item = PlaylistItem(file_, self, prev_item, tags)
+
+        self.random_queue.append(item)
 
         assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
 
