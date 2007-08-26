@@ -4,5 +4,5 @@ Installing instructions
 Run `./setup.sh install`.
 
 That will install files under the appropriate locations as determined by
-kde-config. If the kde-config binary can't be found, installation will be 
+kde-config. If the kde-config binary can't be found, installation will be
 aborted.

@@ -105,7 +105,7 @@ class TreeView(kdeui.KListView):
 
     def slot_search_finished(self, null_search):
         """Open the visible items, closing items opened in the previous search.
-        
+
         Non-toplevel items with more than 5 children will not be opened.
         If null_search is True, no items will be opened at all.
         """

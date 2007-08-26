@@ -111,7 +111,7 @@ class GeneralPage(options1.Page):
         options1.Page.__init__(self, parent)
 
         ##
-        
+
         self.connect(self.kcfg_TagsFromRegex, qt.SIGNAL('toggled(bool)'),
                 self.slot_tags_from_regex_toggled)
 

@@ -51,7 +51,7 @@ MyVBox::noop()
 {
 }
 
-MyVBox::~MyVBox() 
+MyVBox::~MyVBox()
 {
     delete toolbar;
 }

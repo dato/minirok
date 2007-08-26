@@ -52,7 +52,7 @@ def fmt_seconds(seconds):
 
 def get_png(name):
     """Return a QPixmap of the named PNG file under $APPDATA/images.
-    
+
     If it does not exist in $APPDATA/images, it will be assumed Minirok is
     running from source, and it'll be searched in `dirname __file__`/../images.
 

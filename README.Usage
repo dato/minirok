@@ -3,7 +3,7 @@ UI hints
 
   * Enqueue tracks in the playlist with Ctrl+RightButtonClick, like in
     Amarok.
-  
+
   * Mark a track as "stop after this track" with Ctrl+MiddleButtonClick.
 
 
@@ -47,7 +47,7 @@ You can of course change the default keys.
 
 If a Minirok group is not available, this probably means you're running
 Minirok directly from the source tree, or that something went wrong with
-kconf_update. You can go to the General Settings tab, and import directly 
+kconf_update. You can go to the General Settings tab, and import directly
 minirok.khotkeys by specifying the full path to its location (in the
 source tree is in the config/ subdirectory).
 

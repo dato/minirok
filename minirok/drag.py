@@ -26,7 +26,7 @@ class FileListDrag(kdecore.KURLDrag):
     @staticmethod
     def file_list(event):
         """Return a list of the file paths encoded in this event.
-        
+
         Files that the engine can't play will not be included; if the event is
         an instance of FileListDrag, though, the list will be assumed to be
         filtered already.
