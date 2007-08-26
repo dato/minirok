@@ -5,6 +5,10 @@
     * Searching in the tree view handles non-ASCII characters case
       insensitivity. Formerly case insensitiveness only coped with ASCII.
 
+    * When reaching the end of the track marked as "stop after this
+      track", playing stops but the current track jumps to the next track.
+      Formerly it would stay at the just played track.
+
 
 0.5.1	2007-08-25
 

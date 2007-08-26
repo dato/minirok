@@ -320,6 +320,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             if self.stop_after is not None:
                 if self.stop_after.path == re.sub('^file://', '', uri):
                     self.stop_after = None
+                    self.slot_next(force_play=False)
                     return
             elif self.stop_mode == StopMode.AFTER_ONE: # AFTER_QUEUE is ok
                 minirok.logger.warn(
