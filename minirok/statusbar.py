@@ -10,6 +10,7 @@ import kdecore
 
 import minirok
 from minirok import engine, util
+from minirok.playlist import RepeatMode
 
 ##
 
@@ -20,6 +21,7 @@ class StatusBar(kdeui.KStatusBar):
 
         self.timer = util.QTimerWithPause(self, 'statusbar timer')
 
+        self.repeat = RepeatLabel(self)
         self.slider = qt.QSlider(qt.Qt.Horizontal, self, 'track position')
         self.label1 = TimeLabel(self, 'left statusbar label')
         self.label2 = NegativeTimeLabel(self, 'right statusbar label')
@@ -28,8 +30,11 @@ class StatusBar(kdeui.KStatusBar):
         self.slider.setMaximumWidth(150)
         self.slider.setFocusPolicy(qt.QWidget.NoFocus)
 
-        self.addWidget(self.label1, 0, True) # True: permanent (right-aligned)
-        self.addWidget(self.slider, 0, True) # 0 stretch (minimum space on resize)
+        # True: permanent (right-aligned); 0: stretch (minimum space on resize)
+        self.addWidget(self.repeat, 0, True)
+        self.addWidget(self.random, 0, True)
+        self.addWidget(self.label1, 0, True)
+        self.addWidget(self.slider, 0, True)
         self.addWidget(self.label2, 0, True)
 
         self.slot_stop()
@@ -88,3 +93,71 @@ class TimeLabel(qt.QLabel):
 class NegativeTimeLabel(TimeLabel):
 
     PREFIX = '-'
+
+##
+
+class MultiIconLabel(qt.QLabel):
+    """A clickable label that shows a series of icons.
+    
+    The label automatically changes the icon on click, and then emits a
+    qt.PYSIGNAL('clicked(int)').
+    """
+    def __init__(self, parent, icons=None, tooltips=[]):
+        """Initialize the label.
+
+        :param icons: a list of QPixmaps over which to iterate.
+        :param tooltips: tooltips associated with each icon/state.
+        """
+        qt.QLabel.__init__(self, parent)
+
+        if icons is not None:
+            self.icons = list(icons)
+        else:
+            self.icons = [ qt.QPixmap() ]
+
+        self.tooltips = list(tooltips)
+        self.tooltips += [ None ] * (len(self.icons) - len(self.tooltips))
+
+        self.state = -1
+        self.mousePressEvent(None)
+
+    def mousePressEvent(self, event):
+        self.state += 1
+
+        if self.state >= len(self.icons):
+            self.state = 0
+
+        self.setPixmap(self.icons[self.state])
+
+        tooltip = self.tooltips[self.state]
+
+        if tooltip is not None:
+            qt.QToolTip.add(self, tooltip)
+        else:
+            qt.QToolTip.remove(self)
+
+        self.emit(qt.PYSIGNAL('clicked(int)'), (self.state,))
+
+class RepeatLabel(MultiIconLabel):
+    STATES = {
+            0: RepeatMode.NONE,
+            1: RepeatMode.TRACK,
+            2: RepeatMode.PLAYLIST,
+    }
+
+    def __init__(self, parent):
+        icons = [
+                kdecore.SmallIcon('bottom'),
+                util.get_png('repeat_track_small'),
+                util.get_png('repeat_playlist_small'),
+        ]
+        tooltips = [
+                'Repeat: Off',
+                'Repeat: Track',
+                'Repeat: Playlist',
+        ]
+        MultiIconLabel.__init__(self, parent, icons, tooltips)
+        self.connect(self, qt.PYSIGNAL('clicked(int)'), self.slot_clicked)
+
+    def slot_clicked(self, state):
+        minirok.Globals.playlist.repeat_mode = self.STATES[state]

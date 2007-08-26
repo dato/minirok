@@ -32,6 +32,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.queue = []
         self.columns = Columns(self)
         self.stop_mode = StopMode.NONE
+        self.repeat_mode = RepeatMode.NONE
         self.tag_reader = tag_reader.TagReader()
 
         # these have a property() below
@@ -178,7 +179,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 current = self.current_item
             self.action_clear.setEnabled(True)
             self.action_previous.setEnabled(bool(current.itemAbove()))
-            self.action_next.setEnabled(bool(self.queue or current.itemBelow()))
+            self.action_next.setEnabled(bool(self.queue
+                    or self.repeat_mode == RepeatMode.PLAYLIST
+                    or current.itemBelow()))
 
         self.slot_engine_status_changed(minirok.Globals.engine.status)
 
@@ -297,6 +300,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 next = self.firstChild()
             else:
                 next = self.current_item.itemBelow()
+                if next is None and self.repeat_mode is RepeatMode.PLAYLIST:
+                    next = self.firstChild()
             if next is None:
                 self.current_item = self.FIRST_ITEM
             else:
@@ -326,7 +331,12 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 minirok.logger.warn(
                         'BUG: stop_after is None with stop_mode = AFTER_ONE')
 
-        self.slot_next(force_play=True)
+        if self.repeat_mode == RepeatMode.TRACK:
+            # This can't be in slot_next() because the next button should move
+            # to the next track *even* with repeat_mode == TRACK.
+            self.slot_play()
+        else:
+            self.slot_next(force_play=True)
 
     ##
 
@@ -556,6 +566,11 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             return kdeui.KListView.keyPressEvent(self, event)
 
 ##
+
+class RepeatMode:
+    NONE = object()
+    TRACK = object()
+    PLAYLIST = object()
 
 class StopMode:
     NONE = object()

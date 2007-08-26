@@ -1,5 +1,9 @@
 0.6	UNRELEASED
 
+  NEW FEATURES
+
+    * Repeat mode: repeat track or repeat playlist.
+
   BUGFIXES
 
     * Searching in the tree view handles non-ASCII characters case
