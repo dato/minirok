@@ -562,41 +562,31 @@ class StopMode:
     AFTER_ONE = object()
     AFTER_QUEUE = object()
 
-class StopAction(kdeui.KAction):
-    """A normal KAction with a StopActionMenu delayed popup."""
-
-    def __init__(self, *args):
-        kdeui.KAction.__init__(self, *args)
-        self.popup_menu = StopActionMenu(None, 'stop popup menu')
-
-    def plug(self, toolbar):
-        kdeui.KAction.plug(self, toolbar)
-        id_ = kdeui.KAction.getToolButtonID() + 1 # gross...
-        toolbar.getButton(id_).setDelayedPopup(self.popup_menu)
-
-class StopActionMenu(kdeui.KPopupMenu):
+class StopAction(kdeui.KToolBarPopupAction):
 
     NOW = 0
     AFTER_CURRENT = 1
     AFTER_QUEUE = 2
 
     def __init__(self, *args):
-        kdeui.KPopupMenu.__init__(self, *args)
-        self.insertTitle('Stop')
-        self.insertItem('Now', self.NOW)
-        self.insertItem('After current', self.AFTER_CURRENT)
-        self.insertItem('After queue', self.AFTER_QUEUE)
+        kdeui.KToolBarPopupAction.__init__(self, *args)
+        self.popup_menu = self.popupMenu()
 
-        self.connect(self, qt.SIGNAL('aboutToShow()'), self.slot_prepare)
-        self.connect(self, qt.SIGNAL('activated(int)'), self.slot_activated)
+        self.popup_menu.insertTitle('Stop')
+        self.popup_menu.insertItem('Now', self.NOW)
+        self.popup_menu.insertItem('After current', self.AFTER_CURRENT)
+        self.popup_menu.insertItem('After queue', self.AFTER_QUEUE)
+
+        self.connect(self.popup_menu, qt.SIGNAL('aboutToShow()'), self.slot_prepare)
+        self.connect(self.popup_menu, qt.SIGNAL('activated(int)'), self.slot_activated)
 
     def slot_prepare(self):
         playlist = minirok.Globals.playlist
 
-        self.setItemChecked(self.AFTER_CURRENT,
+        self.popup_menu.setItemChecked(self.AFTER_CURRENT,
                 playlist.stop_mode == StopMode.AFTER_ONE and
                 playlist.stop_after == playlist._currently_playing)
-        self.setItemChecked(self.AFTER_QUEUE,
+        self.popup_menu.setItemChecked(self.AFTER_QUEUE,
                 playlist.stop_mode == StopMode.AFTER_QUEUE)
 
     def slot_activated(self, selected):
