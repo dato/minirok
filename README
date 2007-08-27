@@ -76,8 +76,15 @@ hack on, so that too.
 Requirements
 ============
 
-Minirok is written in Python, version 2.4 or later is required. The
-following libraries are *required* for the program to run:
+Minirok is written in Python, version 2.4 or later is required. If it's
+available from your distribution, I recommend you install that package,
+since it'll take care of installing everything necessary. For Debian and
+derivatives, you can grab the latest package from here:
+
+    http://packages.debian.org/unstable/kde/minirok
+
+For installing from source, here's a list of the *required* libraries
+for the program to run:
 
   * PyQt and PyKDE
     Debian and Ubuntu: python-qt3, python-kde3

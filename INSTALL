@@ -1,7 +1,8 @@
 Installing instructions
 =======================
 
-Run `./setup.sh install`.
+If you want to install Minirok from source (instead of installing
+packages from your distribution), run `./setup.sh install`.
 
 That will install files under the appropriate locations as determined by
 kde-config. If the kde-config binary can't be found, installation will be
