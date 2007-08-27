@@ -137,6 +137,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         if not (value is self.FIRST_ITEM and self.childCount() == 0):
             self._current_item = value
+            self.ensureItemVisible(value)
             try:
                 self.random_queue.remove(value)
             except ValueError:

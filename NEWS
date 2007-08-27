@@ -18,6 +18,9 @@
     * The Next button is enabled when at the last item in the playlist,
       but there are items left in the queue.
 
+    * The playlist scrolls automatically to ensure the currently playing
+      item is always visible. This is particularly handy for random mode.
+
 
 0.5.1	2007-08-25
 

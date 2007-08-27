@@ -11,8 +11,6 @@ Playlist:
   * Tabs??
   * If while playing the list gets cleared, and then the currently
     playing file gets added again, the current item should be set to it.
-  * Scroll automatically so that the current track is always visible
-    (QListView.ensureItemVisible()).
   * Previous button behaves more like a "Back" button: does not go to
     the item above the current item, but to the item played right before
     (think queues and random mode).
