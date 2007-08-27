@@ -128,16 +128,17 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
     def _set_current_item(self, value):
-        def set_current(value):
+        def set_current(current):
             if self.current_item not in (self.FIRST_ITEM, None):
-                self.current_item.set_current(value)
+                if current:
+                    self.ensureItemVisible(self.current_item)
+                self.current_item.set_current(current)
                 self.current_item.repaint()
 
         set_current(False)
 
         if not (value is self.FIRST_ITEM and self.childCount() == 0):
             self._current_item = value
-            self.ensureItemVisible(value)
             try:
                 self.random_queue.remove(value)
             except ValueError:
