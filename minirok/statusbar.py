@@ -114,6 +114,7 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
         """
         qt.QLabel.__init__(self, parent)
         util.HasConfig.__init__(self)
+        self.connect(self, qt.PYSIGNAL('clicked(int)'), self.slot_clicked)
 
         if icons is not None:
             self.icons = list(icons)
@@ -154,6 +155,10 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
 
         self.emit(qt.PYSIGNAL('clicked(int)'), (self.state,))
 
+    def slot_clicked(self, state):
+        raise NotImplementedError, \
+            'MultiIconLabel.slot_clicked must be reimplemented in subclasses.'
+
     def slot_save_config(self):
         if self.CONFIG_OPTION is not None:
             config = minirok.Globals.config(self.CONFIG_SECTION)
@@ -180,7 +185,6 @@ class RepeatLabel(MultiIconLabel):
                 'Repeat: Playlist',
         ]
         MultiIconLabel.__init__(self, parent, icons, tooltips)
-        self.connect(self, qt.PYSIGNAL('clicked(int)'), self.slot_clicked)
 
     def slot_clicked(self, state):
         minirok.Globals.playlist.repeat_mode = self.STATES[state]
@@ -198,7 +202,6 @@ class RandomLabel(MultiIconLabel):
                 'Random mode: On',
         ]
         MultiIconLabel.__init__(self, parent, icons, tooltips)
-        self.connect(self, qt.PYSIGNAL('clicked(int)'), self.slot_clicked)
 
     def slot_clicked(self, state):
         minirok.Globals.playlist.random_mode = bool(state)
