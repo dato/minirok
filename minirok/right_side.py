@@ -19,7 +19,7 @@ class RightSide(qt.QVBox):
 
         self.setSpacing(2)
 
-        self.playlist_search = kdeui.KListViewSearchLineWidget(None, self, 'playlist search')
+        self.playlist_search = PlaylistSearchLineWidget(None, self, 'playlist search')
         self.playlist = playlist.Playlist(self, 'playlist')
         self.toolbar = kdeui.KToolBar(self, 'playlist toolbar')
 
@@ -45,3 +45,24 @@ class RightSide(qt.QVBox):
         self.playlist.action_clear.plug(self.toolbar)
 
         minirok.Globals.playlist = self.playlist
+
+##
+
+class PlaylistSearchLine(kdeui.KListViewSearchLine):
+    """A search line that calls Playlist.slot_list_changed when a search finishes."""
+
+    def __init__(self, *args):
+        kdeui.KListViewSearchLine.__init__(self, *args)
+        self.timer = qt.QTimer(self, 'playlist search line timer')
+        self.connect(self.timer, qt.SIGNAL('timeout()'),
+                lambda: minirok.Globals.playlist.slot_list_changed())
+
+    def updateSearch(self, *args):
+        kdeui.KListViewSearchLine.updateSearch(self, *args)
+        self.timer.start(400, True) # True: single-shot
+
+class PlaylistSearchLineWidget(kdeui.KListViewSearchLineWidget):
+    """Same as super class, but with a PlaylistSearchLine widget."""
+
+    def createSearchLine(self, klistview):
+        return PlaylistSearchLine(self, klistview)
