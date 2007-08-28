@@ -32,13 +32,13 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.queue = []
         self.columns = Columns(self)
         self.stop_mode = StopMode.NONE
-        self.repeat_mode = RepeatMode.NONE
-        self.random_mode = False
         self.random_queue = util.RandomOrderedList()
         self.tag_reader = tag_reader.TagReader()
 
         # these have a property() below
         self._stop_after = None
+        self._repeat_mode = RepeatMode.NONE
+        self._random_mode = False
         self._current_item = None
         self._currently_playing = None
 
@@ -128,6 +128,18 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.stop_mode = StopMode.NONE
 
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
+
+    def _set_repeat_mode(self, value):
+        self._repeat_mode = value # TODO Check it's a valid value?
+        self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    repeat_mode = property(lambda self: self._repeat_mode, _set_repeat_mode)
+
+    def _set_random_mode(self, value):
+        self._random_mode = bool(value)
+        self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    random_mode = property(lambda self: self._random_mode, _set_random_mode)
 
     def _set_current_item(self, value):
         def set_current(current):
