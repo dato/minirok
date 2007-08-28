@@ -238,6 +238,9 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
     relative path (with respect to the TreeView root directory) of the items,
     plus the patter is split in words and all have to match (instead of having
     to match *in the same order*, as happes in the standard KListViewSearchLine.
+
+    When the user stops typing, a search_finished(bool empty_search) signal is
+    emitted.
     """
     def __init__(self, *args):
         kdeui.KListViewSearchLine.__init__(self, *args)
