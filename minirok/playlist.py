@@ -365,7 +365,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     def slot_engine_end_of_stream(self, uri):
         self.currently_playing = None
 
-        if self.stop_mode != StopMode.NONE:
+        if (self.stop_mode == StopMode.AFTER_ONE or
+                (self.stop_mode == StopMode.AFTER_QUEUE and not self.queue)):
             if self.stop_after is not None:
                 if self.stop_after.path == re.sub('^file://', '', uri):
                     self.stop_after = None
