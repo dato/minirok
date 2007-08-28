@@ -97,12 +97,15 @@ class NegativeTimeLabel(TimeLabel):
 
 ##
 
-class MultiIconLabel(qt.QLabel):
+class MultiIconLabel(qt.QLabel, util.HasConfig):
     """A clickable label that shows a series of icons.
 
     The label automatically changes the icon on click, and then emits a
     qt.PYSIGNAL('clicked(int)').
     """
+    CONFIG_SECTION = 'Statusbar'
+    CONFIG_OPTION = None
+
     def __init__(self, parent, icons=None, tooltips=[]):
         """Initialize the label.
 
@@ -110,6 +113,7 @@ class MultiIconLabel(qt.QLabel):
         :param tooltips: tooltips associated with each icon/state.
         """
         qt.QLabel.__init__(self, parent)
+        util.HasConfig.__init__(self)
 
         if icons is not None:
             self.icons = list(icons)
@@ -119,7 +123,18 @@ class MultiIconLabel(qt.QLabel):
         self.tooltips = list(tooltips)
         self.tooltips += [ None ] * (len(self.icons) - len(self.tooltips))
 
-        self.state = -1
+        if self.CONFIG_OPTION is not None:
+            config = minirok.Globals.config(self.CONFIG_SECTION)
+            value = util.kurl_to_path(config.readEntry(self.CONFIG_OPTION, '0'))
+            try:
+                self.state = int(value) - 1
+            except ValueError:
+                minirok.logger.warning('invalid value %r for %s', value,
+                        self.CONFIG_OPTION)
+                self.state = -1
+        else:
+            self.state = -1
+
         self.mousePressEvent(None)
 
     def mousePressEvent(self, event):
@@ -139,7 +154,14 @@ class MultiIconLabel(qt.QLabel):
 
         self.emit(qt.PYSIGNAL('clicked(int)'), (self.state,))
 
+    def slot_save_config(self):
+        if self.CONFIG_OPTION is not None:
+            config = minirok.Globals.config(self.CONFIG_SECTION)
+            config.writeEntry(self.CONFIG_OPTION, self.state)
+
 class RepeatLabel(MultiIconLabel):
+    CONFIG_OPTION = 'RepeatMode'
+
     STATES = {
             0: RepeatMode.NONE,
             1: RepeatMode.TRACK,
@@ -164,6 +186,8 @@ class RepeatLabel(MultiIconLabel):
         minirok.Globals.playlist.repeat_mode = self.STATES[state]
 
 class RandomLabel(MultiIconLabel):
+    CONFIG_OPTION = 'RandomMode'
+
     def __init__(self, parent):
         icons = [
                 kdecore.SmallIcon('forward'),
