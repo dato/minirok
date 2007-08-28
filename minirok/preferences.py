@@ -22,7 +22,7 @@ except ImportError:
     print >>sys.stderr, '''\
 You are running Minirok from the source branch without having compiled the UI
 files: the preferences dialog will not work. You can compile them by running
-`make -C minirok/ui` (you will need kdepyuic, from the python-kde3-dev package.'''
+`make -C minirok/ui` (you will need kdepyuic, from the python-kde3-dev package).'''
 
 ##
 
