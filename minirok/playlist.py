@@ -62,6 +62,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.connect(self, qt.SIGNAL('mouseButtonPressed(int, QListViewItem *, const QPoint &, int)'),
                 self.slot_mouse_button_pressed)
 
+        self.connect(self, qt.SIGNAL('moved()'), self.slot_list_changed)
+
         self.connect(self, qt.PYSIGNAL('list_changed'), self.slot_list_changed)
 
         self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
