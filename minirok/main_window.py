@@ -183,7 +183,8 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
     def queryClose(self):
         self.hide()
-        return self._flag_really_quit
+        return self._flag_really_quit or \
+                kdecore.KApplication.kApplication().sessionSaving()
 
 ##
 
