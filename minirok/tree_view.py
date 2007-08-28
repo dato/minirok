@@ -55,7 +55,8 @@ class TreeView(kdeui.KListView):
                 return
 
             if not item.IS_DIR:
-                files.append(item.path)
+                if item.path not in files:
+                    files.append(item.path)
                 return
 
             item.populate()

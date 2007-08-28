@@ -48,7 +48,8 @@ class FileListDrag(kdecore.KURLDrag):
                 else:
                     for file_ in contents:
                         append_path(os.path.join(path, file_))
-            elif all_playable or minirok.Globals.engine.can_play(path):
+            elif ((all_playable or minirok.Globals.engine.can_play(path))
+                    and path not in files):
                 files.append(path)
 
         for url in urls:
