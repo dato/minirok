@@ -81,6 +81,7 @@ class TreeView(kdeui.KListView):
     def slot_show_directory(self, directory):
         """Changes the TreeView root to the specified directory."""
         self.clear()
+        self.automatically_opened.clear()
         self.setUpdatesEnabled(True) # can be unset if not finished populating
         self.root = util.kurl_to_path(directory)
         _populate_tree(self, self.root)
