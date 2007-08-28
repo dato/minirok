@@ -10,6 +10,11 @@ plus a direct translation to Python which does not work.
     Using global shortcuts crashes the Python application. To reproduce,
     press Ctrl+Alt+U.
 
+  * saveProperties.cc, saveProperties.py:
+    Re-implementing KMainWindow::saveProperties() crashes the application
+    at logout. To reproduce, launch saveProperties.py in the background,
+    and log out (using xsm also works).
+
   * xml_toolbar.cc, xml_toolbar.py, xml_toolbar.rc:
     Subclassing KXMLGUIClient doesn't seem to work. See also kxmlguiclient.py.
 
