@@ -14,6 +14,9 @@ Playlist:
   * Previous button behaves more like a "Back" button: does not go to
     the item above the current item, but to the item played right before
     (think queues and random mode).
+  * When searching in the playlist and returning enter, the Next button
+    gets disabled if there's only one item in the search result, but
+    when earsing the search it does not get re-enabled again.
 
 UI:
   * connect track change / playlist change with statusbar and caption

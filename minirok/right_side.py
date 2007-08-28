@@ -27,6 +27,11 @@ class RightSide(qt.QVBox):
         qt.QTimer.singleShot(0, lambda:
                 self.playlist_search.searchLine().setListView(self.playlist))
 
+        qt.QTimer.singleShot(0, lambda:
+                self.connect(self.playlist_search.searchLine(),
+                             qt.SIGNAL('returnPressed(const QString &)'),
+                             self.playlist.slot_play_first_visible))
+
         # populate the toolbar
         self.toolbar.setFullSize(True)
         self.toolbar.setMovingEnabled(False) # this erases the border...

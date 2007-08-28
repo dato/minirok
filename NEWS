@@ -6,6 +6,9 @@
 
     * Random mode.
 
+    * Handle the return key in the playlist search line, starting to
+      play the first item that matched the search.
+
   BUGFIXES
 
     * Searching in the tree view handles non-ASCII characters case
