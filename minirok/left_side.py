@@ -57,7 +57,8 @@ class LeftSide(qt.QVBox):
         # same comment as above applies
         qt.QTimer.singleShot(0, lambda:
                 self.connect(self.tree_search.searchLine(),
-                qt.PYSIGNAL('search_finished'), self.tree_view.slot_search_finished))
+                             qt.PYSIGNAL('search_finished'),
+                             self.tree_view.slot_search_finished))
 
         ##
 
