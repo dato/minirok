@@ -408,7 +408,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.toggle_stop_after(item)
 
     def slot_toggle_stop_after_current(self):
-        self.toggle_stop_after(self.current_item)
+        self.toggle_stop_after(self._currently_playing or self.current_item)
 
     def toggle_stop_after(self, item):
         if item in (self.FIRST_ITEM, None):

@@ -20,6 +20,9 @@
       track", playing stops but the current track jumps to the next track.
       Formerly it would stay at the just played track.
 
+    * "Stop after current" works even if the currently played item is
+      not present in the playlist (i.e., has been removed).
+
     * The Next button is enabled when at the last item in the playlist,
       but there are items left in the queue.
 
