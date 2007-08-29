@@ -27,6 +27,10 @@
     * Items don't get added more than once to the playlist even if they're
       present multiple times in the drag object (eg. when doing Ctrl-A).
 
+    * If Minirok is docked in the systray when logging out of KDE, it will
+      be there as well when restoring the session. Formerly the main window
+      would always be shown.
+
     * Minirok does not cancel logging out when the main window is visible.
 
 

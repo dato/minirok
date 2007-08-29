@@ -53,5 +53,9 @@ def main():
         from minirok import lastfm_submit
         lastfm_submitter = lastfm_submit.LastfmSubmitter()
 
-    main_window.show()
+    if main_window.canBeRestored(1):
+        main_window.restore(1, False) # False: do not force show()
+    else:
+        main_window.show()
+
     application.exec_loop()

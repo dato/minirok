@@ -182,9 +182,17 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
     ##
 
     def queryClose(self):
-        self.hide()
-        return self._flag_really_quit or \
-                kdecore.KApplication.kApplication().sessionSaving()
+        finishing_session = kdecore.KApplication.kApplication().sessionSaving()
+        if not finishing_session:
+            # We want to save the shown/hidden status on session quit
+            self.hide()
+        return self._flag_really_quit or finishing_session
+
+    def saveProperties(self, config):
+        config.writeEntry('docked', bool(self.isHidden()))
+
+    def readProperties(self, config):
+        self.setShown(not config.readBoolEntry('docked', False))
 
 ##
 
