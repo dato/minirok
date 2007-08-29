@@ -280,7 +280,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.current_item = item
         self.slot_play()
 
-    def slot_play_first_visible(self):
+    def slot_play_first_visible(self, search_string):
+        if not unicode(search_string).strip():
+            return
         self.current_item = qt.QListViewItemIterator(self,
                 qt.QListViewItemIterator.Visible).current()
         self.slot_play()
