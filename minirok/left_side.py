@@ -60,6 +60,11 @@ class LeftSide(qt.QVBox):
                              qt.PYSIGNAL('search_finished'),
                              self.tree_view.slot_search_finished))
 
+        qt.QTimer.singleShot(0, lambda:
+                self.connect(self.tree_search.searchLine(),
+                             qt.SIGNAL('returnPressed(const QString &)'),
+                             self.tree_view.slot_append_visible))
+
         ##
 
         if self.path_combo.currentText():

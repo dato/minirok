@@ -7,7 +7,9 @@
     * Random mode.
 
     * Handle the return key in the playlist search line, starting to
-      play the first item that matched the search.
+      play the first item that matched the search; and in the tree view
+      search line, appending matching items to the playlist and starting
+      playback if the player was stopped.
 
   BUGFIXES
 

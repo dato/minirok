@@ -11,7 +11,7 @@ import qt
 import kdeui
 
 import minirok
-from minirok import drag, util
+from minirok import drag, engine, util
 
 ##
 
@@ -73,10 +73,35 @@ class TreeView(kdeui.KListView):
 
         return files
 
+    def visible_files(self):
+        files = []
+        iterator = qt.QListViewItemIterator(self,
+                                            qt.QListViewItemIterator.Visible)
+
+        item = iterator.current()
+        while item:
+            if not item.IS_DIR:
+                files.append(item.path)
+            iterator += 1
+            item = iterator.current()
+
+        return files
+
     ##
 
     def slot_append_selected(self, item):
         minirok.Globals.playlist.add_files(self.selected_files())
+
+    def slot_append_visible(self, search_string):
+        if not unicode(search_string).strip():
+            return
+
+        playlist_was_empty = bool(minirok.Globals.playlist.childCount() == 0)
+        minirok.Globals.playlist.add_files(self.visible_files())
+
+        if (playlist_was_empty
+                and minirok.Globals.engine.status == engine.State.STOPPED):
+            minirok.Globals.action_collection.action('action_play').activate()
 
     def slot_show_directory(self, directory):
         """Changes the TreeView root to the specified directory."""
