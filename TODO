@@ -41,8 +41,6 @@ Last.fm:
 
 Other:
   * Save window position?, maybe use a meaningful size the first time
-  * If the KDE session ends with Minirok minimized in the systray, then
-    Minirok should restore itself only to the systray in the next session.
   * It'd be nice to have module and line numbers in logging output, but
     it doesn't seem to work.
 
