@@ -25,6 +25,10 @@ Statusbar:
     playlist" info somewhere in the display? maybe with an added "this is
     5 hours of noise"
 
+Systray:
+  * Tooltip with track information (title, artist, maybe album, maybe
+    cover image, if it exists).
+
 Options:
   * First radio button properly vertically aligned
 
