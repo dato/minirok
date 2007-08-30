@@ -116,7 +116,6 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     ##
 
     def _set_stop_after(self, value):
-        # TODO Have to set to None in slot_clear() and slot_remove_selected()?
         update = lambda: \
                 self._stop_after is not None and self._stop_after.repaint()
 
@@ -237,6 +236,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.add_files(files, prev_item)
 
     def slot_clear(self):
+        self.stop_after = None
         self.queue[:] = []
         self.random_queue[:] = []
         self.tag_reader.clear_queue()
