@@ -6,6 +6,11 @@ UI hints
 
   * Mark a track as "stop after this track" with Ctrl+MiddleButtonClick.
 
+  * Press return in the tree view search line to append all the search
+    results to the playlist, starting playback if the playlist was empty
+    and en player stopped. Press return as well in the playlist search
+    line to start playing the first track in the search result.
+
 
 DCOP interface
 ==============
