@@ -236,14 +236,22 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self.add_files(files, prev_item)
 
     def slot_clear(self):
-        self.stop_after = None
         self.queue[:] = []
         self.random_queue[:] = []
         self.tag_reader.clear_queue()
+
         if self._currently_playing not in (self.FIRST_ITEM, None):
             # We don't want the currently playing item to be deleted, because
             # ite breaks actions upon it, eg. stop().
             self.takeItem(self._currently_playing)
+
+        if self.stop_after is not None:
+            if (self.stop_mode == StopMode.AFTER_ONE
+                    and self.stop_after != self._currently_playing):
+                self.stop_after = None
+            elif self.stop_mode == StopMode.AFTER_QUEUE:
+                self._stop_after = None # don't touch stop_mode
+
         self.clear()
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
