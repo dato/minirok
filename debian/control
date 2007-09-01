@@ -30,7 +30,7 @@ Description: a small music player written in Python and inspired by Amarok
  Other features include:
  .
   * DCOP interface for controlling the player and retrieving the
-    currently played track
+    currently played track, among other things
  .
   * alter the playing order in the playlist by queueing tracks;
     stop after a certain track; repeat track or playlist; random mode;
