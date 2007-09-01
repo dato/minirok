@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Minirok
-Exec=minirok
+Exec=minirok %U
 Icon=minirok
 Encoding=UTF-8
 Terminal=false

@@ -11,6 +11,8 @@
       search line, appending matching items to the playlist and starting
       playback if the player was stopped.
 
+    * Minirok accepts files to load into the playlist as arguments.
+
   BUGFIXES
 
     * Searching in the tree view handles non-ASCII characters case

@@ -526,7 +526,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         else:
             files = re.split(r'\0+', playlist.read())
             if files != ['']: # empty saved playlist
-                self.add_files(files)
+                self.add_files_untrusted(files)
 
         self.slot_list_changed()
 
@@ -547,6 +547,28 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         for f in files:
             prev_item = self.add_file(f, prev_item)
         self.emit(qt.PYSIGNAL('list_changed'), ())
+
+    def add_files_untrusted(self, files, clear_playlist=False):
+        """Add to the playlist those files that are playable."""
+        if clear_playlist:
+            self.slot_clear()
+
+        def _can_play_with_warning(path):
+            if minirok.Globals.engine.can_play(path):
+                if os.path.isfile(path):
+                    return True
+                else:
+                    if not os.path.exists(path):
+                        minirok.logger.warn('skipping nonexistent file %s', path)
+                    else:
+                        minirok.logger.warn('skipping non regular file %s', path)
+                    return False
+            else:
+                minirok.logger.warn('skipping unplayable file/extension %s',
+                        os.path.basename(path))
+                return False
+
+        self.add_files(filter(_can_play_with_warning, files))
 
     def add_file(self, file_, prev_item):
         tags = self.tags_from_filename(file_)

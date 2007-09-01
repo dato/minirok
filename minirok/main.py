@@ -36,6 +36,9 @@ def main():
         about_data.addCredit(*person)
 
     kdecore.KCmdLineArgs.init(sys.argv, about_data)
+    kdecore.KCmdLineArgs.addCmdLineOptions([
+        ('+[files]', 'Files to load into the playlist'),
+    ])
 
     ##
 
@@ -56,6 +59,17 @@ def main():
     if minirok._has_lastfm:
         from minirok import lastfm_submit
         lastfm_submitter = lastfm_submit.LastfmSubmitter()
+
+    ##
+
+    args = kdecore.KCmdLineArgs.parsedArgs()
+    count = args.count()
+    if count > 0:
+        from minirok import util
+        files = []
+        for i in range(count):
+            files.append(util.kurl_to_path(args.url(i)))
+        minirok.Globals.playlist.add_files_untrusted(files, clear_playlist=True)
 
     ##
 
