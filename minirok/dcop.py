@@ -31,8 +31,6 @@ class Player(dcopexport.DCOPExObj):
         self.addMethod('QString nowPlaying()', self.formatted_now_playing)
         self.addMethod('QString nowPlaying(QString)', self.formatted_now_playing)
 
-        # TODO Stop after current
-
     def formatted_now_playing(self, format=None):
         currently_playing = minirok.Globals.playlist.currently_playing
         if currently_playing is None:
