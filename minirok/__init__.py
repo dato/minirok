@@ -111,10 +111,15 @@ except ImportError:
     _not_found.append('Mutagen')
 
 try:
-    import gst
+    # Do not import gst instead of pygst here, or gst will eat our --help
+    import pygst
+    pygst.require('0.10')
 except ImportError:
     _do_exit = True
     _not_found.append('GStreamer Python bindings')
+except pygst.RequiredVersionError:
+    _do_exit = True
+    _not_found.append('GStreamer Python bindings (>= 0.10)')
 
 try:
     import lastfm

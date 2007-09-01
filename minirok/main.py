@@ -8,9 +8,6 @@ import sys
 import kdecore
 
 import minirok
-import minirok.dcop
-import minirok.engine
-import minirok.main_window
 
 ##
 
@@ -40,18 +37,27 @@ def main():
 
     kdecore.KCmdLineArgs.init(sys.argv, about_data)
 
-    minirok.Globals.engine = minirok.engine.Engine()
+    ##
+
+    # These imports happen here rather than at the top level because if gst
+    # gets imported before the above KCmdLineArgs.init() call, it steals our
+    # --help option
+    from minirok import dcop, engine, main_window as mw
+
+    minirok.Globals.engine = engine.Engine()
     minirok.Globals.engine.start()
 
     application = kdecore.KApplication()
-    main_window = minirok.main_window.MainWindow()
+    main_window = mw.MainWindow()
 
     application.dcopClient().registerAs('minirok', False) # False: do not add PID
-    player = minirok.dcop.Player()
+    player = dcop.Player()
 
     if minirok._has_lastfm:
         from minirok import lastfm_submit
         lastfm_submitter = lastfm_submit.LastfmSubmitter()
+
+    ##
 
     if main_window.canBeRestored(1):
         main_window.restore(1, False) # False: do not force show()
