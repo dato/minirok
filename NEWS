@@ -13,6 +13,10 @@
 
     * Minirok accepts files to load into the playlist as arguments.
 
+    * New command line option -a/--append and accompanying DCOP function
+      appendToPlaylist to append given files to an existing Minirok
+      instance. If no instance is running, a new one will be started.
+
   BUGFIXES
 
     * Searching in the tree view handles non-ASCII characters case

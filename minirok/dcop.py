@@ -8,6 +8,7 @@ import qt
 import dcopexport
 
 import minirok
+from minirok import util
 
 ##
 
@@ -30,6 +31,7 @@ class Player(dcopexport.DCOPExObj):
 
         self.addMethod('QString nowPlaying()', self.formatted_now_playing)
         self.addMethod('QString nowPlaying(QString)', self.formatted_now_playing)
+        self.addMethod('void appendToPlaylist(QStringList)', self.append_to_playlist)
 
     def formatted_now_playing(self, format=None):
         currently_playing = minirok.Globals.playlist.currently_playing
@@ -50,6 +52,10 @@ class Player(dcopexport.DCOPExObj):
                     formatted = title
 
         return qt.QString(formatted)
+
+    def append_to_playlist(self, qstringlist):
+        files = [ util.kurl_to_path(x) for x in qstringlist ]
+        minirok.Globals.playlist.add_files_untrusted(files)
 
     @staticmethod
     def get_action(action_name):

@@ -30,7 +30,16 @@ example:
 
 Do not forget the "s" after the brackets, it's needed by Python.
 
-Finally, there is also a toggleWindow function.
+There is also a appendToPlaylist function, which does the same as
+`minirok --append`. The function takes a QStringList as argument, so to
+invoke it you must place the arguments between square brackets, like this:
+
+  % dcop minirok player appendToPlaylist [ /path/to/file.mp3 ... ] 
+
+Note that you have to specify the full paths of files, or it won't work.
+
+Finally, there is a toggleWindow function, which hides/shows the main
+window.
 
 
 Global shortcuts

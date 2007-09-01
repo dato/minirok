@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+ServiceTypes=audio/*
+Actions=appendToPlaylist;
+
+[Desktop Action appendToPlaylist]
+Name=Append to Minirok playlist
+Exec=minirok --append %U
+Icon=minirok
