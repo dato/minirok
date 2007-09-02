@@ -195,7 +195,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             if self.current_item is None:
                 self._current_item = self.FIRST_ITEM
             if self.current_item is self.FIRST_ITEM:
-                current = self.my_first_child()
+                current = self.firstChild()
             else:
                 current = self.current_item
             self.action_clear.setEnabled(True)
