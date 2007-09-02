@@ -5,6 +5,7 @@ Tree View:
     file tree with inotify instead)
   * Remove artifacts in the pointer when dragging (display file count?)
   * Use a regex as well to control the appearance of file names?
+  * Do not show directories that don't contain at least one playable file?
 
 Playlist:
   * Undo/redo?
