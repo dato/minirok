@@ -241,8 +241,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.tag_reader.clear_queue()
 
         if self._currently_playing not in (self.FIRST_ITEM, None):
-            # We don't want the currently playing item to be deleted, because
-            # ite breaks actions upon it, eg. stop().
+            # We don't want the currently playing item to be deleted,
+            # because it breaks actions upon it, eg. stop().
             self.takeItem(self._currently_playing)
 
         if self.stop_after is not None:
