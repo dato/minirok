@@ -42,6 +42,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self._current_item = None
         self._currently_playing = None
 
+        self._currently_playing_taken = False
+
         self.setSorting(-1)
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
@@ -179,6 +181,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         set_playing(False)
         self._currently_playing = item
+        self._currently_playing_taken = False
         set_playing(True)
 
     currently_playing = property(_get_currently_playing, _set_currently_playing)
@@ -581,7 +584,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         item = PlaylistItem(file_, self, prev_item, tags)
 
-        if (self._currently_playing is not None
+        if (self._currently_playing_taken
+                and self._currently_playing is not None
                 and self._currently_playing.path == item.path):
             self.current_item = item
             self.currently_playing = item
@@ -618,6 +622,11 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     def setColumnWidth(self, col, width):
         self.header().setResizeEnabled(bool(width), col) # Qt does not do this for us
         return kdeui.KListView.setColumnWidth(self, col, width)
+
+    def takeItem(self, item):
+        if item == self._currently_playing:
+            self._currently_playing_taken = True
+        return kdeui.KListView.takeItem(self, item)
 
     def acceptDrag(self, event):
         if drag.FileListDrag.canDecode(event):
