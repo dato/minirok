@@ -99,10 +99,10 @@ try:
     import kfile
     import kdeui
     import kdecore # used below
-    import dcopext
-except ImportError:
+    import dcopexport
+except ImportError, e:
     _do_exit = True
-    _not_found.append('PyKDE')
+    _not_found.append('PyKDE (error was: %s)' % e)
 
 try:
     import mutagen
