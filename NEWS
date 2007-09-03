@@ -35,6 +35,10 @@
     * The playlist scrolls automatically to ensure the currently playing
       item is always visible. This is particularly handy for random mode.
 
+    * If the list gets cleared while playing a certain track, and then
+      that track gets added to the playlist while still being played, it
+      will be marked as such.
+
     * Items don't get added more than once to the playlist even if they're
       present multiple times in the drag object (eg. when doing Ctrl-A).
 
