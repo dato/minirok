@@ -283,6 +283,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 pass
             if item == self.current_item:
                 self.current_item = self.FIRST_ITEM
+            if item != self._currently_playing:
+                del item # maybe memory gets freed even without this?
 
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
