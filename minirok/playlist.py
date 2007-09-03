@@ -582,14 +582,16 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         else:
             regex_failed = False
 
-        item = PlaylistItem(file_, self, prev_item, tags)
-
         if (self._currently_playing_taken
                 and self._currently_playing is not None
-                and self._currently_playing.path == item.path):
+                and self._currently_playing.path == file_):
+            item = self._currently_playing
+            self.insertItem(item)
+            item.moveItem(prev_item)
             self.current_item = item
-            self.currently_playing = item
+            self.currently_playing = item # unsets _currently_playing_taken
         else:
+            item = PlaylistItem(file_, self, prev_item, tags)
             self.random_queue.append(item)
 
         assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
