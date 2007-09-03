@@ -6,7 +6,6 @@ is installed. If you get stuck configuring it, here's a simple recipe to
 have it running in one minute:
 
     % mkdir -p ~/.lastfm/spool
-    % ln -s /usr/bin/lastfmsubmitd ~/.kde/Autostart
     % cat >~/.lastfmsubmitd.conf
 [account]
 user = you
@@ -15,3 +14,10 @@ password = XXX
 [paths]
 log = /home/you/.lastfm/log
 spool = /home/you/.lastfm/spool
+
+    % chmod 600 ~/.lastfmsubmitd.conf
+    % ln -s /usr/bin/lastfmsubmitd ~/.kde/Autostart
+
+The ~/.kde/Autostart bit is just a mechanism to make the daemon start
+with your KDE session. You can use any other method you like, eg. cron,
+or just start it by hand when you see fit.
