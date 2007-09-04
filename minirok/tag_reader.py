@@ -58,6 +58,9 @@ class TagReader(qt.QObject):
             if info is None:
                 raise Exception, 'mutagen.File() returned None'
         except Exception, e:
+            # Er, note that not only the above raise is catched here, since
+            # mutagen.File() can raise exceptios as well. Wasn't obvious when I
+            # revisited this code.
             if item.path in str(e): # mutagen normally includes the path itself
                 msg = 'could not read tags: %s' % e
             else:
