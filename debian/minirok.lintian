@@ -13,3 +13,6 @@ minirok: script-not-executable ./usr/share/minirok/minirok/statusbar.py
 minirok: script-not-executable ./usr/share/minirok/minirok/tag_reader.py
 minirok: script-not-executable ./usr/share/minirok/minirok/tree_view.py
 minirok: script-not-executable ./usr/share/minirok/minirok/util.py
+minirok: desktop-entry-missing-required-key ./usr/share/apps/konqueror/servicemenus/minirok_append.desktop Type
+minirok: desktop-entry-missing-required-key ./usr/share/apps/konqueror/servicemenus/minirok_append.desktop Name
+minirok: desktop-entry-contains-unknown-key ./usr/share/apps/konqueror/servicemenus/minirok_append.desktop:4 Actions
