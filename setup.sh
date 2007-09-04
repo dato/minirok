@@ -64,6 +64,12 @@ install_package () {
     done
 }
 
+install_manpage () {
+    if make -s minirok.1; then
+    	install_file minirok.1 /usr/share/man/man1
+    fi
+}
+
 ##
 
 mode () {
@@ -81,6 +87,7 @@ case "$1" in
 	install_icons
 	install_images
 	install_package
+	install_manpage
 	install_file config/minirokrc "$CONFIG"
 	install_file config/minirok.desktop "$DESKTOP"
 	install_file config/minirok.khotkeys "$KHOTKEYS"

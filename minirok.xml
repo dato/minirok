@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Manual page for Minirok.
+     Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+     Licensed under the terms of the MIT license.
+  -->
+
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN"
+    "file:///usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd"
+[]>
+
+<refentry>
+  <refentryinfo>
+    <author>
+      <firstname>Adeodato</firstname>
+      <surname>Simó</surname>
+    </author>
+    <address>
+      <email>dato@net.com.org.es</email>
+    </address>
+    <date>2007-09-04</date>
+  </refentryinfo>
+  
+  <refmeta>
+    <refentrytitle>minirok</refentrytitle>
+    <manvolnum>1</manvolnum>
+  </refmeta>
+  
+  <refnamediv>
+    <refname>minirok</refname> 
+    <refpurpose>a small music player written in Python</refpurpose>
+  </refnamediv>
+  
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>minirok</command>
+      <arg choice="opt">options</arg>
+      <arg choice="opt" rep="repeat">file</arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+  
+  <refsect1>
+    <title>DESCRIPTION</title>
+    <para>
+      Minirok is a small music player written in Python for the K
+      Desktop Environment. To start it, select it from the applications
+      menu, or type <command>minirok</command> in a terminal.
+    </para>
+    <para>
+      To reproduce music, first type in the combo box at the left the
+      directory where music is located, and press enter. Available audio
+      files will be shown in a tree structure. Locate the files you want
+      to play, and use drag and drop to append them to the playlist in
+      the right. You can also press double click in a file or a folder
+      to append it to the existing playlist.
+    </para>
+    <para>
+      Both the tree view and the playlist have search line widgets above
+      them. Typing text in them will reduce the shown items to those
+      matching the introduced words. If you press enter after a search
+      in the tree view completes, the visible items will be appended to
+      the playlist. If you press enter in the playlist search line, the
+      first visible track will be played.
+    </para>
+    <para>
+      You can modify the order in which the tracks are played by
+      enqueueing them in a different order. For this, press right button
+      click on a track, and select "Enqueue track". Or press Control +
+      RightButtonClick on the track to enqueue.
+    </para>
+    <para>
+      Similarly, you can signal that playing should stop after a certain
+      track. To do this, select "Stop playing after this track" in the
+      contextual menu as above, or press Control + MiddleButtonClick.
+    </para>
+  </refsect1>
+  
+  <refsect1>
+    <title>DCOP INTERFACE</title>
+    <para>
+      Minirok offers a DCOP interface to control the player and various
+      other bits. To invoke a DCOP function, run from a terminal
+      <command>dcop minirok player <replaceable>functionName</replaceable></command>.
+      Here's a list of available functions:
+    </para>
+    <programlisting>    play
+    pause
+    playPause
+    stop
+    next
+    previous
+    nowPlaying
+    toggleWindow
+    appendToPlaylist
+    stopAfterCurrent</programlisting>
+    <para>
+      See the <filename>README.Usage</filename> file for details.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>LAST.FM</title>
+    <para>
+      Minirok can submit played tracks to the Last.fm service. For this,
+      you just need to install lastfmsubmitd and configure it
+      appropriately. See the <filename>README.Lastfm</filename> file for
+      a short guide to configuring lastfmsubmitd.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>OPTIONS</title>
+    <variablelist>
+      <varlistentry>
+        <term><option>-a</option></term>
+        <term><option>--append</option></term>
+        <listitem>
+          <para>
+            Try to append the files given as arguments to an existing
+            Minirok instance first. If that fails, start a new Minirok
+            instance as usual.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+      Minirok also accepts many other option for using the Qt and KDE
+      libraries. Run <command>minirok --help-all</command> for a
+      comprehensive list.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>REPORTING BUGS</title>
+    <para>
+      Please report bug to the Debian Bug Tracking System. See the
+      <filename>README.Bugs</filename> file for instructions.
+    </para>
+    <para>
+      A list of reported issues is kept at http://bugs.debian.org/minirok.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>COPYRIGHT</title>
+    <para>
+      Minirok is Copyright (c) 2007 Adeodato Simó, and licensed under
+      the terms of the MIT license.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>SEE ALSO</title>
+    <para><filename>/usr/share/doc/minirok/NEWS</filename></para>
+    <para><filename>/usr/share/doc/minirok/FAQ</filename></para>
+    <para><filename>/usr/share/doc/minirok/README</filename></para>
+    <para><filename>/usr/share/doc/minirok/README.Bugs</filename></para>
+    <para><filename>/usr/share/doc/minirok/README.Lastfm</filename></para>
+    <para><filename>/usr/share/doc/minirok/README.Usage</filename></para>
+    <para><filename>/usr/share/doc/minirok/TODO</filename></para>
+  </refsect1>
+</refentry>
