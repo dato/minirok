@@ -1,0 +1,9 @@
+Preemptive list of Frequently Asked Questions
+---------------------------------------------
+
+Q: Why does the tree view not show all subdirectories?
+
+A: The tree view does not show files which are not in a recognized
+   playable format. Because of this, all directories which contain no
+   audio files result in empty directories. Having them there only
+   clutters the view, so they are removed as well.

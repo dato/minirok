@@ -22,6 +22,7 @@ class TreeView(kdeui.KListView):
         self.root = None
         self.timer = qt.QTimer(self, 'tree view timer')
         self.iterator = None
+        self.empty_directories = set()
         self.automatically_opened = set()
 
         self.addColumn('')
@@ -106,6 +107,7 @@ class TreeView(kdeui.KListView):
     def slot_show_directory(self, directory):
         """Changes the TreeView root to the specified directory."""
         self.clear()
+        self.empty_directories.clear()
         self.automatically_opened.clear()
         self.setUpdatesEnabled(True) # can be unset if not finished populating
         self.root = util.kurl_to_path(directory)
@@ -128,6 +130,9 @@ class TreeView(kdeui.KListView):
             self.iterator = None
             self.setUpdatesEnabled(True)
             self.repaint()
+            for item in self.empty_directories:
+                (item.parent() or self).takeItem(item)
+                del item # necessary?
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
 
     def slot_search_finished(self, null_search):
@@ -332,16 +337,33 @@ class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
 ##
 
 def _populate_tree(parent, directory):
-    """A helper function to populate either a TreeView or a DirectoryItem."""
+    """A helper function to populate either a TreeView or a DirectoryItem.
+    
+    It updates TreeView's empty_directories set as appropriate.
+    """
     try:
         files = os.listdir(directory)
     except OSError, e:
         minirok.logger.warn('could not list directory: %s', e)
         return
 
+    try:
+        listview = parent.listView()
+    except AttributeError:
+        listview = parent
+
+    has_children = False
+
     for filename in files:
         path = os.path.join(directory, filename)
         if os.path.isdir(path):
-            DirectoryItem(parent, path)
+            item = DirectoryItem(parent, path)
+            listview.empty_directories.add(item)
         elif minirok.Globals.engine.can_play(path):
             FileItem(parent, path)
+            has_children = True
+
+    if has_children:
+        while parent:
+            listview.empty_directories.discard(parent)
+            parent = parent.parent()
