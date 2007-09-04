@@ -43,6 +43,7 @@ EXPORT_DIR="$TMP_DIR/$EXPORT_VERSION"
 bzr export "$EXPORT_DIR"
 
 ( # subshell to preserve old $CWD
+set -e
 cd "$EXPORT_DIR"
 make -s -C minirok/ui >/dev/null
 rm -r $PRUNE_FROM_TARBALL
@@ -54,8 +55,10 @@ if [ -z "$FORCE" ]; then
     gpg --sign --armor --detach-sign "../$EXPORT_VERSION.tar.gz"
 fi
 )
+EXIT=$?
 
 ##
 
 rm -r "$EXPORT_DIR"
 rmdir "$TMP_DIR"
+exit $EXIT
