@@ -23,15 +23,22 @@
     * Searching in the tree view handles non-ASCII characters case
       insensitivity. Formerly case insensitiveness only coped with ASCII.
 
-    * When reaching the end of the track marked as "stop after this
-      track", playing stops but the current track jumps to the next track.
-      Formerly it would stay at the just played track.
-
     * "Stop after current" works even if the currently played item is
       not present in the playlist (i.e., has been removed).
 
     * The Next button is enabled when at the last item in the playlist,
       but there are items left in the queue.
+
+    * Items don't get added more than once to the playlist even if they're
+      present multiple times in the drag object (eg. when doing Ctrl-A).
+
+    * Minirok does not cancel logging out when the main window is visible.
+
+  OTHER CHANGES
+
+    * When reaching the end of the track marked as "stop after this
+      track", playing stops but the current track jumps to the next track.
+      Formerly it would stay at the just played track.
 
     * The playlist scrolls automatically to ensure the currently playing
       item is always visible. This is particularly handy for random mode.
@@ -40,14 +47,9 @@
       that track gets added to the playlist while still being played, it
       will be marked as such.
 
-    * Items don't get added more than once to the playlist even if they're
-      present multiple times in the drag object (eg. when doing Ctrl-A).
-
     * If Minirok is docked in the systray when logging out of KDE, it will
       be there as well when restoring the session. Formerly the main window
       would always be shown.
-
-    * Minirok does not cancel logging out when the main window is visible.
 
 
 0.5.1	2007-08-25
