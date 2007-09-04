@@ -27,7 +27,7 @@
       not present in the playlist (i.e., has been removed).
 
     * The Next button is enabled when at the last item in the playlist,
-      but there are items left in the queue.
+      but with items still left in the queue.
 
     * Items don't get added more than once to the playlist even if they're
       present multiple times in the drag object (eg. when doing Ctrl-A).
@@ -44,8 +44,8 @@
       item is always visible. This is particularly handy for random mode.
 
     * If the list gets cleared while playing a certain track, and then
-      that track gets added to the playlist while still being played, it
-      will be marked as such.
+      that track gets added to the playlist while still being played,
+      the playlist will mark it the current track.
 
     * If Minirok is docked in the systray when logging out of KDE, it will
       be there as well when restoring the session. Formerly the main window
