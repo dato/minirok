@@ -81,7 +81,7 @@ available from your distribution, I recommend you install that package,
 since it'll take care of installing everything necessary. For Debian and
 derivatives, you can grab the latest package from here:
 
-    http://packages.debian.org/unstable/kde/minirok
+    http://chistera.yi.org/~adeodato/code/minirok/packages
 
 For installing from source, here's a list of the *required* libraries
 for the program to run:
