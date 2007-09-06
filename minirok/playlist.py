@@ -438,6 +438,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             index = self.queue.index(item)
         except ValueError:
             if only_dequeue:
+                # XXX this implicitly skips the emit() below, which is what we
+                # want (so that not every removed item triggers a list_changed
+                # signal), but feels very dirty.
                 return
             self.queue.append(item)
             if self.stop_mode == StopMode.AFTER_QUEUE:
@@ -453,6 +456,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 except IndexError:
                     self.stop_after = None
                     self.stop_mode = StopMode.AFTER_QUEUE
+
+        self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def queue_pop(self, index):
         """Pops an item from self.queue, and repaints the necessary items."""

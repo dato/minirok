@@ -1,5 +1,10 @@
 0.7	IN DEVELOPMENT
 
+  BUGFIXES
+
+    * When adding tracks to the queue while playing the last track in
+      the playlist, the Next button would not get enabled.
+
 
 0.6	2007-09-04
 
