@@ -99,19 +99,6 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         self.bin.set_state(gst.STATE_PLAYING)
         self.status = State.PLAYING
 
-        if self.bin.get_state()[0] == gst.STATE_CHANGE_FAILURE:
-            return
-
-        count = 0
-        while count < 5:
-            try:
-                nsecs = self.bin.query_duration(self.time_fmt)[0]
-            except gst.QueryError:
-                count += 1
-                time.sleep(0.2)
-            else:
-                return int(nsecs/1000000000)
-
     def pause(self, paused=True):
         if paused:
             self.bin.set_state(gst.STATE_PAUSED)

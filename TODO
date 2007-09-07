@@ -34,13 +34,6 @@ Appearance:
   * Draw column separators in the playlist? (HOWTO: playlistitem.cpp:595)
     And, only in the Amarok classic theme, or always?
 
-Last.fm:
-  * GStreamer gets the length of some songs wrong, asigning a much
-    longer duration (22:04 for my copy of Under My Thumb). The internal
-    timer of LastfmSubmitter will never finishes, because the song
-    finishes first. It'd be nice to connect the submitter to end_of_stream
-    from Engine, and call self.submit() iff the timer is active at the time.
-
 Other:
   * Save window position?, maybe use a meaningful size the first time
   * It'd be nice to have module and line numbers in logging output, but

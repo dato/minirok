@@ -48,35 +48,48 @@ class TagReader(qt.QObject):
 
     def update_one(self):
         item = self._queue.pop(0)
+
         if len(self._queue) == 0:
             self.timer.stop()
 
+        tags = self.tags(item.path)
+
+        if tags:
+            item.update_tags(tags)
+            item.update_display()
+
+    ##
+
+    @staticmethod
+    def tags(path):
+        """Return a dict with the tags read from the given path.
+
+        Tags that will be read: Track, Artist, Album, Title, Length. Any of
+        these may be not present in the returned dict.
+        """
         try:
-            info = mutagen.File(item.path)
+            info = mutagen.File(path)
             if isinstance(info, mutagen.mp3.MP3):
-                info = mutagen.easyid3.EasyID3(item.path)
+                # EasyID3 does not include the .info part, which contains
+                # the length; so save it from the MP3 object.
+                dot_info = info.info
+                info = mutagen.easyid3.EasyID3(path)
+                info.info = dot_info
             if info is None:
                 raise Exception, 'mutagen.File() returned None'
         except Exception, e:
             # Er, note that not only the above raise is catched here, since
             # mutagen.File() can raise exceptios as well. Wasn't obvious when I
             # revisited this code.
-            if item.path in str(e): # mutagen normally includes the path itself
+            if path in str(e): # mutagen normally includes the path itself
                 msg = 'could not read tags: %s' % e
             else:
-                msg = 'could not read tags from %s: %s' % (item.path, e)
+                msg = 'could not read tags from %s: %s' % (path, e)
             minirok.logger.warning(msg)
-            return
+            return {}
 
-        tags = self.tags(info)
-
-        if tags:
-            item.update_tags(tags)
-            item.update_display()
-
-    @staticmethod
-    def tags(info):
         tags = {}
+
         for column in [ 'Track', 'Artist', 'Album', 'Title' ]:
             if column == 'Track':
                 tag = 'tracknumber'
@@ -90,5 +103,10 @@ class TagReader(qt.QObject):
             except KeyError:
                 # tag is not present
                 pass
+
+        try:
+            tags['Length'] = round(info.info.length)
+        except AttributeError:
+            pass
 
         return tags

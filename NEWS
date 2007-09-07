@@ -1,9 +1,19 @@
 0.7	IN DEVELOPMENT
 
+  NEW FEATURES
+
+    * Calculate the length of tracks when loading them into the
+      playlist, instead of just when starting to play them, unless
+      reading of tags is disabled.
+
   BUGFIXES
 
     * When adding tracks to the queue while playing the last track in
       the playlist, the Next button would not get enabled.
+
+    * Then length of tracks is calculated with Mutagen instead of
+      GStreamer, which fixes several cases where GStreamer would get the
+      length wrong.
 
 
 0.6	2007-09-04
