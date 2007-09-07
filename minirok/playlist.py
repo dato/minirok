@@ -663,6 +663,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                     self.toggle_stop_after(item)
                 elif event.button() == qt.QEvent.RightButton:
                     self.toggle_enqueued(item)
+                elif event.button() == qt.QEvent.LeftButton:
+                    kdeui.KListView.eventFilter(self, object_, event)
             return True
 
         # Play/Pause when middle-click on the current playing track

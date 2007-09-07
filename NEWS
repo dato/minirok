@@ -15,6 +15,8 @@
       GStreamer, which fixes several cases where GStreamer would get the
       length wrong.
 
+    * Ctrl+LeftButtonClick works to select several items in the playlist.
+
 
 0.6	2007-09-04
 
