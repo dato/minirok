@@ -45,9 +45,6 @@ class StatusBar(kdeui.KStatusBar):
         self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
                 self.slot_start)
 
-        self.connect(minirok.Globals.playlist, qt.PYSIGNAL('end_of_stream'),
-                self.slot_stop)
-
         self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
