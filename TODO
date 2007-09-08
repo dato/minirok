@@ -12,6 +12,8 @@ Playlist:
   * Previous button behaves more like a "Back" button: does not go to
     the item above the current item, but to the item played right before
     (think queues and random mode).
+  * After clearing a search, the playlist scrolls to the top, which may
+    not show the current item as visible.
 
 UI:
   * connect track change / playlist change with statusbar and caption
