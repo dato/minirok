@@ -9,7 +9,7 @@ import kdeui
 import kdecore
 
 import minirok
-from minirok import left_side, preferences, right_side, statusbar, util
+from minirok import engine, left_side, preferences, right_side, statusbar, util
 
 ##
 
@@ -197,12 +197,35 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 ##
 
 class Systray(kdeui.KSystemTray):
-    """A KSysTray class that calls Play/Pause on middle button clicks."""
-
+    """A KSysTray class that calls Play/Pause on middle button clicks.
+    
+    It will also show the currently played track in its tooltip.
+    """
     def __init__(self, *args):
         kdeui.KSystemTray.__init__(self, *args)
         self.setPixmap(self.loadIcon('minirok'))
         self.installEventFilter(self)
+
+        self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
+                self.slot_set_tooltip)
+
+        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+                self.slot_engine_status_changed)
+
+    def slot_set_tooltip(self):
+        tags = minirok.Globals.playlist.currently_playing
+        if tags:
+            title = tags.get('Title', '')
+            artist = tags.get('Artist', '')
+            if artist and title:
+                artist += ' - '
+            if artist or title:
+                qt.QToolTip.remove(self)
+                qt.QToolTip.add(self, artist + title)
+
+    def slot_engine_status_changed(self, new_status):
+        if new_status == engine.State.STOPPED:
+            qt.QToolTip.remove(self)
 
     def eventFilter(self, object_, event):
         if (object_ == self

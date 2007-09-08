@@ -6,6 +6,9 @@
       playlist, instead of just when starting to play them, unless
       reading of tags is disabled.
 
+    * The systray icon will show the currently playing track as a
+      tooltip.
+
   BUGFIXES
 
     * When adding tracks to the queue while playing the last track in
