@@ -17,6 +17,9 @@
 
     * Ctrl+LeftButtonClick works to select several items in the playlist.
 
+    * Exit the engine thread cleanly, so that there are no unhandled
+      exceptions when quitting.
+
 
 0.6	2007-09-04
 

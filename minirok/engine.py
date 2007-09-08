@@ -39,7 +39,8 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def __init__(self):
         qt.QObject.__init__(self)
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+
+        self.exit_engine = threading.Event() # join() sets this
 
         self._supported_extensions = []
         for plugin, extensions in self.PLUGINS.items():
@@ -67,8 +68,13 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def run(self):
         loop = gobject.MainLoop()
         context = loop.get_context()
-        while True:
+        while not self.exit_engine.isSet():
             context.iteration(True)
+
+    def join(self, timeout=None):
+        """Call Thread.join(), setting self.exit_engine first."""
+        self.exit_engine.set()
+        threading.Thread.join(self, timeout)
 
     ##
 
