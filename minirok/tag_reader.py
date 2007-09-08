@@ -105,7 +105,7 @@ class TagReader(qt.QObject):
                 pass
 
         try:
-            tags['Length'] = round(info.info.length)
+            tags['Length'] = int(info.info.length)
         except AttributeError:
             pass
 
