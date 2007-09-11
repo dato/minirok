@@ -259,16 +259,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def slot_remove_selected(self): # not connected, but hey
-        iterator = qt.QListViewItemIterator(self,
-                qt.QListViewItemIterator.Selected)
-
-        # Iterating through the iterator, calling takeItem() on each
+        # NB: Iterating through an iterator, calling takeItem() on each
         # iterator.current() does not work: not all items get removed.
-        # Make a list of the selected items first, and iterate over it.
-        items = []
-        while iterator.current():
-            items.append(iterator.current())
-            iterator += 1
+        items = self.selected_items()
 
         if not items:
             return
@@ -484,6 +477,18 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             while item:
                 self.random_queue.append(item)
                 item = item.nextSibling()
+
+    def selected_items(self):
+        """Return the items that are part of the current selection."""
+        iterator = qt.QListViewItemIterator(self,
+                qt.QListViewItemIterator.Selected)
+
+        items = []
+        while iterator.current():
+            items.append(iterator.current())
+            iterator += 1
+
+        return items
 
     ##
 
