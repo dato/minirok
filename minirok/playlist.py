@@ -398,8 +398,18 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         popup = kdeui.KPopupMenu()
         popup.setCheckable(True)
 
-        popup.insertItem('Enqueue track', 0)
-        popup.setItemChecked(0, bool(item in self.queue))
+        selected_items = self.selected_items()
+
+        if not selected_items: # what gives?
+            selected_items = [ item ]
+        else:
+            assert item in selected_items
+
+        if len(selected_items) == 1:
+            popup.insertItem('Enqueue track', 0)
+            popup.setItemChecked(0, bool(item in self.queue))
+        else:
+            popup.insertItem('Enqueue/Dequeue tracks', 0)
 
         popup.insertItem('Stop playing after this track', 1)
         popup.setItemChecked(1, bool(item == self.stop_after))
@@ -407,7 +417,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         selected = popup.exec_loop(qt.QCursor.pos())
 
         if selected == 0:
-            self.toggle_enqueued(item)
+            for item in selected_items:
+                self.toggle_enqueued(item)
         elif selected == 1:
             self.toggle_stop_after(item)
 

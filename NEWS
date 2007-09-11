@@ -23,6 +23,8 @@
     * Exit the engine thread cleanly, so that there are no unhandled
       exceptions when quitting.
 
+    * The contextual menu can handle enqueueing several tracks at once.
+
 
 0.6	2007-09-04
 
