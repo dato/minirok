@@ -158,6 +158,7 @@ class Globals(object):
 
         * Globals.engine
         * Globals.playlist
+        * Globals.preferences
         * Globals.action_collection
         * Globals.config()
     """
