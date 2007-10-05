@@ -98,7 +98,6 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     ##
 
     def play(self, path):
-        """Start playing "path", returning its length in seconds."""
         self.uri = 'file://' + os.path.abspath(path)
         self.bin.set_property('uri', self.uri)
         self.bin.set_state(gst.STATE_NULL)
