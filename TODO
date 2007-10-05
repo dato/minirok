@@ -14,7 +14,6 @@ Playlist:
     (think queues and random mode).
   * After clearing a search, the playlist scrolls to the top, which may
     not show the current item as visible.
-  * Add crop function.
 
 UI:
   * connect track change / playlist change with statusbar and caption

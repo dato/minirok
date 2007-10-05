@@ -258,11 +258,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.clear()
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
-    def slot_remove_selected(self): # not connected, but hey
-        # NB: Iterating through an iterator, calling takeItem() on each
-        # iterator.current() does not work: not all items get removed.
-        items = self.selected_items()
-
+    def remove_items(self, items):
         if not items:
             return
 
@@ -414,6 +410,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         popup.insertItem('Stop playing after this track', 1)
         popup.setItemChecked(1, bool(item == self.stop_after))
 
+        popup.insertItem('Crop tracks', 2)
+
         selected = popup.exec_loop(qt.QCursor.pos())
 
         if selected == 0:
@@ -421,6 +419,8 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 self.toggle_enqueued(item)
         elif selected == 1:
             self.toggle_stop_after(item)
+        elif selected == 2:
+            self.remove_items(self.unselected_items())
 
     def slot_toggle_stop_after_current(self):
         self.toggle_stop_after(self._currently_playing or self.current_item)
@@ -489,10 +489,9 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 self.random_queue.append(item)
                 item = item.nextSibling()
 
-    def selected_items(self):
-        """Return the items that are part of the current selection."""
-        iterator = qt.QListViewItemIterator(self,
-                qt.QListViewItemIterator.Selected)
+    def select_items_helper(self, iterator_flags):
+        """Return a list of items that match iterator_flags."""
+        iterator = qt.QListViewItemIterator(self, iterator_flags)
 
         items = []
         while iterator.current():
@@ -500,6 +499,12 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             iterator += 1
 
         return items
+
+    def selected_items(self):
+        return self.select_items_helper(qt.QListViewItemIterator.Selected)
+
+    def unselected_items(self):
+        return self.select_items_helper(qt.QListViewItemIterator.Unselected)
 
     ##
 
@@ -695,7 +700,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def keyPressEvent(self, event):
         if event.key() == qt.QEvent.Key_Delete:
-            self.slot_remove_selected()
+            self.remove_items(self.selected_items())
         else:
             return kdeui.KListView.keyPressEvent(self, event)
 

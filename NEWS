@@ -9,6 +9,9 @@
     * The systray icon will show the currently playing track as a
       tooltip.
 
+    * New function in the context menu to crop selected tracks, that is,
+      to remove from the playlist all tracks except those selected.
+
   BUGFIXES
 
     * When adding tracks to the queue while playing the last track in
