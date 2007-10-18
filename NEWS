@@ -12,6 +12,8 @@
     * New function in the context menu to crop selected tracks, that is,
       to remove from the playlist all tracks except those selected.
 
+    * The context menu can handle enqueueing several tracks at once.
+
   BUGFIXES
 
     * When adding tracks to the queue while playing the last track in
@@ -25,8 +27,6 @@
 
     * Exit the engine thread cleanly, so that there are no unhandled
       exceptions when quitting.
-
-    * The contextual menu can handle enqueueing several tracks at once.
 
 
 0.6	2007-09-04
