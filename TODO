@@ -35,6 +35,7 @@ Appearance:
     And, only in the Amarok classic theme, or always?
 
 Other:
+  * Shortcuts for random and repeat modes?
   * Save window position?, maybe use a meaningful size the first time
   * It'd be nice to have module and line numbers in logging output, but
     it doesn't seem to work.
