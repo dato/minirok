@@ -578,7 +578,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
         self.emit(qt.PYSIGNAL('list_changed'), ())
 
     def add_files_untrusted(self, files, clear_playlist=False):
-        """Add to the playlist those files that are playable."""
+        """Add to the playlist those files that exist and are playable."""
         if clear_playlist:
             self.slot_clear()
 
