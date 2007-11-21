@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# If $DEBIAN_PREFIX exists, it will be prepended to all locations.
+# If $DEBIAN_PREFIX is set, it will be prepended to all locations.
 # This is used when building the Debian package.
 
 set -e
