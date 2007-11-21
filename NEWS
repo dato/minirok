@@ -14,6 +14,9 @@
 
     * The context menu can handle enqueueing several tracks at once.
 
+    * Compatible with lastfmsubmitd 0.36, which introduced a new API;
+      compatibility with older versions (0.35) is maintained.
+
   BUGFIXES
 
     * When adding tracks to the queue while playing the last track in

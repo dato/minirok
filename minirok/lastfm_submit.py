@@ -7,7 +7,12 @@
 import time
 
 import qt
-import lastfm
+try:
+    import lastfm.client
+    _has_lastfm_client = True
+except ImportError:
+    import lastfm
+    _has_lastfm_client = False
 
 import minirok
 from minirok import engine, util
@@ -27,7 +32,11 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
 
         self.data = None
         self.timer = util.QTimerWithPause(self, 'lastfm timer')
-        self.config = lastfm.config.Config('lastfmsubmitd')
+
+        if _has_lastfm_client:
+            self.lastfm_client = lastfm.client.Client('minirok')
+        else:
+            self.spool_path = lastfm.config.Config('lastfmsubmitd').spool_path
 
         self.apply_preferences()
 
@@ -80,5 +89,8 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
     def slot_submit(self):
         if self.data is not None:
             self.data['time'] = time.gmtime()
-            lastfm.submit([self.data], self.config.spool_path)
+            if _has_lastfm_client:
+                self.lastfm_client.submit(self.data)
+            else:
+                lastfm.submit([self.data], self.spool_path)
             self.data = None
