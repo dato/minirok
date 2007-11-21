@@ -5,7 +5,7 @@ Maintainer: Adeodato Simó <dato@net.com.org.es>
 Build-Depends: debhelper, python, kdelibs4c2a
 Standards-Version: 3.7.2
 Homepage: http://chistera.yi.org/~adeodato/code/minirok
-XS-VCS-Bzr: http://chistera.yi.org/~adeodato/code/minirok/minirok.stable
+XS-Vcs-Bzr: http://chistera.yi.org/~adeodato/code/minirok/minirok.stable
 
 Package: minirok
 Architecture: all
