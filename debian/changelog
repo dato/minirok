@@ -5,6 +5,8 @@ minirok (0.7-1) unstable; urgency=low
   * Remove lintian overrides for minirok_append.desktop, now that lintian
     knows it shouldn't complain in this case.
 
+  * Add a Homepage field.
+
  -- Adeodato Simó <dato@net.com.org.es>  Wed, 21 Nov 2007 20:02:55 +0100
 
 minirok (0.6-1) unstable; urgency=low
