@@ -14,6 +14,7 @@ password = XXX
 [paths]
 log = /home/you/.lastfm/log
 spool = /home/you/.lastfm/spool
+pidfile = /home/you/.lastfm/pid
 
     % chmod 600 ~/.lastfmsubmitd.conf
     % ln -s /usr/bin/lastfmsubmitd ~/.kde/Autostart
