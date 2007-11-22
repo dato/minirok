@@ -16,6 +16,8 @@ Playlist:
     (think queues and random mode).
   * After clearing a search, the playlist scrolls to the top, which may
     not show the current item as visible.
+  * Limiting the search, and removing all visible items, removes all
+    non-visible items in between.
 
 UI:
   * connect track change / playlist change with statusbar and caption
