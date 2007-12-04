@@ -16,7 +16,7 @@ filesystem_encoding = sys.getfilesystemencoding()
 
 __appname__     = 'minirok'
 __progname__    = 'Minirok'
-__version__     = '0.7'
+__version__     = '0.8~dev'
 __description__ = 'A small music player written in Python'
 __copyright__   = 'Copyright (c) 2007 Adeodato Simó'
 __homepage__    = 'http://chistera.yi.org/~adeodato/code/minirok'
