@@ -1,5 +1,10 @@
 0.8	IN DEVELOPMENT
 
+  IMPROVEMENTS
+
+    * Key shortcuts for toggling random mode (Ctrl+R by default) and
+      cycling through possible repeat modes (Ctrl+T).
+
 
 0.7	2007-11-21
 

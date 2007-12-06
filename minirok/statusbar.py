@@ -48,6 +48,15 @@ class StatusBar(kdeui.KStatusBar):
         self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
+        # Actions
+        self.action_next_repeat_mode = kdeui.KAction('Change repeat mode',
+                kdecore.KShortcut('Ctrl+T'), self.repeat.mousePressEvent,
+                minirok.Globals.action_collection, 'action_next_repeat_mode')
+
+        self.action_toggle_random_mode = kdeui.KAction('Toggle random mode',
+                kdecore.KShortcut('Ctrl+R'), self.random.mousePressEvent,
+                minirok.Globals.action_collection, 'action_toggle_random_mode')
+
     def slot_update(self):
         self.elapsed = minirok.Globals.engine.get_position()
         self.remaining = self.length - self.elapsed
@@ -135,7 +144,7 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
 
         self.mousePressEvent(None)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event=None):
         self.state += 1
 
         if self.state >= len(self.icons):
