@@ -50,10 +50,12 @@ class StatusBar(kdeui.KStatusBar):
 
         # Actions
         self.action_next_repeat_mode = kdeui.KAction('Change repeat mode',
+                qt.QIconSet(util.get_png('repeat_track_small')),
                 kdecore.KShortcut('Ctrl+T'), self.repeat.mousePressEvent,
                 minirok.Globals.action_collection, 'action_next_repeat_mode')
 
         self.action_toggle_random_mode = kdeui.KAction('Toggle random mode',
+                qt.QIconSet(util.get_png('random_small')),
                 kdecore.KShortcut('Ctrl+R'), self.random.mousePressEvent,
                 minirok.Globals.action_collection, 'action_toggle_random_mode')
 
