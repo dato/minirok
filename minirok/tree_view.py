@@ -21,7 +21,7 @@ class TreeView(kdeui.KListView):
         kdeui.KListView.__init__(self, *args)
         self.root = None
         self.timer = qt.QTimer(self, 'tree view timer')
-        self.iterator = None
+        self.populate_pending = None
         self.empty_directories = set()
         self.automatically_opened = set()
 
@@ -115,25 +115,28 @@ class TreeView(kdeui.KListView):
         self.timer.start(0, False) # False: not one-shot
 
     def slot_populate_one(self):
-        if self.iterator is None:
+        def _directory_children(parent):
+            return _get_children(parent, lambda x: x.IS_DIR)
+
+        if self.populate_pending is None:
             self.setUpdatesEnabled(False)
             self.emit(qt.PYSIGNAL('scan_in_progress'), (True,))
-            self.iterator = qt.QListViewItemIterator(self)
+            self.populate_pending = _directory_children(self)
 
-        item = self.iterator.current()
-
-        if item is not None:
-            item.populate()
-            self.iterator += 1
-        else:
+        try:
+            item = self.populate_pending.pop(0)
+        except IndexError:
             self.timer.stop()
-            self.iterator = None
+            self.populate_pending = None
             self.setUpdatesEnabled(True)
             self.repaint()
             for item in self.empty_directories:
                 (item.parent() or self).takeItem(item)
                 del item # necessary?
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
+        else:
+            item.populate()
+            self.populate_pending.extend(_directory_children(item))
 
     def slot_search_finished(self, null_search):
         """Open the visible items, closing items opened in the previous search.
@@ -205,9 +208,6 @@ class TreeViewItem(kdeui.KListViewItem):
         self.dirname, self.filename = os.path.split(path)
         kdeui.KListViewItem.__init__(self, parent,
                 util.unicode_from_path(self.filename))
-
-    def populate(self):
-        pass
 
     def compare(self, other, column, asc):
         """Sorts directories before files, and by filename after that."""

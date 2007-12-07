@@ -5,6 +5,12 @@
     * Key shortcuts for toggling random mode (Ctrl+R by default) and
       cycling through possible repeat modes (Ctrl+T).
 
+  OTHER CHANGES
+
+    * Make the creation of the tree view faster by avoding lots of
+      useless calls to slot_populate_one() when iterator.current() is a
+      FileItem and not a DirectoryItem.
+
 
 0.7	2007-11-21
 
