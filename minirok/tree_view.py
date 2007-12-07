@@ -133,6 +133,7 @@ class TreeView(kdeui.KListView):
             for item in self.empty_directories:
                 (item.parent() or self).takeItem(item)
                 del item # necessary?
+            self.empty_directories.clear()
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
         else:
             item.populate()
