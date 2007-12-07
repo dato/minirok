@@ -166,22 +166,14 @@ class TreeView(kdeui.KListView):
 
         ##
 
-        def _visible_children(toplevel):
-            visible_children = []
-            item = toplevel.firstChild()
-            while item:
-                if item.isVisible():
-                    visible_children.append(item)
-                item = item.nextSibling()
-            return visible_children
-
-        pending = _visible_children(self)
+        is_visible = lambda x: x.isVisible()
+        pending = _get_children(self, is_visible)
         toplevel_count = len(pending)
         i = 0
         while pending:
             i += 1
             item = pending.pop(0)
-            visible_children = _visible_children(item)
+            visible_children = _get_children(item, is_visible)
             if ((i <= toplevel_count or len(visible_children) <= 5)
                     and not item.isOpen()):
                 item.setOpen(True)
@@ -367,3 +359,19 @@ def _populate_tree(parent, directory):
         while parent:
             listview.empty_directories.discard(parent)
             parent = parent.parent()
+
+def _get_children(toplevel, filter_func=None):
+    """Returns a filtered list of all direct children of toplevel.
+    
+    :param filter_func: Only include children for which this function returns
+        true. If None, all children will be returned.
+    """
+    children = []
+    item = toplevel.firstChild()
+
+    while item:
+        if filter_func is None or filter_func(item):
+            children.append(item)
+        item = item.nextSibling()
+
+    return children
