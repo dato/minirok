@@ -5,8 +5,6 @@ Tree View:
     file tree with inotify instead)
   * Remove artifacts in the pointer when dragging (display file count?)
   * Use a regex as well to control the appearance of file names?
-  * If dropping while holding down Control, append instead of inserting
-    (like in Amarok)
 
 Playlist:
   * Undo/redo?

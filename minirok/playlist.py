@@ -235,6 +235,10 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def slot_accept_drop(self, event, prev_item):
         if event.source() != self.viewport(): # XXX
+            # If Control is pressed, we want to append at the end:
+            kapp = kdecore.KApplication.kApplication()
+            if kapp.keyboardMouseState() & qt.Qt.ControlButton:
+                prev_item = self.lastItem()
             files = drag.FileListDrag.file_list(event)
             self.add_files(files, prev_item)
 
