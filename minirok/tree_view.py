@@ -333,6 +333,8 @@ def _populate_tree(parent, directory):
     
     It updates TreeView's empty_directories set as appropriate.
     """
+    prune_this_parent = True
+
     try:
         files = os.listdir(directory)
     except OSError, e:
@@ -344,8 +346,6 @@ def _populate_tree(parent, directory):
     except AttributeError:
         listview = parent
 
-    has_children = False
-
     for filename in files:
         path = os.path.join(directory, filename)
         if os.path.isdir(path):
@@ -353,9 +353,9 @@ def _populate_tree(parent, directory):
             listview.empty_directories.add(item)
         elif minirok.Globals.engine.can_play(path):
             FileItem(parent, path)
-            has_children = True
+            prune_this_parent = False
 
-    if has_children:
+    if not prune_this_parent:
         while parent:
             listview.empty_directories.discard(parent)
             parent = parent.parent()
