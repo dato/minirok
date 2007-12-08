@@ -260,7 +260,6 @@ class DirectoryItem(TreeViewItem):
             return
         else:
             if self._mtime != mtime:
-                if self._mtime != -1:
                 self._mtime = mtime
                 self._populated = False
             else:
