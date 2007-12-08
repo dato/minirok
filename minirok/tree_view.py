@@ -126,6 +126,9 @@ class TreeView(kdeui.KListView):
         _populate_tree(self, self.root)
         self.timer.start(0, False) # False: not one-shot
 
+    def slot_refresh(self):
+        self.slot_show_directory(self.root)
+
     def slot_populate_one(self):
         def _directory_children(parent):
             return _get_children(parent, lambda x: x.IS_DIR)

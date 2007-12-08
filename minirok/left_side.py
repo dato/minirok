@@ -23,8 +23,18 @@ class LeftSide(qt.QVBox):
         self.setSpacing(2)
 
         self.tree_search = tree_view.TreeViewSearchLineWidget(None, self, 'tree search')
-        self.path_combo = MyComboBox(self, 'path combo')
+        self.combo_toolbar = kdeui.KToolBar(self, 'combo toolbar')
         self.tree_view = tree_view.TreeView(self, 'tree view')
+
+        self.path_combo = MyComboBox(self.combo_toolbar, 'path combo')
+        self.combo_toolbar.insertWidget(0, 0, self.path_combo)
+        self.combo_toolbar.setItemAutoSized(0)
+        self.combo_toolbar.setIconSize(16)
+
+        self.action_refresh = kdeui.KAction('Refresh tree view', 'reload',
+                kdecore.KShortcut('F5'), self.tree_view.slot_refresh,
+                minirok.Globals.action_collection, 'action_refresh')
+        self.action_refresh.plug(self.combo_toolbar)
 
         # the widgets in KListViewSearchLineWidget are created via a slot fired
         # by a QTimer::singleShot(0ms), so the contained KListViewSearchLine

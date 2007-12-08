@@ -1,8 +1,6 @@
 (This list is obviosly not complete, just here to not forget of these.)
 
 Tree View:
-  * Button/context menu to refresh the tree view? (Or be able to monitor
-    file tree with inotify instead)
   * Remove artifacts in the pointer when dragging (display file count?)
   * Use a regex as well to control the appearance of file names?
   * If dropping while holding down Control, append instead of inserting
