@@ -117,6 +117,7 @@ class TreeView(kdeui.KListView):
         if directory != self.root or self.populate_pending is not None:
             # Not refreshing
             self.clear()
+            self.populate_pending = None
             self.empty_directories.clear()
             self.automatically_opened.clear()
             self.setUpdatesEnabled(True) # can be unset if not finished populating
