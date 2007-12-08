@@ -104,13 +104,24 @@ class TreeView(kdeui.KListView):
                 and minirok.Globals.engine.status == engine.State.STOPPED):
             minirok.Globals.action_collection.action('action_play').activate()
 
+    ##
+
     def slot_show_directory(self, directory):
-        """Changes the TreeView root to the specified directory."""
-        self.clear()
-        self.empty_directories.clear()
-        self.automatically_opened.clear()
-        self.setUpdatesEnabled(True) # can be unset if not finished populating
-        self.root = util.kurl_to_path(directory)
+        """Changes the TreeView root to the specified directory.
+        
+        If directory is the current root and there is no ongoing scan, a simple
+        refresh will be performed instead.
+        """
+        directory = util.kurl_to_path(directory)
+
+        if directory != self.root or self.populate_pending is not None:
+            # Not refreshing
+            self.clear()
+            self.empty_directories.clear()
+            self.automatically_opened.clear()
+            self.setUpdatesEnabled(True) # can be unset if not finished populating
+            self.root = directory
+
         _populate_tree(self, self.root)
         self.timer.start(0, False) # False: not one-shot
 
@@ -231,11 +242,30 @@ class DirectoryItem(TreeViewItem):
 
     def __init__(self, parent, path):
         TreeViewItem.__init__(self, parent, path)
+        self._mtime = -1
         self._populated = False
         self.setExpandable(True)
 
     def populate(self):
-        """Populate the entry with children, one level deep."""
+        """Populate the entry with children, one level deep.
+        
+        This method will only re-read directory contents from the filesystem
+        if the mtime of the directory is different to the mtime when they were
+        last read.
+        """
+        try:
+            mtime = os.stat(self.path).st_mtime
+        except OSError, e:
+            minirok.logger.warn('cout not stat: %s', e)
+            return
+        else:
+            if self._mtime != mtime:
+                if self._mtime != -1:
+                self._mtime = mtime
+                self._populated = False
+            else:
+                return
+
         if not self._populated:
             _populate_tree(self, self.path)
             self._populated = True
@@ -332,16 +362,37 @@ class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
 def _populate_tree(parent, directory):
     """A helper function to populate either a TreeView or a DirectoryItem.
     
+    If parent already contains children, it will be just refreshed, keeping as
+    many existing children as possible.
+
     It updates TreeView's empty_directories set as appropriate.
     """
     prune_this_parent = True
 
+    # Get contents of directory
     try:
-        files = os.listdir(directory)
+        files = set(os.listdir(directory))
     except OSError, e:
         minirok.logger.warn('could not list directory: %s', e)
         return
 
+    # Check filesystem contents against existing children
+    # TODO What's up with prune_this_parent when refreshing.
+    children = _get_children(parent)
+    if children:
+        # map { basename: item }, to compare with files
+        mapping = dict((os.path.basename(i.path), i) for i in children)
+        keys = set(mapping.keys())
+        common = files & keys
+
+        # Remove items no longer found in the filesystem
+        for k in keys - common:
+            parent.takeItem(mapping[k])
+
+        # Do not re-add items already in the tree view
+        files -= common
+
+    # Pointer to parent's listView (for empty_directories)
     try:
         listview = parent.listView()
     except AttributeError:

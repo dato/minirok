@@ -1,5 +1,11 @@
 0.8	IN DEVELOPMENT
 
+  NEW FEATURES
+
+    * The tree view can now quickly scan for changes in the filesystem
+      (via a new Refresh button), instead of having to re-read all
+      directory contents.
+
   IMPROVEMENTS
 
     * Key shortcuts for toggling random mode (Ctrl+R by default) and
