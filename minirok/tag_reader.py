@@ -6,6 +6,7 @@
 
 import qt
 import mutagen
+import mutagen.id3
 import mutagen.mp3
 import mutagen.easyid3
 
@@ -70,12 +71,16 @@ class TagReader(qt.QObject):
         try:
             info = mutagen.File(path)
             if isinstance(info, mutagen.mp3.MP3):
-                # EasyID3 does not include the .info part, which contains
-                # the length; so save it from the MP3 object.
+                # We really want an EasyID3 object, so we re-read the tags now.
+                # Alas, EasyID3 does not include the .info part, which contains
+                # the length, so we save it from the MP3 object.
                 dot_info = info.info
-                info = mutagen.easyid3.EasyID3(path)
+                try:
+                    info = mutagen.easyid3.EasyID3(path)
+                except mutagen.id3.ID3NoHeaderError:
+                    info = mutagen.easyid3.EasyID3()
                 info.info = dot_info
-            if info is None:
+            elif info is None:
                 raise Exception, 'mutagen.File() returned None'
         except Exception, e:
             # Er, note that not only the above raise is catched here, since

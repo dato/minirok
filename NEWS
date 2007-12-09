@@ -11,6 +11,12 @@
     * Key shortcuts for toggling random mode (Ctrl+R by default) and
       cycling through possible repeat modes (Ctrl+T).
 
+  BUGFIXES
+
+    * Does not discard length information for MP3 files without any ID3
+      tags; formerly, the length for such files would always be reported
+      as 0:00.
+
   OTHER CHANGES
 
     * Make the creation of the tree view faster by avoding lots of
