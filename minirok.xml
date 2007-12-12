@@ -73,6 +73,12 @@
       track. To do this, select "Stop playing after this track" in the
       contextual menu as above, or press Control + MiddleButtonClick.
     </para>
+    <para>
+      If you make changes to the filesystem, you can quickly refresh the
+      tree view by clicking on the refresh button next to the combo box
+      with the directory name. A key can be also configurated to do
+      this, F5 by default.
+    </para>
   </refsect1>
   
   <refsect1>
