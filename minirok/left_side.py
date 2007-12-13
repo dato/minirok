@@ -57,22 +57,11 @@ class LeftSide(qt.QVBox):
                              qt.SIGNAL('returnPressed(const QString &)'),
                              self.tree_view.slot_append_visible))
 
-        ##
-
         self.connect(self.tree_view, qt.PYSIGNAL('scan_in_progress'),
                 self.tree_search.slot_scan_in_progress)
 
-        self.connect(self.path_combo, qt.SIGNAL('urlActivated(const KURL &)'),
+        self.connect(self.path_combo, qt.PYSIGNAL('new_directory_selected'),
                 self.tree_view.slot_show_directory)
-
-        self.connect(self.path_combo, qt.SIGNAL('urlActivated(const KURL &)'),
-                self.path_combo.slot_url_changed)
-
-        self.connect(self.path_combo, qt.SIGNAL('returnPressed(const QString &)'),
-                self.tree_view.slot_show_directory)
-
-        self.connect(self.path_combo, qt.SIGNAL('returnPressed(const QString &)'),
-                self.path_combo.slot_url_changed)
 
         ##
 
@@ -106,6 +95,12 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
         urls = config.readPathListEntry(self.CONFIG_HISTORY_OPTION)
         self.setURLs(urls)
 
+        self.connect(self, qt.SIGNAL('urlActivated(const KURL &)'),
+                self.slot_url_changed)
+
+        self.connect(self, qt.SIGNAL('returnPressed(const QString &)'),
+                self.slot_url_changed)
+
     def slot_focus(self):
         self.setFocus()
         self.lineEdit().selectAll()
@@ -120,6 +115,7 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
         urls.remove(url)
         urls.prepend(url)
         self.setURLs(urls, kfile.KURLComboBox.RemoveBottom)
+        self.emit(qt.PYSIGNAL('new_directory_selected'), (util.kurl_to_path(url),))
 
     def slot_save_config(self):
         config = minirok.Globals.config(self.CONFIG_SECTION)

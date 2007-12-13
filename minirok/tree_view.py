@@ -112,8 +112,6 @@ class TreeView(kdeui.KListView):
         If directory is the current root and there is no ongoing scan, a simple
         refresh will be performed instead.
         """
-        directory = util.kurl_to_path(directory)
-
         if directory != self.root or self.populate_pending is not None:
             # Not refreshing
             self.clear()
