@@ -78,8 +78,8 @@ class LeftSide(qt.QVBox):
         ##
 
         if self.path_combo.currentText():
-            # This can't go in the MyComboBox constructor because the TreeView
-            # does not exist yet.
+            # This can't go in the MyComboBox constructor because the signals
+            # are not connected yet at that time.
             self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
                     (self.path_combo.currentText(),))
         else:
