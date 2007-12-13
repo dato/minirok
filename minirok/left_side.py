@@ -36,6 +36,10 @@ class LeftSide(qt.QVBox):
                 minirok.Globals.action_collection, 'action_refresh')
         self.action_refresh.plug(self.combo_toolbar)
 
+        self.action_focus_path_combo = kdeui.KAction('Focus path combo',
+                kdecore.KShortcut('Alt+O'), self.path_combo.slot_focus,
+                minirok.Globals.action_collection, 'action_path_combo_focus')
+
         # the widgets in KListViewSearchLineWidget are created via a slot fired
         # by a QTimer::singleShot(0ms), so the contained KListViewSearchLine
         # widget cannot be accessed until then; have to use a QTimer as well.
@@ -43,9 +47,15 @@ class LeftSide(qt.QVBox):
         qt.QTimer.singleShot(0, lambda:
                 self.tree_search.searchLine().setListView(self.tree_view))
 
-        self.action_focus_path_combo = kdeui.KAction('Focus path combo',
-                kdecore.KShortcut('Alt+O'), self.path_combo.slot_focus,
-                minirok.Globals.action_collection, 'action_path_combo_focus')
+        qt.QTimer.singleShot(0, lambda:
+                self.connect(self.tree_search.searchLine(),
+                             qt.PYSIGNAL('search_finished'),
+                             self.tree_view.slot_search_finished))
+
+        qt.QTimer.singleShot(0, lambda:
+                self.connect(self.tree_search.searchLine(),
+                             qt.SIGNAL('returnPressed(const QString &)'),
+                             self.tree_view.slot_append_visible))
 
         ##
 
@@ -63,17 +73,6 @@ class LeftSide(qt.QVBox):
 
         self.connect(self.path_combo, qt.SIGNAL('returnPressed(const QString &)'),
                 self.path_combo.slot_url_changed)
-
-        # same comment as above applies
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.tree_search.searchLine(),
-                             qt.PYSIGNAL('search_finished'),
-                             self.tree_view.slot_search_finished))
-
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.tree_search.searchLine(),
-                             qt.SIGNAL('returnPressed(const QString &)'),
-                             self.tree_view.slot_append_visible))
 
         ##
 
