@@ -48,8 +48,9 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         ac = self.actionCollection()
 
         # File menu
-        self.action_open_directory = kdeui.KStdAction.open(self.slot_open_directory, ac)
-        self.action_open_directory.setText('Open directory...')
+        self.action_open_directory = kdeui.KAction('Open directory...',
+                'fileopen', kdecore.KShortcut('Ctrl+F'),
+                self.slot_open_directory, ac, 'action_open_directory')
         self.action_quit = kdeui.KStdAction.quit(self.slot_really_quit, ac)
 
         # Settings menu
