@@ -11,6 +11,10 @@
     * Key shortcuts for toggling random mode (Ctrl+R by default) and
       cycling through possible repeat modes (Ctrl+T).
 
+    * Make the creation of the tree view faster by avoding lots of
+      useless calls to slot_populate_one() when iterator.current() is a
+      FileItem and not a DirectoryItem.
+
   BUGFIXES
 
     * Does not discard length information for MP3 files without any ID3
@@ -18,10 +22,6 @@
       as 0:00.
 
   OTHER CHANGES
-
-    * Make the creation of the tree view faster by avoding lots of
-      useless calls to slot_populate_one() when iterator.current() is a
-      FileItem and not a DirectoryItem.
 
     * Improve the handling of non existing directories in the tree view
       combo box.
