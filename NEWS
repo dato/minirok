@@ -6,6 +6,10 @@
       (via a new Refresh button), instead of having to re-read all
       directory contents.
 
+    * New action "Open directory" in the File menu to select with a
+      dialog the directory to load in the tree view, instead of having
+      to type it (particularly since completion does not work in PyKDE).
+
   IMPROVEMENTS
 
     * Key shortcuts for toggling random mode (Ctrl+R by default) and

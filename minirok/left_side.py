@@ -103,6 +103,15 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
         self.connect(self, qt.SIGNAL('returnPressed(const QString &)'),
                 self.slot_url_changed)
 
+    def set_url(self, url):
+        """Public function to set an URL in the combo box.
+
+        Using this function rather than setCurrentText() saves you from having
+        to manually emit an urlActivated() or similar signal.
+        """
+        self.setCurrentText(url)
+        self.slot_url_changed(url)
+
     def slot_focus(self):
         self.setFocus()
         self.lineEdit().selectAll()

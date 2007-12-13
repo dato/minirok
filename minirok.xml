@@ -48,11 +48,12 @@
     </para>
     <para>
       To reproduce music, first type in the combo box at the left the
-      directory where music is located, and press enter. Available audio
-      files will be shown in a tree structure. Locate the files you want
-      to play, and use drag and drop to append them to the playlist in
-      the right. You can also press double click in a file or a folder
-      to append it to the existing playlist.
+      directory where music is located, and press enter, or select "Open
+      directory" from the File menu. Available audio files will be shown
+      in a tree structure. Locate the files you want to play, and use
+      drag and drop to append them to the playlist in the right. You can
+      also press double click in a file or a folder to append it to the
+      existing playlist.
     </para>
     <para>
       Both the tree view and the playlist have search line widgets above

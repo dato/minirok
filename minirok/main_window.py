@@ -6,6 +6,7 @@
 
 import qt
 import kdeui
+import kfile
 import kdecore
 
 import minirok
@@ -47,6 +48,8 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         ac = self.actionCollection()
 
         # File menu
+        self.action_open_directory = kdeui.KStdAction.open(self.slot_open_directory, ac)
+        self.action_open_directory.setText('Open directory...')
         self.action_quit = kdeui.KStdAction.quit(self.slot_really_quit, ac)
 
         # Settings menu
@@ -83,6 +86,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
     def init_menus(self):
         file_menu = qt.QPopupMenu(self)
+        self.action_open_directory.plug(file_menu)
         self.action_quit.plug(file_menu)
         self.menuBar().insertItem('&File', file_menu)
 
@@ -146,6 +150,20 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
             lv.setAlternateBackground(alternate_bg_color)
 
     ##
+
+    def slot_open_directory(self):
+        """Open a dialog to select a directory, and set it in the tree view."""
+        # NOTE: Not using KFileDialog.getExistingDirectory() here, because
+        # it pops up just a tree view which I don't find very useable.
+        current = qt.QString(self.left_side.path_combo.urls().first())
+        dialog = kfile.KFileDialog(current, 'Directories', self,
+                'open directory dialog', True)
+        dialog.setCaption('Open directory')
+        dialog.setMode(kfile.KFile.Directory)
+        dialog.exec_loop()
+        directory = dialog.selectedFile()
+        if directory:
+            self.left_side.path_combo.set_url(directory)
 
     def slot_really_quit(self):
         self._flag_really_quit = True
