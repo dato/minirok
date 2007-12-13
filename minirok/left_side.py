@@ -4,6 +4,8 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import os
+
 import qt
 import kio
 import kfile
@@ -106,16 +108,19 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
         self.lineEdit().selectAll()
 
     def slot_url_changed(self, url):
-        # FIXME? if the user introduces a non-existant path, the first of the
-        # present URLs get selected instead (but not opened)
         if isinstance(url, kdecore.KURL):
-            # we need a QString
-            url = url.isLocalFile() and url.path() or url.prettyURL()
-        urls = self.urls()
-        urls.remove(url)
-        urls.prepend(url)
-        self.setURLs(urls, kfile.KURLComboBox.RemoveBottom)
-        self.emit(qt.PYSIGNAL('new_directory_selected'), (util.kurl_to_path(url),))
+            # We can only store QStrings
+            url = url.pathOrURL()
+
+        directory = util.kurl_to_path(url)
+
+        if os.path.isdir(directory):
+            urls = self.urls()
+            urls.remove(url)
+            urls.prepend(url)
+            self.setURLs(urls, kfile.KURLComboBox.RemoveBottom)
+
+        self.emit(qt.PYSIGNAL('new_directory_selected'), (directory,))
 
     def slot_save_config(self):
         config = minirok.Globals.config(self.CONFIG_SECTION)

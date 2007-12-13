@@ -23,6 +23,9 @@
       useless calls to slot_populate_one() when iterator.current() is a
       FileItem and not a DirectoryItem.
 
+    * Improve the handling of non existing directories in the tree view
+      combo box.
+
 
 0.7	2007-11-21
 
