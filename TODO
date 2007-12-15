@@ -38,5 +38,7 @@ Other:
   * Save window position?, maybe use a meaningful size the first time
   * It'd be nice to have module and line numbers in logging output, but
     it doesn't seem to work.
+  * Tag reader: real crap on e.g. my sshfs over wireless. Use a separate
+    thread after all, plus a "done" list?
 
 vi: sw=2
