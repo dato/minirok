@@ -16,7 +16,7 @@ if [ "$DIST" = "UNRELEASED" ]; then
     sed -i -e "1s/ ($UPSTREAM_VERSION-/ ($TMP_UPSTREAM_VERSION-/" debian/changelog
     fakeroot debian/rules clean binary
     sed -i -e "1s/ ($TMP_UPSTREAM_VERSION-/ ($UPSTREAM_VERSION-/" debian/changelog
-    rm ../packages/minirok_$UPSTREAM_VERSION~r*deb
+    rm -f ../packages/minirok_$UPSTREAM_VERSION~r*deb
     mv ../minirok_$TMP_UPSTREAM_VERSION-1_all.deb ../packages
     echo http://chistera.yi.org/~adeodato/code/minirok/packages/minirok_$TMP_UPSTREAM_VERSION-1_all.deb
     exit 0
