@@ -241,7 +241,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     def slot_clear(self):
         self.queue[:] = []
         self.random_queue[:] = []
-        self.tag_reader.clear_queue()
+        self.tag_reader.worker.clear_queue()
 
         if self._currently_playing not in (self.FIRST_ITEM, None):
             # We don't want the currently playing item to be deleted,
@@ -264,7 +264,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         for item in items:
             self.takeItem(item)
-            self.tag_reader.dequeue(item)
+            self.tag_reader.worker.dequeue(item)
             self.toggle_enqueued(item, only_dequeue=True)
             try:
                 self.random_queue.remove(item)
@@ -624,7 +624,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         if self._regex_mode == 'Always' or (regex_failed
                 and self._regex_mode == 'OnRegexFail'):
-            self.tag_reader.queue(item)
+            self.tag_reader.worker.queue(item)
 
         return item
 

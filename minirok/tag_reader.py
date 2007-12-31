@@ -11,6 +11,7 @@ import mutagen.mp3
 import mutagen.easyid3
 
 import minirok
+from minirok import util
 
 ##
 
@@ -21,43 +22,18 @@ class TagReader(qt.QObject):
         qt.QObject.__init__(self)
 
         self.timer = qt.QTimer(self, 'tag reader timer')
-        self.connect(self.timer, qt.SIGNAL('timeout()'), self.update_one)
+        self.connect(self.timer, qt.SIGNAL('timeout()'), self.update_done)
 
-        self._queue = []
-
-    ##
-
-    def queue(self, item):
-        self._queue.append(item)
-        if len(self._queue) == 1:
-            self.timer.start(0, False) # False: not one-shot
-
-    def dequeue(self, item):
-        try:
-            self._queue.remove(item)
-        except ValueError:
-            pass
-
-        if len(self._queue) == 0:
-            self.timer.stop()
-
-    def clear_queue(self):
-        self._queue[:] = []
-        self.timer.stop()
+        self.worker = util.IOWorker(self, TagReader.tags)
+        self.worker.start()
 
     ##
 
-    def update_one(self):
-        item = self._queue.pop(0)
-
-        if len(self._queue) == 0:
-            self.timer.stop()
-
-        tags = self.tags(item.path)
-
-        if tags:
-            item.update_tags(tags)
-            item.update_display()
+    def update_done(self):
+        for item, tags in self.worker.pop_done():
+            if tags:
+                item.update_tags(tags)
+                item.update_display()
 
     ##
 
