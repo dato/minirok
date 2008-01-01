@@ -20,6 +20,8 @@ class StatusBar(kdeui.KStatusBar):
         kdeui.KStatusBar.__init__(self, *args)
 
         self.timer = util.QTimerWithPause(self, 'statusbar timer')
+        self.blink_timer = qt.QTimer(self, 'statusbar blink timer')
+        self.blink_timer_flag = True # used in slot_blink()
 
         self.repeat = RepeatLabel(self)
         self.random = RandomLabel(self)
@@ -41,6 +43,8 @@ class StatusBar(kdeui.KStatusBar):
         self.slot_stop()
 
         self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_update)
+
+        self.connect(self.blink_timer, qt.SIGNAL('timeout()'), self.slot_blink)
 
         self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
                 self.slot_start)
@@ -74,16 +78,29 @@ class StatusBar(kdeui.KStatusBar):
 
     def slot_stop(self):
         self.timer.stop()
+        self.blink_timer.stop()
         self.length = self.elapsed = self.remaining = 0
         self.slot_update()
 
     def slot_engine_status_changed(self, new_status):
         if new_status == engine.State.PAUSED:
             self.timer.pause()
+            self.blink_timer.start(750, False) # False: not single-shot
         elif new_status == engine.State.PLAYING:
             self.timer.resume()
+            self.blink_timer.stop()
         elif new_status == engine.State.STOPPED:
             self.slot_stop()
+
+    def slot_blink(self):
+        self.blink_timer_flag = not self.blink_timer_flag
+
+        if self.blink_timer_flag:
+            self.label1.update()
+            self.label2.update()
+        else:
+            self.label1.erase()
+            self.label2.erase()
 
 ##
 
