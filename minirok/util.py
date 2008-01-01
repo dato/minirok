@@ -194,7 +194,8 @@ class IOWorker(qt.QThread):
         """Create a worker.
 
         :param parent: The parent of this worker, from with we expect a "timer"
-            attribute (to start it whenever there are done items).
+            attribute (to start it whenever there are done items). The timer
+            will always be started with 0ms, and in single-shot mode.
 
         :param function: The I/O function to call on each item.path.
         """
@@ -231,7 +232,6 @@ class IOWorker(qt.QThread):
 
     @needs_lock('_mutex2')
     def pop_done(self):
-        self.parent.timer.stop()
         done = self._done[:]
         self._done[:] = []
         return done
@@ -267,6 +267,7 @@ class IOWorker(qt.QThread):
             self._mutex2.lock()
             try:
                 self._done.append((item, result))
-                self.parent.timer.start(0, False) # False: not one-shot
             finally:
                 self._mutex2.unlock()
+
+            self.parent.timer.start(0, True) # True: single-shot
