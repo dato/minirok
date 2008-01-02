@@ -18,7 +18,7 @@ __appname__     = 'minirok'
 __progname__    = 'Minirok'
 __version__     = '0.8~dev'
 __description__ = 'A small music player written in Python'
-__copyright__   = 'Copyright (c) 2007 Adeodato Simó'
+__copyright__   = 'Copyright (c) 2007-2008 Adeodato Simó'
 __homepage__    = 'http://chistera.yi.org/~adeodato/code/minirok'
 __bts__         = 'http://bugs.debian.org'
 __authors__     = [
@@ -31,7 +31,7 @@ __thanksto__    = [
 ]
 
 __license__ = '''\
-Minirok is Copyright (c) 2007 Adeodato Simó, and licensed under the
+Minirok is Copyright (c) 2007-2008 Adeodato Simó, and licensed under the
 terms of the MIT license:
 
   Permission is hereby granted, free of charge, to any person obtaining
