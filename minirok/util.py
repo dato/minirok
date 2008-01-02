@@ -263,9 +263,9 @@ class ThreadedWorker(qt.QThread):
 
             self._mutex.lock()
             try:
-                if item in self._queue:
+                try:
                     self._queue.remove(item)
-                else:
+                except ValueError:
                     continue
             finally:
                 self._mutex.unlock()
