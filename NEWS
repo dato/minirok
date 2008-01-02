@@ -22,6 +22,15 @@
       useless calls to slot_populate_one() when iterator.current() is a
       FileItem and not a DirectoryItem.
 
+    * Read ID3 tags in a separate thread, to improve UI responsiveness
+      when the audio files live in a network filesystem over a slow
+      network link, eg. sshfs over wireless.
+
+      (The same is planned for reading directory contents for the tree
+      view, probably once ported to Qt4, because I'm having trouble with
+      the main thread blocking when reading directory contents in a
+      separate thread, that seem solved in PyQt4.)
+
   BUGFIXES
 
     * Does not discard length information for MP3 files without any ID3

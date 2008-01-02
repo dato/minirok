@@ -169,3 +169,112 @@ class RandomOrderedList(list):
 
     def append(self, item):
         self.insert(random.randrange(len(self)+1), item)
+
+##
+
+def needs_lock(mutex_name):
+    """Helper decorator for ThreadedWorker."""
+    def decorator(function):
+        def wrapper(self, *args):
+            mutex = getattr(self, mutex_name)
+            mutex.lock()
+            try:
+                return function(self, *args)
+            finally:
+                mutex.unlock()
+        return wrapper
+    return decorator
+
+##
+
+class ThreadedWorker(qt.QThread):
+    """A thread that performs a given action on items in a queue.
+    
+    The thread consumes items from a queue, and stores pairs (item, result)
+    in a "done" queue. Whenever there are done items, the thread fires off a
+    QTimer, received in the constructor.
+    """
+    # XXX More generic would be to accept a callback function instead of a timer.
+    def __init__(self, function, timer=None):
+        """Create a worker.
+
+        :param function: The function to invoke on each item.
+
+        :param timer: The QTimer object to start to start whenever there are
+            done items. The timer will always be started with 0ms, and in
+            single-shot mode.
+        """
+        qt.QThread.__init__(self)
+
+        self._done = []
+        self._queue = []
+        self._mutex = qt.QMutex() # for _queue
+        self._mutex2 = qt.QMutex() # for _done
+        self._pending = qt.QWaitCondition()
+
+        self.timer = timer
+        self.function = function
+
+    ##
+
+    @needs_lock('_mutex')
+    def queue(self, item):
+        self._queue.append(item)
+        self._pending.wakeAll()
+
+    @needs_lock('_mutex')
+    def dequeue(self, item):
+        try:
+            self._queue.remove(item)
+        except ValueError:
+            pass                                                                                                                                                            
+
+    @needs_lock('_mutex')
+    @needs_lock('_mutex2')
+    def clear_queue(self):
+        self._done[:] = []
+        self._queue[:] = []
+
+    @needs_lock('_mutex2')
+    def pop_done(self):
+        done = self._done[:]
+        self._done[:] = []
+        return done
+
+    ##
+
+    def run(self):
+        while True:
+            self._mutex.lock()
+            try:
+                try:
+                    # We just don't pop() the item here, because after calling
+                    # self.function(), we'll want to check that the item is still
+                    # in the queue (that is, that the queue was not cleared in the
+                    # meantime).
+                    item = self._queue[0]
+                finally:
+                    self._mutex.unlock()
+            except IndexError:
+                self._pending.wait()
+                continue
+
+            result = self.function(item)
+
+            self._mutex.lock()
+            try:
+                try:
+                    self._queue.remove(item)
+                except ValueError:
+                    continue
+            finally:
+                self._mutex.unlock()
+
+            self._mutex2.lock()
+            try:
+                self._done.append((item, result))
+            finally:
+                self._mutex2.unlock()
+
+            if self.timer is not None:
+                self.timer.start(0, True) # True: single-shot
