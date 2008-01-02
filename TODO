@@ -38,7 +38,8 @@ Other:
   * Save window position?, maybe use a meaningful size the first time
   * It'd be nice to have module and line numbers in logging output, but
     it doesn't seem to work.
-  * Tag reader: real crap on e.g. my sshfs over wireless. Use a separate
-    thread after all, plus a "done" list?
+  * Read directory contents in a separate thread, as we do with tags.
+    But probably when ported to Qt4, see:
+      http://www.riverbankcomputing.com/pipermail/pyqt/2008-January/018103.html
 
 vi: sw=2
