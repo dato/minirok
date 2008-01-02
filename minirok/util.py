@@ -245,18 +245,19 @@ class ThreadedWorker(qt.QThread):
 
     def run(self):
         while True:
-            if len(self._queue) == 0:
-                self._pending.wait()
-
             self._mutex.lock()
             try:
-                # We just don't pop() the item here, because after calling
-                # self.function(), we'll want to check that the item is still
-                # in the queue (that is, that the queue was not cleared in the
-                # meantime).
-                item = self._queue[0]
-            finally:
-                self._mutex.unlock()
+                try:
+                    # We just don't pop() the item here, because after calling
+                    # self.function(), we'll want to check that the item is still
+                    # in the queue (that is, that the queue was not cleared in the
+                    # meantime).
+                    item = self._queue[0]
+                finally:
+                    self._mutex.unlock()
+            except IndexError:
+                self._pending.wait()
+                continue
 
             result = self.function(item)
 
