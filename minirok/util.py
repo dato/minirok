@@ -187,17 +187,22 @@ def needs_lock(mutex_name):
 
 ##
 
-class IOWorker(qt.QThread):
-    """A thread that performs I/O actions on QListviewItems."""
-
-    def __init__(self, parent, function):
+class ThreadedWorker(qt.QThread):
+    """A thread that performs a given action on items in a queue.
+    
+    The thread consumes items from a queue, and stores pairs (item, result)
+    in a "done" queue. Whenever there are done items, the thread fires off a
+    QTimer, received in the constructor.
+    """
+    # XXX More generic would be to accept a callback function instead of a timer.
+    def __init__(self, function, timer=None):
         """Create a worker.
 
-        :param parent: The parent of this worker, from with we expect a "timer"
-            attribute (to start it whenever there are done items). The timer
-            will always be started with 0ms, and in single-shot mode.
+        :param function: The function to invoke on each item.
 
-        :param function: The I/O function to call on each item.path.
+        :param timer: The QTimer object to start to start whenever there are
+            done items. The timer will always be started with 0ms, and in
+            single-shot mode.
         """
         qt.QThread.__init__(self)
 
@@ -207,7 +212,7 @@ class IOWorker(qt.QThread):
         self._mutex2 = qt.QMutex() # for _done
         self._pending = qt.QWaitCondition()
 
-        self.parent = parent
+        self.timer = timer
         self.function = function
 
     ##
@@ -253,7 +258,7 @@ class IOWorker(qt.QThread):
             finally:
                 self._mutex.unlock()
 
-            result = self.function(item.path)
+            result = self.function(item)
 
             self._mutex.lock()
             try:
@@ -270,4 +275,5 @@ class IOWorker(qt.QThread):
             finally:
                 self._mutex2.unlock()
 
-            self.parent.timer.start(0, True) # True: single-shot
+            if self.timer is not None:
+                self.timer.start(0, True) # True: single-shot
