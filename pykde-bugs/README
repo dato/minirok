@@ -2,10 +2,6 @@ Files in these directory contain example code that expose bugs in the
 PyKDE bindings. For each example, a working C++ example is provided,
 plus a direct translation to Python which does not work.
 
-  * combo.cc, combo.py:
-    Completion in KURLComboBox does not work. To reproduce, type a path
-    in the provided combo box.
-
   * gaccel.cc, gaccel.py:
     Using global shortcuts crashes the Python application. To reproduce,
     press Ctrl+Alt+U.

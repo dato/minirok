@@ -8,7 +8,7 @@
 
     * New action "Open directory" in the File menu to select with a
       dialog the directory to load in the tree view, instead of having
-      to type it (particularly since completion does not work in PyKDE).
+      to type it.
 
   IMPROVEMENTS
 
@@ -17,6 +17,9 @@
 
     * The labels in the statusbar that tell the position in the track
       will now blink while the player is paused.
+
+    * Completion of directory names works in the path combo. (The code
+      was there, but wasn't working due to a small PyKDE oddity.)
 
     * Make the creation of the tree view faster by avoding lots of
       useless calls to slot_populate_one() when iterator.current() is a

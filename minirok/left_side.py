@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
@@ -91,7 +91,8 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
                 True, parent, 'path combo') # True: read-write
         util.HasConfig.__init__(self)
 
-        self.setCompletionObject(kio.KURLCompletion(kio.KURLCompletion.DirCompletion)) # does not work :(
+        self.completion_object = kio.KURLCompletion(kio.KURLCompletion.DirCompletion)
+        self.setCompletionObject(self.completion_object)
 
         config = minirok.Globals.config(self.CONFIG_SECTION)
         urls = config.readPathListEntry(self.CONFIG_HISTORY_OPTION)
