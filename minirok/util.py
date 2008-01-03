@@ -9,8 +9,8 @@ import re
 import time
 import random
 
-import qt
-import kdecore
+from PyQt4 import QtCore
+from PyKDE4 import kdecore
 
 import minirok
 
@@ -187,7 +187,7 @@ def needs_lock(mutex_name):
 
 ##
 
-class ThreadedWorker(qt.QThread):
+class ThreadedWorker(QtCore.QThread):
     """A thread that performs a given action on items in a queue.
     
     The thread consumes items from a queue, and stores pairs (item, result)
@@ -204,13 +204,13 @@ class ThreadedWorker(qt.QThread):
             done items. The timer will always be started with 0ms, and in
             single-shot mode.
         """
-        qt.QThread.__init__(self)
+        QtCore.QThread.__init__(self)
 
         self._done = []
         self._queue = []
-        self._mutex = qt.QMutex() # for _queue
-        self._mutex2 = qt.QMutex() # for _done
-        self._pending = qt.QWaitCondition()
+        self._mutex = QtCore.QMutex() # for _queue
+        self._mutex2 = QtCore.QMutex() # for _done
+        self._pending = QtCore.QWaitCondition()
 
         self.timer = timer
         self.function = function
@@ -247,17 +247,19 @@ class ThreadedWorker(qt.QThread):
         while True:
             self._mutex.lock()
             try:
-                try:
-                    # We just don't pop() the item here, because after calling
-                    # self.function(), we'll want to check that the item is still
-                    # in the queue (that is, that the queue was not cleared in the
-                    # meantime).
-                    item = self._queue[0]
-                finally:
-                    self._mutex.unlock()
-            except IndexError:
-                self._pending.wait()
-                continue
+                while True:
+                    try:
+                        # We just don't pop() the item here, because after
+                        # calling self.function(), we'll want to check that the
+                        # item is still in the queue (that is, that the queue
+                        # was not cleared in the meantime).
+                        item = self._queue[0]
+                    except IndexError:
+                        self._pending.wait(self._mutex) # unlocks and re-locks
+                    else:
+                        break
+            finally:
+                self._mutex.unlock()
 
             result = self.function(item)
 
