@@ -45,6 +45,7 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
             func = self.connect
         else:
             # Grrr, self.disconnect() without arguments does not work
+            # XXX-KDE4 Check whether this is still the case in PyQt4.
             func = self.disconnect
 
         func(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
