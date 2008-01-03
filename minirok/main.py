@@ -1,46 +1,50 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import sys
-import kdecore
-
 import minirok
+from PyKDE4 import kdecore
 
 ##
 
 def main():
+    _ = kdecore.ki18n
+    emptyloc = kdecore.KLocalizedString()
+
     about_data = kdecore.KAboutData(
             minirok.__appname__,
-            minirok.__progname__,
+            "", # catalog name
+            _(minirok.__progname__),
             minirok.__version__,
-            minirok.__description__,
+            _(minirok.__description__),
             kdecore.KAboutData.License_Custom,
-            minirok.__copyright__,
-            "", # extra text
+            _(minirok.__copyright__),
+            emptyloc, # extra text
             minirok.__homepage__,
             minirok.__bts__)
 
-    about_data.setLicenseText(minirok.__license__)
-    about_data.setCustomAuthorText('',
-            'Please report bugs to <a href="%s">%s</a>.<br>'
+    about_data.setLicenseText(_(minirok.__license__))
+    about_data.setCustomAuthorText(emptyloc,
+            _('Please report bugs to <a href="%s">%s</a>.<br>'
             'See README.Bugs for instructions.' %
-             (minirok.__bts__, minirok.__bts__))
+             (minirok.__bts__, minirok.__bts__)))
 
-    for author in minirok.__authors__:
-        about_data.addAuthor(*author)
+    for name, task, email in minirok.__authors__:
+        about_data.addAuthor(_(name), _(task), email)
 
-    for person in minirok.__thanksto__:
-        about_data.addCredit(*person)
+    for name, task, email, webpage in minirok.__thanksto__:
+        about_data.addCredit(_(name), _(task), email, webpage)
+
+    options = kdecore.KCmdLineOptions()
+    options.add('a')
+    options.add('append', _('Try to append files to an existing Minirok instance'))
+    options.add('+[files]', _('Files to load into the playlist'))
 
     kdecore.KCmdLineArgs.init(sys.argv, about_data)
-    kdecore.KCmdLineArgs.addCmdLineOptions([
-        ('a',),
-        ('append', 'Try to append files to an existing Minirok instance'),
-        ('+[files]', 'Files to load into the playlist'),
-    ])
+    kdecore.KCmdLineArgs.addCmdLineOptions(options)
 
     args = kdecore.KCmdLineArgs.parsedArgs()
     count = args.count()
