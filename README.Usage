@@ -12,7 +12,7 @@ UI hints
     line to start playing the first track in the search result.
 
 
-DCOP interface
+DCOP interface XXX-KDE4
 ==============
 
 Minirok exports a DCOP interface containing functions to perform
@@ -42,7 +42,7 @@ Finally, there is a toggleWindow function, which hides/shows the main
 window.
 
 
-Global shortcuts
+Global shortcuts XXX-KDE4
 ================
 
 One of the top items in the list of features I wanted was global shortcuts,

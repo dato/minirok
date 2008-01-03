@@ -29,7 +29,7 @@ Other features include:
 
   * support for the classic Amarok "funky-monkey" theme
 
-  * global keybindings (see README.Usage for details)
+  * global keybindings (see README.Usage for details XXX-KDE4)
 
 
 Audio formats
@@ -86,10 +86,10 @@ derivatives, you can grab the latest package from here:
 For installing from source, here's a list of the *required* libraries
 for the program to run:
 
-  * PyQt and PyKDE
-    Debian and Ubuntu: python-qt3, python-kde3
+  * PyQt and PyKDE (version 4)
+    Debian and Ubuntu: python-qt4, python-kde4
     Source: http://www.riverbankcomputing.co.uk/pyqt/download.php
-            http://www.riverbankcomputing.co.uk/pykde/download.php
+            http://www.riverbankcomputing.co.uk/pykde/download.php (XXX-KDE4?)
 
   * Mutagen (audio metadata library)
     Debian and Ubuntu: python-mutagen

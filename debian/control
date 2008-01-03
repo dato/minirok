@@ -2,7 +2,7 @@ Source: minirok
 Section: kde
 Priority: optional
 Maintainer: Adeodato Simó <dato@net.com.org.es>
-Build-Depends: debhelper, python, kdelibs4c2a
+Build-Depends: debhelper, python, kdelibs5
 Standards-Version: 3.7.2
 Homepage: http://chistera.yi.org/~adeodato/code/minirok
 XS-Vcs-Bzr: http://chistera.yi.org/~adeodato/code/minirok/minirok.stable
@@ -10,7 +10,7 @@ XS-Vcs-Bzr: http://chistera.yi.org/~adeodato/code/minirok/minirok.stable
 Package: minirok
 Architecture: all
 Depends: python (>= 2.4),
- python-qt3, python-kde3,
+ python-qt4, python-kde4,
  python-mutagen,
  python-gst0.10, gstreamer0.10-alsa | gstreamer0.10-audiosink,
  gstreamer0.10-plugins-base, gstreamer0.10-plugins-good, gstreamer0.10-plugins-ugly,
@@ -45,7 +45,7 @@ Description: a small music player written in Python and inspired by Amarok
  .
   * support for the classic Amarok "funky-monkey" theme
  .
-  * global keybindings (see README.Usage for details)
+  * global keybindings (see README.Usage for details XXX-KDE4)
  .
  Minirok is written using the PyKDE bindings and the GStreamer media
  framework.

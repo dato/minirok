@@ -7,22 +7,22 @@ set -e
 
 ##
 
-if ! kde-config 2>/dev/null; then
-    echo >&2 "ERROR: could not find kde-config."
+if ! kde4-config 2>/dev/null; then
+    echo >&2 "ERROR: could not find kde4-config."
     exit 1
 fi
 
 ##
 
-PREFIX=`kde-config --prefix`
-BIN=`kde-config --expandvars --install exe`
-APPS=`kde-config --expandvars --install data`
-ICONS=`kde-config --expandvars --install icon`
-CONFIG=`kde-config --expandvars --install config`
-DESKTOP=`kde-config --expandvars --install xdgdata-apps`
+PREFIX=`kde4-config --prefix`
+BIN=`kde4-config --expandvars --install exe`
+APPS=`kde4-config --expandvars --install data`
+ICONS=`kde4-config --expandvars --install icon`
+CONFIG=`kde4-config --expandvars --install config`
+DESKTOP=`kde4-config --expandvars --install xdgdata-apps`
 MINIROK="$APPS/minirok"
-KHOTKEYS="$APPS/khotkeys"
-KCONF_UPDATE="$APPS/kconf_update"
+KHOTKEYS="$APPS/khotkeys" # XXX-KDE4
+KCONF_UPDATE="$APPS/kconf_update" # XXX-KDE4
 KONQUEROR_SERVICE_MENU="$APPS/konqueror/servicemenus"
 
 ##
