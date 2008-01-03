@@ -89,17 +89,17 @@ _do_exit = False
 _not_found = []
 
 try:
-    import qt
+    import PyQt4
 except ImportError:
     _do_exit = True
     _not_found.append('PyQt')
 
 try:
-    import kio
-    import kfile
-    import kdeui
-    import kdecore # used below
-    import dcopexport
+    from PyKDE4 import (
+        kio,
+        kdeui, # used below
+        kdecore,
+    )
 except ImportError, e:
     _do_exit = True
     _not_found.append('PyKDE (error was: %s)' % e)
@@ -158,7 +158,7 @@ class Globals(object):
     """
     @staticmethod
     def config(group='General'):
-        config = kdecore.KApplication.kApplication().config()
+        config = kdeui.KApplication.kApplication().config()
         config.setGroup(group)
         return config
 
