@@ -54,12 +54,13 @@ class PlaylistSearchLine(kdeui.KListViewSearchLine):
     def __init__(self, *args):
         kdeui.KListViewSearchLine.__init__(self, *args)
         self.timer = qt.QTimer(self, 'playlist search line timer')
+        self.timer.setSingleShot(True)
         self.connect(self.timer, qt.SIGNAL('timeout()'),
                 lambda: minirok.Globals.playlist.slot_list_changed())
 
     def updateSearch(self, *args):
         kdeui.KListViewSearchLine.updateSearch(self, *args)
-        self.timer.start(400, True) # True: single-shot
+        self.timer.start(400)
 
 class PlaylistSearchLineWidget(kdeui.KListViewSearchLineWidget):
     """Same as super class, but with a PlaylistSearchLine widget."""

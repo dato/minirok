@@ -85,7 +85,7 @@ class StatusBar(kdeui.KStatusBar):
     def slot_engine_status_changed(self, new_status):
         if new_status == engine.State.PAUSED:
             self.timer.pause()
-            self.blink_timer.start(750, False) # False: not single-shot
+            self.blink_timer.start(750)
         elif new_status == engine.State.PLAYING:
             self.timer.resume()
             self.blink_timer.stop()

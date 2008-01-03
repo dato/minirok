@@ -122,7 +122,7 @@ class TreeView(kdeui.KListView):
             self.root = directory
 
         _populate_tree(self, self.root)
-        self.timer.start(0, False) # False: not one-shot
+        self.timer.start(0)
 
     def slot_refresh(self):
         self.slot_show_directory(self.root)
@@ -301,6 +301,7 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
         self.string = None
         self.regexes = []
         self.timer = qt.QTimer(self, 'tree search line timer')
+        self.timer.setSingleShot(True)
 
         self.connect(self.timer, qt.SIGNAL('timeout()'),
                 self.slot_emit_search_finished)
@@ -321,7 +322,7 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
             self.string = None
 
         kdeui.KListViewSearchLine.updateSearch(self, string_)
-        self.timer.start(400, True) # True: single-shot
+        self.timer.start(400)
 
     def itemMatches(self, item, string_):
         # We don't need to do anything with the string_ parameter here because

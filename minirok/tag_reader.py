@@ -22,6 +22,7 @@ class TagReader(qt.QObject):
         qt.QObject.__init__(self)
 
         self.timer = qt.QTimer(self, 'tag reader timer')
+        self.timer.setSingleShot(True)
         self.connect(self.timer, qt.SIGNAL('timeout()'), self.update_done)
 
         self.worker = util.ThreadedWorker(
