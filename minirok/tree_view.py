@@ -7,7 +7,7 @@
 import os
 import re
 
-import qt
+from PyQt4 import QtCore
 import kdeui
 
 import minirok
@@ -133,7 +133,7 @@ class TreeView(kdeui.KListView):
 
         if self.populate_pending is None:
             self.setUpdatesEnabled(False)
-            self.emit(qt.PYSIGNAL('scan_in_progress'), (True,))
+            self.emit(QtCore.SIGNAL('scan_in_progress'), True)
             self.populate_pending = _directory_children(self)
 
         try:
@@ -147,7 +147,7 @@ class TreeView(kdeui.KListView):
                 (item.parent() or self).takeItem(item)
                 del item # necessary?
             self.empty_directories.clear()
-            self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
+            self.emit(QtCore.SIGNAL('scan_in_progress'), False)
         else:
             item.populate()
             self.populate_pending.extend(_directory_children(item))
@@ -307,7 +307,7 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
                 self.slot_emit_search_finished)
 
     def slot_emit_search_finished(self):
-        self.emit(qt.PYSIGNAL('search_finished'), (self.string is None,))
+        self.emit(QtCore.SIGNAL('search_finished'), self.string is None)
 
     ##
 

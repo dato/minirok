@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import time
 
-import qt
+from PyQt4 import QtCore
 try:
     import lastfm.client
     _has_lastfm_client = True
@@ -48,10 +48,10 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
             # XXX-KDE4 Check whether this is still the case in PyQt4.
             func = self.disconnect
 
-        func(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
+        func(minirok.Globals.playlist, QtCore.SIGNAL('new_track'),
                 self.slot_new_track)
 
-        func(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+        func(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
         func(self.timer, qt.SIGNAL('timeout()'), self.slot_submit)

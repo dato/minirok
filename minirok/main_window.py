@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import qt
+from PyQt4 import QtCore
 import kdeui
 import kfile
 import kdecore
@@ -225,10 +225,10 @@ class Systray(kdeui.KSystemTray):
         self.setPixmap(self.loadIcon('minirok'))
         self.installEventFilter(self)
 
-        self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
+        self.connect(minirok.Globals.playlist, QtCore.SIGNAL('new_track'),
                 self.slot_set_tooltip)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+        self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
     def slot_set_tooltip(self):

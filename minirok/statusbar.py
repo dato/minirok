@@ -4,7 +4,7 @@
 # Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import qt
+from PyQt4 import QtCore
 import kdeui
 import kdecore
 
@@ -46,10 +46,10 @@ class StatusBar(kdeui.KStatusBar):
 
         self.connect(self.blink_timer, qt.SIGNAL('timeout()'), self.slot_blink)
 
-        self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
+        self.connect(minirok.Globals.playlist, QtCore.SIGNAL('new_track'),
                 self.slot_start)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+        self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
         # Actions
@@ -126,7 +126,7 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
     """A clickable label that shows a series of icons.
 
     The label automatically changes the icon on click, and then emits a
-    qt.PYSIGNAL('clicked(int)').
+    QtCore.SIGNAL('clicked(int)').
     """
     CONFIG_SECTION = 'Statusbar'
     CONFIG_OPTION = None
@@ -139,7 +139,7 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
         """
         qt.QLabel.__init__(self, parent)
         util.HasConfig.__init__(self)
-        self.connect(self, qt.PYSIGNAL('clicked(int)'), self.slot_clicked)
+        self.connect(self, QtCore.SIGNAL('clicked(int)'), self.slot_clicked)
 
         if icons is not None:
             self.icons = list(icons)
@@ -178,7 +178,7 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
         else:
             qt.QToolTip.remove(self)
 
-        self.emit(qt.PYSIGNAL('clicked(int)'), (self.state,))
+        self.emit(QtCore.SIGNAL('clicked(int)'), self.state)
 
     def slot_clicked(self, state):
         raise NotImplementedError, \

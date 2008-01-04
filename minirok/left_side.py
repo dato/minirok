@@ -6,7 +6,7 @@
 
 import os
 
-import qt
+from PyQt4 import QtCore
 import kio
 import kfile
 import kdeui
@@ -51,7 +51,7 @@ class LeftSide(qt.QVBox):
 
         qt.QTimer.singleShot(0, lambda:
                 self.connect(self.tree_search.searchLine(),
-                             qt.PYSIGNAL('search_finished'),
+                             QtCore.SIGNAL('search_finished'),
                              self.tree_view.slot_search_finished))
 
         qt.QTimer.singleShot(0, lambda:
@@ -59,10 +59,10 @@ class LeftSide(qt.QVBox):
                              qt.SIGNAL('returnPressed(const QString &)'),
                              self.tree_view.slot_append_visible))
 
-        self.connect(self.tree_view, qt.PYSIGNAL('scan_in_progress'),
+        self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
                 self.tree_search.slot_scan_in_progress)
 
-        self.connect(self.path_combo, qt.PYSIGNAL('new_directory_selected'),
+        self.connect(self.path_combo, QtCore.SIGNAL('new_directory_selected'),
                 self.tree_view.slot_show_directory)
 
         ##
@@ -71,7 +71,7 @@ class LeftSide(qt.QVBox):
             # This can't go in the MyComboBox constructor because the signals
             # are not connected yet at that time.
             self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
-                    (self.path_combo.currentText(),))
+                    self.path_combo.currentText())
         else:
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
@@ -130,7 +130,7 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
             urls.prepend(url)
             self.setURLs(urls, kfile.KURLComboBox.RemoveBottom)
 
-        self.emit(qt.PYSIGNAL('new_directory_selected'), (directory,))
+        self.emit(QtCore.SIGNAL('new_directory_selected'), directory)
 
     def slot_save_config(self):
         config = minirok.Globals.config(self.CONFIG_SECTION)

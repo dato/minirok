@@ -1,18 +1,18 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
 import time
 import threading
 
-import qt
 import gst
 import gobject
 
 import minirok
+from PyQt4 import QtCore
 
 gobject.threads_init()
 
@@ -81,7 +81,7 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def _set_status(self, value):
         if value != self._status:
             self._status = value
-            self.emit(qt.PYSIGNAL('status_changed'), (value,))
+            self.emit(QtCore.SIGNAL('status_changed'), value)
 
     status = property(lambda self: self._status, _set_status)
 
@@ -128,7 +128,7 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def _message_eos(self, bus, message):
         self.bin.set_state(gst.STATE_NULL)
         self.status = State.STOPPED
-        self.emit(qt.PYSIGNAL('end_of_stream'), (self.uri,))
+        self.emit(QtCore.SIGNAL('end_of_stream'), self.uri)
 
     def _message_error(self, bus, message):
         error, debug_info = message.parse_error()

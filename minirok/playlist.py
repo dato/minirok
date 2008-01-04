@@ -9,7 +9,7 @@ import re
 import sys
 import errno
 
-import qt
+from PyQt4 import QtCore
 import kdeui
 import kdecore
 
@@ -66,12 +66,12 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         self.connect(self, qt.SIGNAL('moved()'), self.slot_list_changed)
 
-        self.connect(self, qt.PYSIGNAL('list_changed'), self.slot_list_changed)
+        self.connect(self, QtCore.SIGNAL('list_changed'), self.slot_list_changed)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
+        self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('end_of_stream'),
+        self.connect(minirok.Globals.engine, QtCore.SIGNAL('end_of_stream'),
                 self.slot_engine_end_of_stream)
 
         self.init_actions()
@@ -132,13 +132,13 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
     def _set_repeat_mode(self, value):
         self._repeat_mode = value # TODO Check it's a valid value?
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     repeat_mode = property(lambda self: self._repeat_mode, _set_repeat_mode)
 
     def _set_random_mode(self, value):
         self._random_mode = bool(value)
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     random_mode = property(lambda self: self._random_mode, _set_random_mode)
 
@@ -162,7 +162,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             self._current_item = None
 
         set_current(True)
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
@@ -256,7 +256,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 self._stop_after = None # don't touch stop_mode
 
         self.clear()
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, items):
         if not items:
@@ -275,7 +275,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             if item != self._currently_playing:
                 del item # maybe memory gets freed even without this?
 
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     def slot_new_current_item(self, item):
         self.maybe_populate_random_queue()
@@ -307,7 +307,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                 self.current_item.update_tags({'Length': tags.get('Length', 0)})
                 self.current_item.update_display()
 
-            self.emit(qt.PYSIGNAL('new_track'), ())
+            self.emit(QtCore.SIGNAL('new_track'))
 
     def slot_pause(self):
         e = minirok.Globals.engine
@@ -459,7 +459,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
                     self.stop_after = None
                     self.stop_mode = StopMode.AFTER_QUEUE
 
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     def queue_pop(self, index):
         """Pops an item from self.queue, and repaints the necessary items."""
@@ -575,7 +575,7 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
             prev_item = self.lastItem()
         for f in files:
             prev_item = self.add_file(f, prev_item)
-        self.emit(qt.PYSIGNAL('list_changed'), ())
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     def add_files_untrusted(self, files, clear_playlist=False):
         """Add to the playlist those files that exist and are playable."""
