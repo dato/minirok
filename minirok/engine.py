@@ -26,7 +26,7 @@ class State:
 
 ##
 
-class GStreamerEngine(qt.QObject, threading.Thread):
+class GStreamerEngine(QtCore.QObject, threading.Thread):
     SINK = 'alsasink'
 
     PLUGINS = {
@@ -37,7 +37,7 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     }
 
     def __init__(self):
-        qt.QObject.__init__(self)
+        QtCore.QObject.__init__(self)
         threading.Thread.__init__(self)
 
         self.exit_engine = threading.Event() # join() sets this
