@@ -9,8 +9,8 @@ import re
 import time
 import random
 
-from PyQt4 import QtCore
 from PyKDE4 import kdecore
+from PyQt4 import QtCore, QtGui
 
 import minirok
 
@@ -21,8 +21,8 @@ def kurl_to_path(kurl):
 
     For KURLs, the leading file:// prefix will be stripped if present.
     """
-    if isinstance(kurl, kdecore.KURL):
-        kurl = kurl.pathOrURL()
+    if isinstance(kurl, kdecore.KUrl):
+        kurl = kurl.pathOrUrl()
 
     return unicode(kurl).encode(minirok.filesystem_encoding)
 
@@ -67,12 +67,12 @@ def get_png(name):
     except KeyError:
         pass
 
-    for path in [ str(kdecore.locate('appdata', os.path.join('images', name))),
+    for path in [ # XXX-KDE4 str(kdecore.locate('appdata', os.path.join('images', name))),
             os.path.join(os.path.dirname(__file__), '..', 'images', name) ]:
         if os.path.exists(path):
             break
 
-    return _png_cache.setdefault(name, qt.QPixmap(path, 'PNG'))
+    return _png_cache.setdefault(name, QtGui.QPixmap(path, 'PNG'))
 
 _png_cache = {}
 
@@ -82,8 +82,9 @@ class HasConfig(object):
     """A class that connects its slot_save_config to kApp.shutDown()"""
 
     def __init__(self):
-        qt.QObject.connect(kdecore.KApplication.kApplication(),
-                qt.SIGNAL('shutDown()'), self.slot_save_config)
+        # XXX-KDE4 I think the shutDown() signal has disappeared
+        QtCore.QObject.connect(kdecore.KApplication.kApplication(),
+                QtCore.SIGNAL('shutDown()'), self.slot_save_config)
 
     def slot_save_config(self):
         raise NotImplementedError, \
@@ -109,7 +110,7 @@ class HasGUIConfig(object):
 
 ##
 
-class QTimerWithPause(qt.QTimer):
+class QTimerWithPause(QtCore.QTimer):
     """A QTimer with pause() and resume() methods.
 
     Idea taken from:
@@ -119,13 +120,13 @@ class QTimerWithPause(qt.QTimer):
     to True.
     """
     def __init__(self, *args):
-        qt.QTimer.__init__(self, *args)
+        QtCore.QTimer.__init__(self, *args)
         self.duration = 0
         self.finished = True
         self.recur_time = None
         self.start_time = 0
 
-        self.connect(self, qt.SIGNAL('timeout()'), self.slot_timer_finished)
+        self.connect(self, QtCore.SIGNAL('timeout()'), self.slot_timer_finished)
 
     def start(self, msecs, single_shot=True):
         if not single_shot:
@@ -153,7 +154,7 @@ class QTimerWithPause(qt.QTimer):
         self.start_time = time.time()
         # We always start ourselves in single-shot mode, and restart if
         # necessary in slot_timer_finished()
-        qt.QTimer.start(self, msecs, True)
+        QtCore.QTimer.start(self, msecs, True)
 
     def slot_timer_finished(self):
         if self.recur_time is not None:
