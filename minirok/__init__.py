@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
@@ -16,7 +16,7 @@ filesystem_encoding = sys.getfilesystemencoding()
 
 __appname__     = 'minirok'
 __progname__    = 'Minirok'
-__version__     = '0.8~dev'
+__version__     = '0.98~dev'
 __description__ = 'A small music player written in Python'
 __copyright__   = 'Copyright (c) 2007-2008 Adeodato Simó'
 __homepage__    = 'http://chistera.yi.org/~adeodato/code/minirok'
