@@ -19,7 +19,7 @@ from minirok import engine, util
 
 ##
 
-class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
+class LastfmSubmitter(QtCore.QObject, util.HasGUIConfig):
     """An object that takes care of submiting played tracks to Last.fm.
 
     It relies on the Playlist.new_track signal. Upon receiving it, it starts a
@@ -27,11 +27,11 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
     timer is paused accordingly.
     """
     def __init__(self):
-        qt.QObject.__init__(self)
+        QtCore.QObject.__init__(self)
         util.HasGUIConfig.__init__(self)
 
         self.data = None
-        self.timer = util.QTimerWithPause(self, 'lastfm timer')
+        self.timer = util.QTimerWithPause(self)
 
         if _has_lastfm_client:
             self.lastfm_client = lastfm.client.Client('minirok')
@@ -54,7 +54,7 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
         func(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
                 self.slot_engine_status_changed)
 
-        func(self.timer, qt.SIGNAL('timeout()'), self.slot_submit)
+        func(self.timer, QtCore.SIGNAL('timeout()'), self.slot_submit)
 
     def slot_new_track(self):
         all_tags = minirok.Globals.playlist.currently_playing
