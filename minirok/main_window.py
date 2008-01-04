@@ -4,10 +4,8 @@
 # Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-from PyQt4 import QtCore
-import kdeui
-import kfile
-import kdecore
+from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui, kdecore
 
 import minirok
 from minirok import engine, left_side, preferences, right_side, statusbar, util
@@ -215,42 +213,37 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
 ##
 
-class Systray(kdeui.KSystemTray):
-    """A KSysTray class that calls Play/Pause on middle button clicks.
+class Systray(kdeui.KSystemTrayIcon):
+    """A KSystemTrayIcon class that calls Play/Pause on middle button clicks.
     
     It will also show the currently played track in its tooltip.
     """
     def __init__(self, *args):
-        kdeui.KSystemTray.__init__(self, *args)
-        self.setPixmap(self.loadIcon('minirok'))
+        kdeui.KSystemTrayIcon.__init__(self, *args)
+        self.setIcon(self.loadIcon('minirok'))
         self.installEventFilter(self)
 
-        self.connect(minirok.Globals.playlist, QtCore.SIGNAL('new_track'),
-                self.slot_set_tooltip)
+        self.connect(self,
+                QtCore.SIGNAL('activated(QSystemTrayIcon::ActivationReason)'),
+                self.slot_activated)
 
-        self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
-                self.slot_engine_status_changed)
-
-    def slot_set_tooltip(self):
-        tags = minirok.Globals.playlist.currently_playing
-        if tags:
-            title = tags.get('Title', '')
-            artist = tags.get('Artist', '')
-            if artist and title:
-                artist += ' - '
-            if artist or title:
-                qt.QToolTip.remove(self)
-                qt.QToolTip.add(self, artist + title)
-
-    def slot_engine_status_changed(self, new_status):
-        if new_status == engine.State.STOPPED:
-            qt.QToolTip.remove(self)
+    def slot_activated(self, reason):
+        # NB: Filtering for middle button clicks in eventFilter() below does
+        # not seem to work.
+        if reason == QtGui.QSystemTrayIcon.MiddleClick:
+            minirok.Globals.action_collection.action('action_play_pause').activate()
 
     def eventFilter(self, object_, event):
         if (object_ == self
-                and event.type() == qt.QEvent.MouseButtonPress
-                and event.button() == qt.QEvent.MidButton):
-            minirok.Globals.action_collection.action('action_play_pause').activate()
+                and event.type() == QtCore.QEvent.ToolTip):
+            tags = minirok.Globals.playlist.currently_playing
+            if tags:
+                title = tags.get('Title', '')
+                artist = tags.get('Artist', '')
+                if artist and title:
+                    artist += ' - '
+                if artist or title:
+                    QtGui.QToolTip.showText(event.globalPos(), artist + title)
             return True
 
-        return kdeui.KSystemTray.eventFilter(self, object_, event)
+        return kdeui.KSystemTrayIcon.eventFilter(self, object_, event)
