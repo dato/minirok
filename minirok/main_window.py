@@ -199,7 +199,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
     ##
 
     def queryClose(self):
-        finishing_session = kdecore.KApplication.kApplication().sessionSaving()
+        finishing_session = kdeui.KApplication.kApplication().sessionSaving()
         if not finishing_session:
             # We want to save the shown/hidden status on session quit
             self.hide()
