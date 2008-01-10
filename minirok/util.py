@@ -9,8 +9,8 @@ import re
 import time
 import random
 
-from PyKDE4 import kdecore
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui, kdecore
 
 import minirok
 
@@ -79,12 +79,11 @@ _png_cache = {}
 ##
 
 class HasConfig(object):
-    """A class that connects its slot_save_config to kApp.shutDown()"""
+    """A class that connects its slot_save_config to kApp.aboutToQuit()."""
 
     def __init__(self):
-        # XXX-KDE4 I think the shutDown() signal has disappeared
-        QtCore.QObject.connect(kdecore.KApplication.kApplication(),
-                QtCore.SIGNAL('shutDown()'), self.slot_save_config)
+        QtCore.QObject.connect(kdeui.KApplication.kApplication(),
+                QtCore.SIGNAL('aboutToQuit()'), self.slot_save_config)
 
     def slot_save_config(self):
         raise NotImplementedError, \
