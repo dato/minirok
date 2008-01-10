@@ -12,7 +12,7 @@ from minirok import engine, left_side, preferences, right_side, statusbar, util
 
 ##
 
-class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
+class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
     def __init__ (self, *args):
         kdeui.KMainWindow.__init__(self, *args)
@@ -21,19 +21,21 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         minirok.Globals.action_collection = self.actionCollection()
         minirok.Globals.preferences = preferences.Preferences()
 
-        self.main_view = qt.QSplitter(self, 'main view')
+        self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view, 'left side')
         self.right_side = right_side.RightSide(self.main_view, 'right side')
         self.statusbar = statusbar.StatusBar(self, 'statusbar')
 
         self.init_actions()
-        self.init_menus()
         self.init_systray()
-        self.init_global_accel()
         self.apply_preferences()
 
         self.setCentralWidget(self.main_view)
-        self.setAutoSaveSettings()
+        # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check
+
+        self.setHelpMenuEnabled(False)
+        self.setupGUI(self.StandardWindowOption(self.Keys | self.Save | self.Create), # XXX-KDE4 self.ToolBar
+                '/home/adeodato/devel/minirok/minirok.kde4/config/minirokui.rc') # XXX-KDE4
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
@@ -43,77 +45,48 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
     ##
 
     def init_actions(self):
-        ac = self.actionCollection()
+        actionCollection = self.actionCollection()
+
+        def _action(name, text, slot, icon=None):
+            """Helper to create KAction objects."""
+            action = kdeui.KAction(self)
+            action.setText(text)
+            if icon is not None:
+                action.setIcon(kdeui.KIcon(icon))
+            self.connect(action, QtCore.SIGNAL('triggered(bool)'), slot)
+            actionCollection.addAction(name, action)
+            return action
 
         # File menu
-        self.action_open_directory = kdeui.KAction('Open directory...',
-                'fileopen', kdecore.KShortcut('Ctrl+F'),
-                self.slot_open_directory, ac, 'action_open_directory')
-        self.action_quit = kdeui.KStdAction.quit(self.slot_really_quit, ac)
+        self.action_open_directory = _action('action_open_directory',
+                'Open directory...', self.slot_open_directory, 'document-open')
 
-        # Settings menu
-        self.action_shortcuts = kdeui.KStdAction.keyBindings(
-                self.slot_configure_shortcuts, ac)
-        self.action_shortcuts.setShortcutConfigurable(False)
+        self.action_quit = kdeui.KStandardAction.quit(self.slot_really_quit,
+                actionCollection)
 
-        self.action_global_shortcuts = kdeui.KStdAction.keyBindings(
-                self.slot_configure_global_shortcuts, ac, 'action_global_shortcuts')
-        self.action_global_shortcuts.setShortcutConfigurable(False)
-        self.action_global_shortcuts.setText('Configure &Global Shortcuts...')
+        # Help menu
+        self.action_about = kdeui.KStandardAction.aboutApp(
+                kdeui.KAboutApplicationDialog(kdecore.KGlobal.mainComponent().aboutData(), self).show,
+                # XXX-KDE4 kdelibs bug, fix pending: kdeui.KAboutApplicationDialog(None, self).show,
+                actionCollection)
+        self.action_about.setShortcutConfigurable(False)
 
-        # XXX This needs the KXML framework, but it does not work in PyKDE, see
-        # see pykde-bugs/xml_toolbar.py.
-        # self.action_configure_toolbars = kdeui.KStdAction.configureToolbars(
-        #         self.slot_configure_toolbars, ac)
-        # self.action_configure_toolbars.setShortcutConfigurable(False)
+        return # XXX-KDE4
 
         self.action_preferences = kdeui.KStdAction.preferences(
                 self.slot_preferences, ac)
         self.action_preferences.setShortcutConfigurable(False)
-
-        # Help menu
-        self.action_about = kdeui.KStdAction.aboutApp(
-                kdeui.KAboutApplication(self, 'about', False).show, ac)
-        self.action_about.setShortcutConfigurable(False)
 
         # Other
         self.action_toggle_window = kdeui.KAction('Show/Hide window',
                 kdecore.KShortcut.null(), self.slot_toggle_window, ac,
                 'action_toggle_window')
 
-        self.actionCollection().readShortcutSettings()
-
-    def init_menus(self):
-        file_menu = qt.QPopupMenu(self)
-        self.action_open_directory.plug(file_menu)
-        self.action_quit.plug(file_menu)
-        self.menuBar().insertItem('&File', file_menu)
-
-        settings_menu = qt.QPopupMenu(self)
-        self.action_shortcuts.plug(settings_menu)
-        # self.action_global_shortcuts.plug(settings_menu)
-        # self.action_configure_toolbars.plug(settings_menu)
-        self.action_preferences.plug(settings_menu)
-        self.menuBar().insertItem('&Settings', settings_menu)
-
-        help_menu = qt.QPopupMenu(self)
-        self.action_about.plug(help_menu)
-        self.menuBar().insertItem('&Help', help_menu)
-
     def init_systray(self):
         self.systray = Systray(self)
         self.systray.connect(self.systray, QtCore.SIGNAL('quitSelected()'),
             self.slot_really_quit)
         self.systray.show()
-
-    def init_global_accel(self):
-        # XXX Using global accels crash PyKDE applications. :-(
-        # http://www.riverbankcomputing.com/pipermail/pyqt/2007-August/016865.html
-        # self.global_accel = kdecore.KGlobalAccel(self)
-        # self.global_accel.insert('play', 'Play', '', kdecore.KShortcut('Ctrl+Alt+U'),
-        #         kdecore.KShortcut.null(), self.engine.play)
-        # self.global_accel.updateConnections()
-        pass
 
     ##
 
@@ -167,12 +140,6 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
     def slot_really_quit(self):
         self._flag_really_quit = True
         self.close()
-
-    def slot_configure_shortcuts(self):
-        kdeui.KKeyDialog.configure(self.actionCollection(), self)
-
-    def slot_configure_global_shortcuts(self):
-        kdeui.KKeyDialog.configure(self.global_accel, True, self)
 
     def slot_preferences(self):
         if kdeui.KConfigDialog.showDialog('preferences dialog'):
