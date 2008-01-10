@@ -102,7 +102,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
     def init_systray(self):
         self.systray = Systray(self)
-        self.systray.connect(self.systray, qt.SIGNAL('quitSelected()'),
+        self.systray.connect(self.systray, QtCore.SIGNAL('quitSelected()'),
             self.slot_really_quit)
         self.systray.show()
 
