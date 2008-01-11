@@ -49,7 +49,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
         # File menu
         self.action_open_directory = util.create_action('action_open_directory',
-                'Open directory...', self.slot_open_directory, 'document-open')
+                'Open directory...', self.slot_open_directory, 'document-open', 'Ctrl+F')
 
         self.action_quit = kdeui.KStandardAction.quit(self.slot_really_quit,
                 actionCollection)
