@@ -6,7 +6,8 @@
 
 import sys
 import minirok
-from PyKDE4 import kdecore
+
+from PyKDE4 import kdeui, kdecore
 
 ##
 
@@ -63,18 +64,19 @@ def main():
     # These imports happen here rather than at the top level because if gst
     # gets imported before the above KCmdLineArgs.init() call, it steals our
     # --help option
-    from minirok import dcop, engine, main_window as mw
+    from minirok import engine, main_window as mw # XXX-KDE4 dcop dropped
 
     minirok.Globals.engine = engine.Engine()
-    application = kdecore.KApplication()
+    application = kdeui.KApplication()
     main_window = mw.MainWindow()
 
-    application.dcopClient().registerAs('minirok', False) # False: do not add PID
-    player = dcop.Player()
+    # XXX-KDE4
+    # application.dcopClient().registerAs('minirok', False) # False: do not add PID
+    # player = dcop.Player()
 
     if minirok._has_lastfm:
         from minirok import lastfm_submit
-        lastfm_submitter = lastfm_submit.LastfmSubmitter()
+        # lastfm_submitter = lastfm_submit.LastfmSubmitter() # XXX-KDE4 (preferences)
 
     if files:
         minirok.Globals.playlist.add_files_untrusted(files, clear_playlist=True)
@@ -86,7 +88,7 @@ def main():
     else:
         main_window.show()
 
-    application.exec_loop()
+    application.exec_()
 
 ##
 
