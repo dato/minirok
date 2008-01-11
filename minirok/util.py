@@ -93,7 +93,9 @@ def create_action(name, text, slot, icon=None, shortcut=None, global_shortcut=No
                 kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
 
     if global_shortcut is not None:
-        raise NotImplementedError, 'global_shortcut still not accepted here'
+        action.setGlobalShortcut(kdeui.KShortcut(global_shortcut),
+                # XXX-KDE4 here too
+                kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
 
     return action
 
