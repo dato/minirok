@@ -28,9 +28,9 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
         self.right_side = right_side.RightSide(self.main_view, 'right side')
         self.statusbar = statusbar.StatusBar(self, 'statusbar')
 
+        self.init_systray()
         self.init_actions()
         self.init_menus()
-        self.init_systray()
         self.init_global_accel()
         self.apply_preferences()
 
@@ -80,7 +80,7 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
 
         # Other
         self.action_toggle_window = kdeui.KAction('Show/Hide window',
-                kdecore.KShortcut.null(), self.slot_toggle_window, ac,
+                kdecore.KShortcut.null(), self.systray.toggleActive, ac,
                 'action_toggle_window')
 
         self.actionCollection().readShortcutSettings()
@@ -185,18 +185,6 @@ class MainWindow(kdeui.KMainWindow, util.HasGUIConfig):
             self.connect(dialog, qt.SIGNAL('settingsChanged()'),
                     util.HasGUIConfig.settings_changed)
             dialog.show()
-
-    def slot_toggle_window(self):
-        w_id = self.winId()
-        w_info = kdecore.KWin.windowInfo(w_id)
-        current_desktop = kdecore.KWin.currentDesktop()
-
-        if not w_info.isOnDesktop(current_desktop) or w_info.isMinimized():
-            kdecore.KWin.setOnDesktop(w_id, current_desktop)
-            kdecore.KWin.activateWindow(w_id)
-            self.setShown(True)
-        else:
-            self.setShown(not self.isShown())
 
     ##
 
