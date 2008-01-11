@@ -5,7 +5,7 @@
 # Licensed under the terms of the MIT license.
 
 from PyQt4 import QtGui, QtCore
-from PyKDE4 import kdeui, kdecore
+from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
 from minirok import engine, left_side, preferences, right_side, statusbar, util
