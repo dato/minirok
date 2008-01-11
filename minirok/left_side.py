@@ -6,41 +6,41 @@
 
 import os
 
-from PyQt4 import QtCore
-import kio
-import kfile
-import kdeui
-import kdecore
+from PyQt4 import QtGui, QtCore
+from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
 from minirok import tree_view, util
 
 ##
 
-class LeftSide(qt.QVBox):
+class LeftSide(QtGui.QWidget):
 
     def __init__(self, *args):
-        qt.QVBox.__init__(self, *args)
+        QtGui.QWidget.__init__(self, *args)
 
-        self.setSpacing(2)
+        # self.setSpacing(2)
+        # XXX-KDE4 TODO Implement vertical layout
 
-        self.tree_search = tree_view.TreeViewSearchLineWidget(None, self, 'tree search')
-        self.combo_toolbar = kdeui.KToolBar(self, 'combo toolbar')
-        self.tree_view = tree_view.TreeView(self, 'tree view')
+        # self.tree_search = tree_view.TreeViewSearchLineWidget(None, self, 'tree search')
+        self.combo_toolbar = kdeui.KToolBar(self)
+        # self.tree_view = tree_view.TreeView(self, 'tree view')
 
-        self.path_combo = MyComboBox(self.combo_toolbar, 'path combo')
-        self.combo_toolbar.insertWidget(0, 0, self.path_combo)
-        self.combo_toolbar.setItemAutoSized(0)
-        self.combo_toolbar.setIconSize(16)
+        self.path_combo = MyComboBox(self.combo_toolbar)
+        self.combo_toolbar.addWidget(self.path_combo)
+        self.combo_toolbar.setIconDimensions(16)
+        self.combo_toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
+        # self.combo_toolbar.setItemAutoSized(0) # XXX-KDE4 should be stretchabe or however it's called
 
-        self.action_refresh = kdeui.KAction('Refresh tree view', 'reload',
-                kdecore.KShortcut('F5'), self.tree_view.slot_refresh,
-                minirok.Globals.action_collection, 'action_refresh')
-        self.action_refresh.plug(self.combo_toolbar)
+        self.action_refresh = util.create_action('action_refresh_tree_view',
+                # 'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
+                'Refresh tree view', lambda: XXX_KDE4.self.tree_view.slot_refresh, 'view-refresh', 'F5')
+        self.combo_toolbar.addAction(self.action_refresh)
 
-        self.action_focus_path_combo = kdeui.KAction('Focus path combo',
-                kdecore.KShortcut('Alt+O'), self.path_combo.slot_focus,
-                minirok.Globals.action_collection, 'action_path_combo_focus')
+        self.action_focus_path_combo = util.create_action('action_path_combo_focus',
+                'Focus path combobox', self.path_combo.slot_focus, shortcut='Alt+O')
+
+        return # XXX-KDE4
 
         # the widgets in KListViewSearchLineWidget are created via a slot fired
         # by a QTimer::singleShot(0ms), so the contained KListViewSearchLine
@@ -80,28 +80,28 @@ class LeftSide(qt.QVBox):
 
 ##
 
-class MyComboBox(kfile.KURLComboBox, util.HasConfig):
+class MyComboBox(kio.KUrlComboBox, util.HasConfig):
     """A KURLComboBox that saves the introduced directories in the config."""
 
     CONFIG_SECTION = 'Tree View'
     CONFIG_HISTORY_OPTION = 'History'
 
-    def __init__(self, parent, name):
-        kfile.KURLComboBox.__init__(self, kfile.KURLComboBox.Directories,
-                True, parent, 'path combo') # True: read-write
+    def __init__(self, parent):
+        kio.KUrlComboBox.__init__(self, kio.KUrlComboBox.Directories, True, parent)
         util.HasConfig.__init__(self)
 
-        self.completion_object = kio.KURLCompletion(kio.KURLCompletion.DirCompletion)
+        self.completion_object = kio.KUrlCompletion(kio.KUrlCompletion.DirCompletion)
         self.setCompletionObject(self.completion_object)
 
-        config = minirok.Globals.config(self.CONFIG_SECTION)
-        urls = config.readPathListEntry(self.CONFIG_HISTORY_OPTION)
-        self.setURLs(urls)
+        # XXX-KDE4
+        # config = minirok.Globals.config(self.CONFIG_SECTION)
+        # urls = config.readPathListEntry(self.CONFIG_HISTORY_OPTION)
+        # self.setURLs(urls)
 
-        self.connect(self, qt.SIGNAL('urlActivated(const KURL &)'),
+        self.connect(self, QtCore.SIGNAL('urlActivated(const KUrl &)'),
                 self.slot_url_changed)
 
-        self.connect(self, qt.SIGNAL('returnPressed(const QString &)'),
+        self.connect(self, QtCore.SIGNAL('returnPressed(const QString &)'),
                 self.slot_url_changed)
 
     def set_url(self, url):
@@ -118,9 +118,9 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
         self.lineEdit().selectAll()
 
     def slot_url_changed(self, url):
-        if isinstance(url, kdecore.KURL):
+        if isinstance(url, kdecore.KUrl):
             # We can only store QStrings
-            url = url.pathOrURL()
+            url = url.pathOrUrl()
 
         directory = util.kurl_to_path(url)
 
@@ -128,10 +128,11 @@ class MyComboBox(kfile.KURLComboBox, util.HasConfig):
             urls = self.urls()
             urls.remove(url)
             urls.prepend(url)
-            self.setURLs(urls, kfile.KURLComboBox.RemoveBottom)
+            self.setUrls(urls, kio.KUrlComboBox.RemoveBottom)
 
         self.emit(QtCore.SIGNAL('new_directory_selected'), directory)
 
     def slot_save_config(self):
+        return # XXX-KDE4
         config = minirok.Globals.config(self.CONFIG_SECTION)
         config.writePathEntry(self.CONFIG_HISTORY_OPTION, self.urls())

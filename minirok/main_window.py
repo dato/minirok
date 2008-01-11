@@ -22,7 +22,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         minirok.Globals.preferences = preferences.Preferences()
 
         self.main_view = QtGui.QSplitter(self)
-        self.left_side = left_side.LeftSide(self.main_view, 'left side')
+        self.left_side = left_side.LeftSide(self.main_view)
         self.right_side = right_side.RightSide(self.main_view, 'right side')
         self.statusbar = statusbar.StatusBar(self, 'statusbar')
 
