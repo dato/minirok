@@ -8,7 +8,7 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
-from minirok import engine, left_side, preferences, right_side, statusbar, util
+from minirok import left_side, preferences, right_side, statusbar, util
 
 ##
 
