@@ -15,7 +15,7 @@ from minirok import engine, left_side, preferences, right_side, statusbar, util
 class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
     def __init__ (self, *args):
-        kdeui.KMainWindow.__init__(self, *args)
+        kdeui.KXmlGuiWindow.__init__(self, *args)
         util.HasGUIConfig.__init__(self)
 
         minirok.Globals.action_collection = self.actionCollection()
