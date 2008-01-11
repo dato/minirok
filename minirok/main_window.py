@@ -61,16 +61,15 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
                 actionCollection)
         self.action_about.setShortcutConfigurable(False)
 
+        # Other
+        self.action_toggle_window = util.create_action('action_toggle_window',
+                'Show/Hide window', self.systray.toggleActive, global_shortcut='Ctrl+Alt+U') # XXX-KDE4 Ctrl+Alt+M
+
         return # XXX-KDE4
 
         self.action_preferences = kdeui.KStdAction.preferences(
                 self.slot_preferences, ac)
         self.action_preferences.setShortcutConfigurable(False)
-
-        # Other
-        self.action_toggle_window = kdeui.KAction('Show/Hide window',
-                kdecore.KShortcut.null(), self.systray.toggleActive, ac,
-                'action_toggle_window')
 
     def init_systray(self):
         self.systray = Systray(self)
