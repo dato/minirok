@@ -6,15 +6,12 @@
 
 import os
 import time
-import threading
 
 import gst
 import gobject
 
 import minirok
 from PyQt4 import QtCore
-
-gobject.threads_init()
 
 ##
 
@@ -26,7 +23,7 @@ class State:
 
 ##
 
-class GStreamerEngine(QtCore.QObject, threading.Thread):
+class GStreamerEngine(QtCore.QObject):
     SINK = 'alsasink'
 
     PLUGINS = {
@@ -38,9 +35,6 @@ class GStreamerEngine(QtCore.QObject, threading.Thread):
 
     def __init__(self):
         QtCore.QObject.__init__(self)
-        threading.Thread.__init__(self)
-
-        self.exit_engine = threading.Event() # join() sets this
 
         self._supported_extensions = []
         for plugin, extensions in self.PLUGINS.items():
@@ -64,17 +58,6 @@ class GStreamerEngine(QtCore.QObject, threading.Thread):
         bus.connect('message::error', self._message_error)
 
         self.time_fmt = gst.Format(gst.FORMAT_TIME)
-
-    def run(self):
-        loop = gobject.MainLoop()
-        context = loop.get_context()
-        while not self.exit_engine.isSet():
-            context.iteration(True)
-
-    def join(self, timeout=None):
-        """Call Thread.join(), setting self.exit_engine first."""
-        self.exit_engine.set()
-        threading.Thread.join(self, timeout)
 
     ##
 

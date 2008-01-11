@@ -66,8 +66,6 @@ def main():
     from minirok import dcop, engine, main_window as mw
 
     minirok.Globals.engine = engine.Engine()
-    minirok.Globals.engine.start()
-
     application = kdecore.KApplication()
     main_window = mw.MainWindow()
 
