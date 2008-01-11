@@ -76,6 +76,27 @@ def get_png(name):
 
 _png_cache = {}
 
+def create_action(name, text, slot, icon=None, shortcut=None, global_shortcut=None):
+    """Helper to create KAction objects."""
+    action = kdeui.KAction(None)
+    action.setText(text)
+
+    QtCore.QObject.connect(action, QtCore.SIGNAL('triggered(bool)'), slot)
+    minirok.Globals.action_collection.addAction(name, action)
+
+    if icon is not None:
+        action.setIcon(kdeui.KIcon(icon))
+
+    if shortcut is not None:
+        action.setShortcut(kdeui.KShortcut(shortcut),
+                # XXX-KDE4 ../pykde4-bugs/01_kaction_setShortcut_requires_two_arguments.py
+                kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
+
+    if global_shortcut is not None:
+        raise NotImplementedError, 'global_shortcut still not accepted here'
+
+    return action
+
 ##
 
 class HasConfig(object):

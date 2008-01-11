@@ -47,18 +47,8 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
     def init_actions(self):
         actionCollection = self.actionCollection()
 
-        def _action(name, text, slot, icon=None):
-            """Helper to create KAction objects."""
-            action = kdeui.KAction(self)
-            action.setText(text)
-            if icon is not None:
-                action.setIcon(kdeui.KIcon(icon))
-            self.connect(action, QtCore.SIGNAL('triggered(bool)'), slot)
-            actionCollection.addAction(name, action)
-            return action
-
         # File menu
-        self.action_open_directory = _action('action_open_directory',
+        self.action_open_directory = util.create_action('action_open_directory',
                 'Open directory...', self.slot_open_directory, 'document-open')
 
         self.action_quit = kdeui.KStandardAction.quit(self.slot_really_quit,
