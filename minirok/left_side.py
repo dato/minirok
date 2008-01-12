@@ -19,12 +19,15 @@ class LeftSide(QtGui.QWidget):
     def __init__(self, *args):
         QtGui.QWidget.__init__(self, *args)
 
-        # self.setSpacing(2)
-        # XXX-KDE4 TODO Implement vertical layout
+        # self.tree_search = tree_view.TreeViewSearchLineWidget(None, None??, 'tree search')
+        self.combo_toolbar = kdeui.KToolBar(None)
+        # self.tree_view = tree_view.TreeView(None, 'tree view')
 
-        # self.tree_search = tree_view.TreeViewSearchLineWidget(None, self, 'tree search')
-        self.combo_toolbar = kdeui.KToolBar(self)
-        # self.tree_view = tree_view.TreeView(self, 'tree view')
+        layout = QtGui.QVBoxLayout()
+        # layout.addWidget(self.tree_search)
+        layout.addWidget(self.combo_toolbar)
+        # layout.addWidget(self.tree_view)
+        self.setLayout(layout)
 
         self.path_combo = MyComboBox(self.combo_toolbar)
         self.combo_toolbar.addWidget(self.path_combo)
