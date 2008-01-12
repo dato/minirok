@@ -129,7 +129,7 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
 
         if os.path.isdir(directory):
             urls = self.urls()
-            urls.remove(url)
+            urls.removeAll(url)
             urls.prepend(url)
             self.setUrls(urls, kio.KUrlComboBox.RemoveBottom)
 
