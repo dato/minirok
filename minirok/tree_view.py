@@ -227,16 +227,10 @@ class TreeViewItem(QtGui.QTreeWidgetItem):
         """Sorts directories before files, and by filename after that."""
         return other.IS_DIR - self.IS_DIR or cmp(self.filename, other.filename)
 
+
 class FileItem(TreeViewItem):
+    pass
 
-    HARD_CODED_REGEX = re.compile(r'^(?:(?P<track>\d+)_)?(?:(?P<artist>.+?) - )?(?P<title>.+)\.(?P<ext>\w{3,})')
-
-    def D__init__(self, parent, path):
-        TreeViewItem.__init__(self, parent, path)
-        m = self.HARD_CODED_REGEX.search(self.filename)
-        if m:
-            # self.groups = m.groupdict()
-            self.setText(0, util.unicode_from_path(m.group('title')))
 
 class DirectoryItem(TreeViewItem):
 
