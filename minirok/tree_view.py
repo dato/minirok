@@ -20,10 +20,13 @@ class TreeView(kdeui.KListView):
     def __init__(self, *args):
         kdeui.KListView.__init__(self, *args)
         self.root = None
-        self.timer = qt.QTimer(self, 'tree view timer')
-        self.populate_pending = None
+        self.populating = False
         self.empty_directories = set()
         self.automatically_opened = set()
+        self.timer = qt.QTimer(self, 'tree view timer')
+
+        self.worker = util.ThreadedWorker(_my_listdir, self.timer)
+        self.worker.start()
 
         self.addColumn('')
         self.header().hide()
@@ -32,14 +35,7 @@ class TreeView(kdeui.KListView):
         self.setRootIsDecorated(True)
         self.setSelectionModeExt(kdeui.KListView.Extended)
 
-        # Initially the tree view was populated in a separated thread, but
-        # that didn't work out nicely because you cannot do UI calls in
-        # threads other than the main thread. Now, we use a QTimer object to
-        # periodically call a function that just reads one directory and
-        # creates its KListViewItems. The timer starts with 0 msecs, which
-        # means it will get called whenever there are no pending events to
-        # process.
-        self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_populate_one)
+        self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_populate_done)
 
         self.connect(self, qt.SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
                 self.slot_append_selected)
@@ -112,35 +108,43 @@ class TreeView(kdeui.KListView):
         If directory is the current root and there is no ongoing scan, a simple
         refresh will be performed instead.
         """
-        if directory != self.root or self.populate_pending is not None:
+        if directory != self.root or self.populating:
             # Not refreshing
             self.clear()
-            self.populate_pending = None
+            self.populating = False
             self.empty_directories.clear()
             self.automatically_opened.clear()
             self.setUpdatesEnabled(True) # can be unset if not finished populating
             self.root = directory
 
         _populate_tree(self, self.root)
-        self.timer.start(0, False) # False: not one-shot
+        self.timer.start(0, True) # True: single-shot
 
     def slot_refresh(self):
         self.slot_show_directory(self.root)
 
-    def slot_populate_one(self):
+    def slot_populate_done(self):
         def _directory_children(parent):
             return _get_children(parent, lambda x: x.IS_DIR)
 
-        if self.populate_pending is None:
+        if not self.populating:
+            self.populating = True
             self.setUpdatesEnabled(False)
             self.emit(qt.PYSIGNAL('scan_in_progress'), (True,))
-            self.populate_pending = _directory_children(self)
+            self.worker.queue_many(_directory_children(self))
+            return
 
-        try:
-            item = self.populate_pending.pop(0)
-        except IndexError:
+        done = self.worker.pop_done()
+
+        if done:
+            for item, directory_contents in done:
+                _populate_cache[item.path] = directory_contents
+                item.populate()
+                self.worker.queue_many(_directory_children(item))
+
+        if self.worker.is_empty():
             self.timer.stop()
-            self.populate_pending = None
+            self.populating = False
             self.setUpdatesEnabled(True)
             self.repaint()
             for item in self.empty_directories:
@@ -148,9 +152,6 @@ class TreeView(kdeui.KListView):
                 del item # necessary?
             self.empty_directories.clear()
             self.emit(qt.PYSIGNAL('scan_in_progress'), (False,))
-        else:
-            item.populate()
-            self.populate_pending.extend(_directory_children(item))
 
     def slot_search_finished(self, null_search):
         """Open the visible items, closing items opened in the previous search.
@@ -360,6 +361,8 @@ class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
 
 ##
 
+_populate_cache = {}
+
 def _populate_tree(parent, directory):
     """A helper function to populate either a TreeView or a DirectoryItem.
     
@@ -369,13 +372,18 @@ def _populate_tree(parent, directory):
     It updates TreeView's empty_directories set as appropriate.
     """
     prune_this_parent = True
+    directory_contents = _populate_cache.get(directory, None)
 
-    # Get contents of directory
-    try:
-        files = set(os.listdir(directory))
-    except OSError, e:
-        minirok.logger.warn('could not list directory: %s', e)
-        return
+    if directory_contents is None:
+        # Get contents of directory from the filesystem
+        # print 'W: foo'
+        try:
+            directory_contents = os.listdir(directory)
+        except OSError, e:
+            minirok.logger.warn('could not list directory: %s', e)
+            return
+
+    files = set(directory_contents)
 
     # Check filesystem contents against existing children
     # TODO What's up with prune_this_parent when refreshing.
@@ -428,3 +436,7 @@ def _get_children(toplevel, filter_func=None):
         item = item.nextSibling()
 
     return children
+
+def _my_listdir(item):
+    return [ unicode(x).encode(minirok.filesystem_encoding)
+                for x in qt.QDir(item.path).entryList() if x not in ('.', '..') ]

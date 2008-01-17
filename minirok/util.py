@@ -223,6 +223,18 @@ class ThreadedWorker(qt.QThread):
         self._pending.wakeAll()
 
     @needs_lock('_mutex')
+    def queue_many(self, items):
+        if len(items) > 0:
+            self._queue.extend(items)
+            self._pending.wakeAll()
+
+    @needs_lock('_mutex')
+    @needs_lock('_mutex2')
+    def is_empty(self):
+        """Returns True if both queues are empty."""
+        return len(self._queue) == 0 and len(self._done) == 0
+
+    @needs_lock('_mutex')
     def dequeue(self, item):
         try:
             self._queue.remove(item)

@@ -69,9 +69,15 @@ class LeftSide(qt.QVBox):
 
         if self.path_combo.currentText():
             # This can't go in the MyComboBox constructor because the signals
-            # are not connected yet at that time.
-            self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
-                    (self.path_combo.currentText(),))
+            # are not connected yet at that time. Also, it's in a QTimer
+            # because now that the TreeView works with a threaded worker, the
+            # 0ms timers triggered from there seemed to be taking precedence
+            # over the one creating the KListViewSearchLineWidget, thus making
+            # that widget only appear after the worker had finished.
+            qt.QTimer.singleShot(0, lambda:
+                    self.path_combo.emit(
+                        qt.SIGNAL('returnPressed(const QString &)'),
+                        (self.path_combo.currentText(),)))
         else:
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
