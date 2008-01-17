@@ -24,6 +24,7 @@ class TreeView(kdeui.KListView):
         self.empty_directories = set()
         self.automatically_opened = set()
         self.timer = qt.QTimer(self, 'tree view timer')
+        self.timer.setSingleShot(True)
 
         self.worker = util.ThreadedWorker(_my_listdir, self.timer)
         self.worker.start()
@@ -118,7 +119,7 @@ class TreeView(kdeui.KListView):
             self.root = directory
 
         _populate_tree(self, self.root)
-        self.timer.start(0, True) # True: single-shot
+        self.timer.start(0)
 
     def slot_refresh(self):
         self.slot_show_directory(self.root)
