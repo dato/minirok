@@ -206,22 +206,24 @@ class TreeView(QtGui.QTreeWidget):
 
 ##
 
-class TreeViewItem(kdeui.KListViewItem):
+class TreeViewItem(QtGui.QTreeWidgetItem):
 
-    IS_DIR = 0
+    IS_DIR = 0 # TODO Use QTreeWidgetItem::type() instead?
 
     def __init__(self, parent, path):
         self.path = path
-        self.root = parent.root
-        self.rel_path = re.sub('^%s/*' % re.escape(self.root), '', path)
-        # optimization for TreeViewSearchLine.itemMatches() below
-        self.unicode_rel_path = util.unicode_from_path(self.rel_path)
 
-        self.dirname, self.filename = os.path.split(path)
-        kdeui.KListViewItem.__init__(self, parent,
-                util.unicode_from_path(self.filename))
+        dirname, self.filename = os.path.split(path)
+        QtGui.QTreeWidgetItem.__init__(self, parent,
+                [ util.unicode_from_path(self.filename) ])
+
+        # optimization for TreeViewSearchLine.itemMatches() below
+        root = self.treeWidget().root
+        rel_path = re.sub('^%s/*' % re.escape(root), '', path)
+        self.unicode_rel_path = util.unicode_from_path(rel_path)
 
     def compare(self, other, column, asc):
+        # XXX-KDE4 TODO
         """Sorts directories before files, and by filename after that."""
         return other.IS_DIR - self.IS_DIR or cmp(self.filename, other.filename)
 
