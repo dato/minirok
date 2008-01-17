@@ -25,6 +25,7 @@ class TreeView(QtGui.QTreeWidget):
         self.automatically_opened = set()
 
         self.worker = util.ThreadedWorker(_my_listdir)
+        # self.worker = util.ThreadedWorker(lambda item: os.listdir(item.path))
         self.connect(self.worker, QtCore.SIGNAL('items_ready'),
                 self.slot_populate_done)
         self.worker.start()
@@ -412,6 +413,15 @@ def _get_children(toplevel, filter_func=None):
     return [ item for item in map(toplevel.child, range(toplevel.childCount()))
                 if filter_func is None or filter_func(item) ]
 
+_my_listdir_qdir = QtCore.QDir()
+_my_listdir_qdir.setFilter(QtCore.QDir.Files | QtCore.QDir.Dirs | QtCore.QDir.NoDotAndDotDot)
+
 def _my_listdir(item):
+    """Like os.listdir(item.path), implemented using Qt's QDir.
+
+    This function is used from the Worker thread, because os.listdir() blocks.
+    """
+    # TODO Verify again that is still the case.
+    _my_listdir_qdir.setPath(item.path.decode(minirok.filesystem_encoding))
     return [ unicode(x).encode(minirok.filesystem_encoding)
-                for x in qt.QDir(item.path).entryList() if x not in ('.', '..') ]
+                for x in _my_listdir_qdir.entryList() ]
