@@ -75,6 +75,18 @@ class LeftSide(QtGui.QWidget):
             # are not connected yet at that time.
             self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
                     self.path_combo.currentText())
+
+            # XXX-KDE4 Check this other way, which was merged from threaded_io
+            # This can't go in the MyComboBox constructor because the signals
+            # are not connected yet at that time. Also, it's in a QTimer
+            # because now that the TreeView works with a threaded worker, the
+            # 0ms timers triggered from there seemed to be taking precedence
+            # over the one creating the KListViewSearchLineWidget, thus making
+            # that widget only appear after the worker had finished.
+            #XXX qt.QTimer.singleShot(0, lambda:
+            #XXX         self.path_combo.emit(
+            #XXX             qt.SIGNAL('returnPressed(const QString &)'),
+            #XXX             self.path_combo.currentText()))
         else:
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
