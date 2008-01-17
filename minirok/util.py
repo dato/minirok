@@ -224,8 +224,8 @@ class ThreadedWorker(QtCore.QThread):
         :param function: The function to invoke on each item.
 
         :param timer: The QTimer object to start to start whenever there are
-            done items. The timer will always be started with 0ms, and in
-            single-shot mode.
+            done items. The timer will always be started with 0ms, and its
+            holder should probably set it to single-shot mode.
         """
         QtCore.QThread.__init__(self)
 
@@ -314,4 +314,4 @@ class ThreadedWorker(QtCore.QThread):
                 self._mutex2.unlock()
 
             if self.timer is not None:
-                self.timer.start(0, True) # True: single-shot
+                self.timer.start(0)
