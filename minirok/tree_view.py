@@ -7,41 +7,37 @@
 import os
 import re
 
-from PyQt4 import QtCore
-import kdeui
+from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui
 
 import minirok
 from minirok import drag, engine, util
 
 ##
 
-class TreeView(kdeui.KListView):
+class TreeView(QtGui.QTreeWidget):
 
     def __init__(self, *args):
-        kdeui.KListView.__init__(self, *args)
+        QtGui.QTreeWidget.__init__(self, *args)
         self.root = None
         self.populating = False
         self.empty_directories = set()
         self.automatically_opened = set()
-        self.timer = qt.QTimer(self, 'tree view timer')
+
+        self.timer = QtCore.QTimer(self)
         self.timer.setSingleShot(True)
 
         self.worker = util.ThreadedWorker(_my_listdir, self.timer)
         self.worker.start()
 
-        self.addColumn('')
         self.header().hide()
+        # XXX-KDE4
+        # self.setDragEnabled(True)
+        # self.setSelectionModeExt(kdeui.KListView.Extended)
 
-        self.setDragEnabled(True)
-        self.setRootIsDecorated(True)
-        self.setSelectionModeExt(kdeui.KListView.Extended)
+        self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.slot_populate_done)
 
-        self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_populate_done)
-
-        self.connect(self, qt.SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
-                self.slot_append_selected)
-
-        self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
+        self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
                 self.slot_append_selected)
 
     ##
