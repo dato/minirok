@@ -214,18 +214,13 @@ class ThreadedWorker(QtCore.QThread):
     """A thread that performs a given action on items in a queue.
     
     The thread consumes items from a queue, and stores pairs (item, result)
-    in a "done" queue. Whenever there are done items, the thread fires off a
-    QTimer, received in the constructor.
+    in a "done" queue. Whenever there are done items, the thread emits a
+    "items_ready" signal.
     """
-    # XXX More generic would be to accept a callback function instead of a timer.
     def __init__(self, function, timer=None):
         """Create a worker.
 
         :param function: The function to invoke on each item.
-
-        :param timer: The QTimer object to start to start whenever there are
-            done items. The timer will always be started with 0ms, and its
-            holder should probably set it to single-shot mode.
         """
         QtCore.QThread.__init__(self)
 
@@ -235,7 +230,6 @@ class ThreadedWorker(QtCore.QThread):
         self._mutex2 = QtCore.QMutex() # for _done
         self._pending = QtCore.QWaitCondition()
 
-        self.timer = timer
         self.function = function
 
     ##
@@ -313,5 +307,4 @@ class ThreadedWorker(QtCore.QThread):
             finally:
                 self._mutex2.unlock()
 
-            if self.timer is not None:
-                self.timer.start(0)
+            self.emit(QtCore.SIGNAL('items_ready'))
