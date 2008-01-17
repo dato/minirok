@@ -395,24 +395,21 @@ def _populate_tree(parent, directory):
         # Do not re-add items already in the tree view
         files -= common
 
-    # Pointer to parent's listView (for empty_directories)
-    try:
-        listview = parent.listView()
-    except AttributeError:
-        listview = parent
+    # Pointer to the parent QTreeWidget, for empty_directories
+    treewidget = parent.treeWidget()
 
     for filename in files:
         path = os.path.join(directory, filename)
         if os.path.isdir(path):
             item = DirectoryItem(parent, path)
-            listview.empty_directories.add(item)
+            treewidget.empty_directories.add(item)
         elif minirok.Globals.engine.can_play(path):
             FileItem(parent, path)
             prune_this_parent = False
 
     if not prune_this_parent:
         while parent:
-            listview.empty_directories.discard(parent)
+            treewidget.empty_directories.discard(parent)
             parent = parent.parent()
 
 def _get_children(toplevel, filter_func=None):
