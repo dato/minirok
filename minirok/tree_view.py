@@ -128,7 +128,7 @@ class TreeView(QtGui.QTreeWidget):
             self.populating = True
             self.setUpdatesEnabled(False)
             self.emit(QtCore.SIGNAL('scan_in_progress'), True)
-            self.worker.queue_many(_directory_children(self))
+            self.worker.queue_many(_directory_children(self.invisibleRootItem()))
             return
 
         done = self.worker.pop_done()
