@@ -114,7 +114,7 @@ class TreeView(QtGui.QTreeWidget):
             self.setUpdatesEnabled(True) # can be unset if not finished populating
             self.root = directory
 
-        _populate_tree(self, self.root)
+        _populate_tree(self.invisibleRootItem(), self.root)
         self.timer.start(0)
 
     def slot_refresh(self):
@@ -425,15 +425,8 @@ def _get_children(toplevel, filter_func=None):
     :param filter_func: Only include children for which this function returns
         true. If None, all children will be returned.
     """
-    children = []
-    item = toplevel.firstChild()
-
-    while item:
-        if filter_func is None or filter_func(item):
-            children.append(item)
-        item = item.nextSibling()
-
-    return children
+    return [ item for item in map(toplevel.child, range(toplevel.childCount()))
+                if filter_func is None or filter_func(item) ]
 
 def _my_listdir(item):
     return [ unicode(x).encode(minirok.filesystem_encoding)
