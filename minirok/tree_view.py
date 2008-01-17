@@ -382,7 +382,7 @@ def _populate_tree(parent, directory):
     children = _get_children(parent)
     if children:
         # map { basename: item }, to compare with files
-        mapping = dict((os.path.basename(i.path), i) for i in children)
+        mapping = dict((i.filename, i) for i in children)
         keys = set(mapping.keys())
         common = files & keys
 
