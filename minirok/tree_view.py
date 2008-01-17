@@ -137,7 +137,7 @@ class TreeView(QtGui.QTreeWidget):
             self.setUpdatesEnabled(True)
             self.repaint()
             for item in self.empty_directories:
-                (item.parent() or self).takeItem(item)
+                (item.parent() or self.invisibleRootItem()).removeChild(item)
                 del item # necessary?
             self.empty_directories.clear()
             self.emit(QtCore.SIGNAL('scan_in_progress'), False)
@@ -382,7 +382,7 @@ def _populate_tree(parent, directory):
 
         # Remove items no longer found in the filesystem
         for k in keys - common:
-            parent.takeItem(mapping[k])
+            parent.removeChild(mapping[k])
 
         # Do not re-add items already in the tree view
         files -= common
