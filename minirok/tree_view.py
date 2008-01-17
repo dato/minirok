@@ -24,18 +24,15 @@ class TreeView(QtGui.QTreeWidget):
         self.empty_directories = set()
         self.automatically_opened = set()
 
-        self.timer = QtCore.QTimer(self)
-        self.timer.setSingleShot(True)
-
-        self.worker = util.ThreadedWorker(_my_listdir, self.timer)
+        self.worker = util.ThreadedWorker(_my_listdir)
+        self.connect(self.worker, QtCore.SIGNAL('items_ready'),
+                self.slot_populate_done)
         self.worker.start()
 
         self.header().hide()
         # XXX-KDE4
         # self.setDragEnabled(True)
         # self.setSelectionModeExt(kdeui.KListView.Extended)
-
-        self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.slot_populate_done)
 
         self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
                 self.slot_append_selected)
@@ -108,14 +105,19 @@ class TreeView(QtGui.QTreeWidget):
         if directory != self.root or self.populating:
             # Not refreshing
             self.clear()
-            self.populating = False
             self.empty_directories.clear()
             self.automatically_opened.clear()
             self.setUpdatesEnabled(True) # can be unset if not finished populating
             self.root = directory
 
+        def _directory_children(parent):
+            return _get_children(parent, lambda x: x.IS_DIR)
+
+        self.populating = True
         _populate_tree(self.invisibleRootItem(), self.root)
-        self.timer.start(0)
+        self.setUpdatesEnabled(False)
+        self.emit(QtCore.SIGNAL('scan_in_progress'), True)
+        self.worker.queue_many(_directory_children(self.invisibleRootItem()))
 
     def slot_refresh(self):
         self.slot_show_directory(self.root)
@@ -124,23 +126,12 @@ class TreeView(QtGui.QTreeWidget):
         def _directory_children(parent):
             return _get_children(parent, lambda x: x.IS_DIR)
 
-        if not self.populating:
-            self.populating = True
-            self.setUpdatesEnabled(False)
-            self.emit(QtCore.SIGNAL('scan_in_progress'), True)
-            self.worker.queue_many(_directory_children(self.invisibleRootItem()))
-            return
-
-        done = self.worker.pop_done()
-
-        if done:
-            for item, directory_contents in done:
-                _populate_cache[item.path] = directory_contents
-                item.populate()
-                self.worker.queue_many(_directory_children(item))
+        for item, directory_contents in self.worker.pop_done():
+            _populate_cache[item.path] = directory_contents
+            item.populate()
+            self.worker.queue_many(_directory_children(item))
 
         if self.worker.is_empty():
-            self.timer.stop()
             self.populating = False
             self.setUpdatesEnabled(True)
             self.repaint()
