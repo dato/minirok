@@ -291,7 +291,7 @@ class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
         try:
             item_text = item.unicode_rel_path
         except AttributeError:
-            item_text = unicode(item.text(0)) # XXX-KDE4
+            item_text = unicode(item.text(0))
 
         for regex in self.regexes:
             if not regex.search(item_text):
