@@ -21,13 +21,13 @@ class LeftSide(QtGui.QWidget):
 
         self.tree_search = tree_view.TreeViewSearchLineWidget()
         self.combo_toolbar = kdeui.KToolBar(None)
-        # self.tree_view = tree_view.TreeView(None, 'tree view')
+        self.tree_view = tree_view.TreeView()
 
         layout = QtGui.QVBoxLayout()
         layout.setSpacing(0)
         layout.addWidget(self.tree_search)
         layout.addWidget(self.combo_toolbar)
-        # layout.addWidget(self.tree_view)
+        layout.addWidget(self.tree_view)
         self.setLayout(layout)
 
         self.path_combo = MyComboBox(self.combo_toolbar)
@@ -37,8 +37,7 @@ class LeftSide(QtGui.QWidget):
         # self.combo_toolbar.setItemAutoSized(0) # XXX-KDE4 should be stretchabe or however it's called
 
         self.action_refresh = util.create_action('action_refresh_tree_view',
-                # 'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
-                'Refresh tree view', lambda: XXX_KDE4.self.tree_view.slot_refresh, 'view-refresh', 'F5')
+                'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
         self.combo_toolbar.addAction(self.action_refresh)
 
         self.action_focus_path_combo = util.create_action('action_path_combo_focus',
