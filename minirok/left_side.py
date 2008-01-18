@@ -19,9 +19,9 @@ class LeftSide(QtGui.QWidget):
     def __init__(self, *args):
         QtGui.QWidget.__init__(self, *args)
 
-        self.tree_search = tree_view.TreeViewSearchLineWidget()
-        self.combo_toolbar = kdeui.KToolBar(None)
         self.tree_view = tree_view.TreeView()
+        self.combo_toolbar = kdeui.KToolBar(None)
+        self.tree_search = tree_view.TreeViewSearchLineWidget()
 
         layout = QtGui.QVBoxLayout()
         layout.setSpacing(0)
