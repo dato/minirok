@@ -57,7 +57,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         # Help menu
         self.action_about = kdeui.KStandardAction.aboutApp(
                 kdeui.KAboutApplicationDialog(kdecore.KGlobal.mainComponent().aboutData(), self).show,
-                # XXX-KDE4 kdelibs bug, fix pending: kdeui.KAboutApplicationDialog(None, self).show,
+                # XXX-KDE4 kdelibs bug (r759579): kdeui.KAboutApplicationDialog(None, self).show,
                 actionCollection)
         self.action_about.setShortcutConfigurable(False)
 
