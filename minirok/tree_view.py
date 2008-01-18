@@ -21,14 +21,12 @@ class TreeView(QtGui.QTreeWidget):
         QtGui.QTreeWidget.__init__(self, *args)
         self.root = None
         self.populating = False
+        self.populate_pending = None
         self.empty_directories = set()
         self.automatically_opened = set()
 
-        self.worker = util.ThreadedWorker(_my_listdir)
-        # self.worker = util.ThreadedWorker(lambda item: os.listdir(item.path))
-        self.connect(self.worker, QtCore.SIGNAL('items_ready'),
-                self.slot_populate_done)
-        self.worker.start()
+        self.timer = QtCore.QTimer(self)
+        self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.slot_populate_done)
 
         self.header().hide()
         # XXX-KDE4
@@ -37,6 +35,9 @@ class TreeView(QtGui.QTreeWidget):
 
         self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
                 self.slot_append_selected)
+
+        self.connect(self, QtCore.SIGNAL('itemExpanded(QTreeWidgetItem *)'),
+                lambda item: item.repopulate())
 
     ##
 
@@ -106,9 +107,9 @@ class TreeView(QtGui.QTreeWidget):
         if directory != self.root or self.populating:
             # Not refreshing
             self.clear()
+            self.populate_pending = None
             self.empty_directories.clear()
             self.automatically_opened.clear()
-            self.setUpdatesEnabled(True) # can be unset if not finished populating
             self.root = directory
 
         def _directory_children(parent):
@@ -116,9 +117,10 @@ class TreeView(QtGui.QTreeWidget):
 
         self.populating = True
         _populate_tree(self.invisibleRootItem(), self.root)
-        self.setUpdatesEnabled(False)
         self.emit(QtCore.SIGNAL('scan_in_progress'), True)
-        self.worker.queue_many(_directory_children(self.invisibleRootItem()))
+
+        self.populate_pending = _directory_children(self.invisibleRootItem())
+        self.timer.start(0)
 
     def slot_refresh(self):
         self.slot_show_directory(self.root)
@@ -127,20 +129,19 @@ class TreeView(QtGui.QTreeWidget):
         def _directory_children(parent):
             return _get_children(parent, lambda x: x.IS_DIR)
 
-        for item, directory_contents in self.worker.pop_done():
-            _populate_cache[item.path] = directory_contents
-            item.populate()
-            self.worker.queue_many(_directory_children(item))
-
-        if self.worker.is_empty():
+        try:
+            item = self.populate_pending.pop(0)
+        except IndexError:
+            self.timer.stop()
             self.populating = False
-            self.setUpdatesEnabled(True)
-            self.repaint()
             for item in self.empty_directories:
                 (item.parent() or self.invisibleRootItem()).removeChild(item)
                 del item # necessary?
             self.empty_directories.clear()
             self.emit(QtCore.SIGNAL('scan_in_progress'), False)
+        else:
+            _populate_tree(item, item.path)
+            self.populate_pending.extend(_directory_children(item))
 
     def slot_search_finished(self, null_search):
         """Open the visible items, closing items opened in the previous search.
@@ -230,44 +231,15 @@ class DirectoryItem(TreeViewItem):
 
     def __init__(self, parent, path):
         TreeViewItem.__init__(self, parent, path)
-        self._mtime = -1
-        self._populated = False
-        self.setExpandable(True)
+        self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
 
-    def populate(self):
-        """Populate the entry with children, one level deep.
-        
-        This method will only re-read directory contents from the filesystem
-        if the mtime of the directory is different to the mtime when they were
-        last read.
-        """
-        try:
-            mtime = os.stat(self.path).st_mtime
-        except OSError, e:
-            minirok.logger.warn('cout not stat: %s', e)
-            return
-        else:
-            if self._mtime != mtime:
-                self._mtime = mtime
-                self._populated = False
-            else:
-                return
-
-        if not self._populated:
-            _populate_tree(self, self.path)
-            self._populated = True
-
-    ##
-
-    def setOpen(self, opening):
-        if not self._populated:
-            self.populate()
-
+    def repopulate(self):
+        """Force a repopulation of this item."""
+        _populate_tree(self, self.path, force_refresh=True)
         if not self.childCount():
-            self.setExpandable(False)
-            return
-
-        TreeViewItem.setOpen(self, opening)
+            self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicator)
+        else:
+            self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
 
 ##
 
@@ -347,29 +319,34 @@ class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
 
 ##
 
-_populate_cache = {}
+def _get_children(toplevel, filter_func=None):
+    """Returns a filtered list of all direct children of toplevel.
+    
+    :param filter_func: Only include children for which this function returns
+        true. If None, all children will be returned.
+    """
+    return [ item for item in map(toplevel.child, range(toplevel.childCount()))
+                if filter_func is None or filter_func(item) ]
 
-def _populate_tree(parent, directory):
+def _populate_tree(parent, directory, force_refresh=False):
     """A helper function to populate either a TreeView or a DirectoryItem.
     
-    If parent already contains children, it will be just refreshed, keeping as
+    When populating, this function sets parent.mtime, and when invoked later on
+    the same parent, it will return immediately if the mtime of directory is
+    not different. If it is different, a refresh will be performed, keeping as
     many existing children as possible.
 
     It updates TreeView's empty_directories set as appropriate.
     """
-    prune_this_parent = True
-    directory_contents = _populate_cache.get(directory, None)
+    _my_listdir(directory)
+    mtime, contents = _my_listdir_cache[directory]
 
-    if directory_contents is None:
-        # Get contents of directory from the filesystem
-        # print 'W: foo'
-        try:
-            directory_contents = os.listdir(directory)
-        except OSError, e:
-            minirok.logger.warn('could not list directory: %s', e)
-            return
-
-    files = set(directory_contents)
+    if mtime == getattr(parent, 'mtime', None):
+        return
+    else:
+        parent.mtime = mtime
+        files = set(contents)
+        prune_this_parent = True
 
     # Check filesystem contents against existing children
     # TODO What's up with prune_this_parent when refreshing.
@@ -404,24 +381,26 @@ def _populate_tree(parent, directory):
             treewidget.empty_directories.discard(parent)
             parent = parent.parent()
 
-def _get_children(toplevel, filter_func=None):
-    """Returns a filtered list of all direct children of toplevel.
-    
-    :param filter_func: Only include children for which this function returns
-        true. If None, all children will be returned.
+_my_listdir_cache = {}
+
+def _my_listdir(path):
+    """Read directory contents, storing results in a dictionary cache.
+
+    When invoked over a previously read directory, its contents will only be
+    re-read from the filesystem if the mtime is different to the mtime the last
+    time the contents were read.
     """
-    return [ item for item in map(toplevel.child, range(toplevel.childCount()))
-                if filter_func is None or filter_func(item) ]
-
-_my_listdir_qdir = QtCore.QDir()
-_my_listdir_qdir.setFilter(QtCore.QDir.Files | QtCore.QDir.Dirs | QtCore.QDir.NoDotAndDotDot)
-
-def _my_listdir(item):
-    """Like os.listdir(item.path), implemented using Qt's QDir.
-
-    This function is used from the Worker thread, because os.listdir() blocks.
-    """
-    # TODO Verify again that is still the case.
-    _my_listdir_qdir.setPath(item.path.decode(minirok.filesystem_encoding))
-    return [ unicode(x).encode(minirok.filesystem_encoding)
-                for x in _my_listdir_qdir.entryList() ]
+    try:
+        mtime = os.stat(path).st_mtime
+    except OSError, e:
+        minirok.logger.warn('cout not stat: %s', e)
+        _my_listdir_cache[path] = (None, [])
+    else:
+        if mtime == _my_listdir_cache.get(path, (None, None))[0]:
+            return
+        else:
+            try:
+                _my_listdir_cache[path] = (mtime, os.listdir(path))
+            except OSError, e:
+                minirok.logger.warn('could not listdir: %s', e)
+                _my_listdir_cache[path] = (None, [])
