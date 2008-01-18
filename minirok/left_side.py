@@ -66,7 +66,7 @@ class LeftSide(QtGui.QWidget):
         if self.path_combo.currentText():
             # This can't go in the MyComboBox constructor because the signals
             # are not connected yet at that time.
-            self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
+            self.path_combo.emit(QtCore.SIGNAL('returnPressed(const QString &)'),
                     self.path_combo.currentText())
         else:
             text = 'Enter a directory here'
