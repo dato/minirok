@@ -243,7 +243,7 @@ class DirectoryItem(TreeViewItem):
 
 ##
 
-class TreeViewSearchLine(kdeui.KListViewSearchLine):
+class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
     """Class to perform matches against a TreeViewItem.
 
     The itemMatches() method is overriden to make a match against the full
@@ -255,13 +255,13 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
     emitted.
     """
     def __init__(self, *args):
-        kdeui.KListViewSearchLine.__init__(self, *args)
+        kdeui.KTreeWidgetSearchLine.__init__(self, *args)
         self.string = None
         self.regexes = []
-        self.timer = qt.QTimer(self, 'tree search line timer')
+        self.timer = QtCore.QTimer(self)
         self.timer.setSingleShot(True)
 
-        self.connect(self.timer, qt.SIGNAL('timeout()'),
+        self.connect(self.timer, QtCore.SIGNAL('timeout()'),
                 self.slot_emit_search_finished)
 
     def slot_emit_search_finished(self):
@@ -291,7 +291,7 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
         try:
             item_text = item.unicode_rel_path
         except AttributeError:
-            item_text = unicode(item.text(0))
+            item_text = unicode(item.text(0)) # XXX-KDE4
 
         for regex in self.regexes:
             if not regex.search(item_text):
@@ -299,21 +299,21 @@ class TreeViewSearchLine(kdeui.KListViewSearchLine):
         else:
             return True
 
-class TreeViewSearchLineWidget(kdeui.KListViewSearchLineWidget):
+
+class TreeViewSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
     """Same as super class, but with a TreeViewSearchLine widget."""
 
-    def createSearchLine(self, klistview):
-        return TreeViewSearchLine(self, klistview)
+    def createSearchLine(self, qtreewidget):
+        return TreeViewSearchLine(self, qtreewidget)
 
     ##
 
     def slot_scan_in_progress(self, scanning):
         """Disables itself with an informative tooltip while scanning."""
         if scanning:
-            qt.QToolTip.add(self,
-                    'Search disabled while reading directory contents')
+            self.setToolTip('Search disabled while reading directory contents')
         else:
-            qt.QToolTip.remove(self)
+            self.setToolTip('')
 
         self.setEnabled(not scanning)
 

@@ -19,12 +19,13 @@ class LeftSide(QtGui.QWidget):
     def __init__(self, *args):
         QtGui.QWidget.__init__(self, *args)
 
-        # self.tree_search = tree_view.TreeViewSearchLineWidget(None, None??, 'tree search')
+        self.tree_search = tree_view.TreeViewSearchLineWidget()
         self.combo_toolbar = kdeui.KToolBar(None)
         # self.tree_view = tree_view.TreeView(None, 'tree view')
 
         layout = QtGui.QVBoxLayout()
-        # layout.addWidget(self.tree_search)
+        layout.setSpacing(0)
+        layout.addWidget(self.tree_search)
         layout.addWidget(self.combo_toolbar)
         # layout.addWidget(self.tree_view)
         self.setLayout(layout)
@@ -43,24 +44,17 @@ class LeftSide(QtGui.QWidget):
         self.action_focus_path_combo = util.create_action('action_path_combo_focus',
                 'Focus path combobox', self.path_combo.slot_focus, shortcut='Alt+O')
 
-        return # XXX-KDE4
+        ##
 
-        # the widgets in KListViewSearchLineWidget are created via a slot fired
-        # by a QTimer::singleShot(0ms), so the contained KListViewSearchLine
-        # widget cannot be accessed until then; have to use a QTimer as well.
-        # Thanks to Peter Rockai for the hint.
-        qt.QTimer.singleShot(0, lambda:
-                self.tree_search.searchLine().setListView(self.tree_view))
+        self.tree_search.searchLine().setTreeWidget(self.tree_view)
 
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.tree_search.searchLine(),
-                             QtCore.SIGNAL('search_finished'),
-                             self.tree_view.slot_search_finished))
+        self.connect(self.tree_search.searchLine(),
+                QtCore.SIGNAL('search_finished'),
+                self.tree_view.slot_search_finished)
 
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.tree_search.searchLine(),
-                             qt.SIGNAL('returnPressed(const QString &)'),
-                             self.tree_view.slot_append_visible))
+        self.connect(self.tree_search.searchLine(),
+                QtCore.SIGNAL('returnPressed(const QString &)'),
+                self.tree_view.slot_append_visible)
 
         self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
                 self.tree_search.slot_scan_in_progress)
@@ -69,6 +63,8 @@ class LeftSide(QtGui.QWidget):
                 self.tree_view.slot_show_directory)
 
         ##
+
+        return # XXX-KDE4
 
         if self.path_combo.currentText():
             # This can't go in the MyComboBox constructor because the signals
