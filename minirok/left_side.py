@@ -95,25 +95,16 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         # self.setURLs(urls)
 
         self.connect(self, QtCore.SIGNAL('urlActivated(const KUrl &)'),
-                self.slot_url_changed)
+                self.slot_set_url)
 
         self.connect(self, QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.slot_url_changed)
-
-    def set_url(self, url):
-        """Public function to set an URL in the combo box.
-
-        Using this function rather than setCurrentText() saves you from having
-        to manually emit an urlActivated() or similar signal.
-        """
-        self.setCurrentText(url)
-        self.slot_url_changed(url)
+                self.slot_set_url)
 
     def slot_focus(self):
         self.setFocus()
         self.lineEdit().selectAll()
 
-    def slot_url_changed(self, url):
+    def slot_set_url(self, url):
         if isinstance(url, kdecore.KUrl):
             # We can only store QStrings
             url = url.pathOrUrl()

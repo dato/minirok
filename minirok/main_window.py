@@ -124,7 +124,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         dialog.exec_()
         directory = dialog.selectedFile()
         if directory:
-            self.left_side.path_combo.set_url(directory)
+            self.left_side.path_combo.slot_set_url(directory)
 
     def slot_really_quit(self):
         self._flag_really_quit = True
