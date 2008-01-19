@@ -279,21 +279,25 @@ class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
 
     ##
 
-    def updateSearch(self, string_):
-        string_ = unicode(string_).strip()
-        if string_:
-            if string_ != self.string:
-                self.string = string_
+    def updateSearch(self, string):
+        # http://www.riverbankcomputing.com/pipermail/pyqt/2008-January/018314.html
+        if not isinstance(string, QtCore.QString):
+            return kdeui.KTreeWidgetSearchLine.updateSearch(self, string)
+
+        pystring = unicode(string).strip()
+        if pystring:
+            if pystring != self.string:
+                self.string = pystring
                 self.regexes = [ re.compile(re.escape(pat), re.I | re.U)
-                                               for pat in string_.split() ]
+                                               for pat in pystring.split() ]
         else:
             self.string = None
 
-        kdeui.KListViewSearchLine.updateSearch(self, string_)
+        kdeui.KTreeWidgetSearchLine.updateSearch(self, string)
         self.timer.start(400)
 
-    def itemMatches(self, item, string_):
-        # We don't need to do anything with the string_ parameter here because
+    def itemMatches(self, item, string):
+        # We don't need to do anything with the string parameter here because
         # self.string and self.regexes are always set in updateSearch() above.
         if self.string is None:
             return True
