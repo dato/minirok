@@ -8,7 +8,7 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
-from minirok import left_side, preferences, right_side, statusbar, util
+from minirok import left_side, util # XXX-KDE4 preferences, right_side, statusbar, util
 
 ##
 
@@ -19,16 +19,16 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         util.HasGUIConfig.__init__(self)
 
         minirok.Globals.action_collection = self.actionCollection()
-        minirok.Globals.preferences = preferences.Preferences()
+        # XXX-KDE4 minirok.Globals.preferences = preferences.Preferences()
 
         self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view)
-        self.right_side = right_side.RightSide(self.main_view, 'right side')
-        self.statusbar = statusbar.StatusBar(self, 'statusbar')
+        # XXX-KDE4 self.right_side = right_side.RightSide(self.main_view)
+        # XXX-KDE4 self.statusbar = statusbar.StatusBar(self, 'statusbar')
 
         self.init_systray()
         self.init_actions()
-        self.apply_preferences()
+        # XXX-KDE4 self.apply_preferences()
 
         self.setCentralWidget(self.main_view)
         # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check

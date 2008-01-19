@@ -69,6 +69,9 @@ class LeftSide(QtGui.QWidget):
             self.path_combo.emit(QtCore.SIGNAL('returnPressed(const QString &)'),
                     self.path_combo.currentText())
         else:
+            self.path_combo.emit(QtCore.SIGNAL('returnPressed(const QString &)'),
+                    '/home/adeodato/mp3/artists')
+            return # XXX-KDE4
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
             self.path_combo.setEditText(text)
