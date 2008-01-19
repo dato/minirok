@@ -7,8 +7,8 @@
 import os
 import re
 
-from PyQt4 import QtGui, QtCore
 from PyKDE4 import kdeui
+from PyQt4 import QtGui, QtCore
 
 import minirok
 from minirok import engine, util # XXX-KDE4 drag
