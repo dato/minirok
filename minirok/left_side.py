@@ -19,14 +19,15 @@ class LeftSide(QtGui.QWidget):
     def __init__(self, *args):
         QtGui.QWidget.__init__(self, *args)
 
-        # self.tree_search = tree_view.TreeViewSearchLineWidget(None, None??, 'tree search')
+        self.tree_view = tree_view.TreeView()
         self.combo_toolbar = kdeui.KToolBar(None)
-        # self.tree_view = tree_view.TreeView(None, 'tree view')
+        self.tree_search = tree_view.TreeViewSearchLineWidget()
 
         layout = QtGui.QVBoxLayout()
-        # layout.addWidget(self.tree_search)
+        layout.setSpacing(0)
+        layout.addWidget(self.tree_search)
         layout.addWidget(self.combo_toolbar)
-        # layout.addWidget(self.tree_view)
+        layout.addWidget(self.tree_view)
         self.setLayout(layout)
 
         self.path_combo = MyComboBox(self.combo_toolbar)
@@ -36,31 +37,23 @@ class LeftSide(QtGui.QWidget):
         # self.combo_toolbar.setItemAutoSized(0) # XXX-KDE4 should be stretchabe or however it's called
 
         self.action_refresh = util.create_action('action_refresh_tree_view',
-                # 'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
-                'Refresh tree view', lambda: XXX_KDE4.self.tree_view.slot_refresh, 'view-refresh', 'F5')
+                'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
         self.combo_toolbar.addAction(self.action_refresh)
 
         self.action_focus_path_combo = util.create_action('action_path_combo_focus',
                 'Focus path combobox', self.path_combo.slot_focus, shortcut='Alt+O')
 
-        return # XXX-KDE4
+        ##
 
-        # the widgets in KListViewSearchLineWidget are created via a slot fired
-        # by a QTimer::singleShot(0ms), so the contained KListViewSearchLine
-        # widget cannot be accessed until then; have to use a QTimer as well.
-        # Thanks to Peter Rockai for the hint.
-        qt.QTimer.singleShot(0, lambda:
-                self.tree_search.searchLine().setListView(self.tree_view))
+        self.tree_search.searchLine().setTreeWidget(self.tree_view)
 
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.tree_search.searchLine(),
-                             QtCore.SIGNAL('search_finished'),
-                             self.tree_view.slot_search_finished))
+        self.connect(self.tree_search.searchLine(),
+                QtCore.SIGNAL('search_finished'),
+                self.tree_view.slot_search_finished)
 
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.tree_search.searchLine(),
-                             qt.SIGNAL('returnPressed(const QString &)'),
-                             self.tree_view.slot_append_visible))
+        self.connect(self.tree_search.searchLine(),
+                QtCore.SIGNAL('returnPressed(const QString &)'),
+                self.tree_view.slot_append_visible)
 
         self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
                 self.tree_search.slot_scan_in_progress)
@@ -73,12 +66,12 @@ class LeftSide(QtGui.QWidget):
         if self.path_combo.currentText():
             # This can't go in the MyComboBox constructor because the signals
             # are not connected yet at that time.
-            self.path_combo.emit(qt.SIGNAL('returnPressed(const QString &)'),
+            self.path_combo.emit(QtCore.SIGNAL('returnPressed(const QString &)'),
                     self.path_combo.currentText())
         else:
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
-            self.path_combo.setCurrentText(text)
+            self.path_combo.setEditText(text)
             self.path_combo.setMinimumWidth(width + 30) # add pixels for arrow
 
 ##
@@ -102,25 +95,16 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         # self.setURLs(urls)
 
         self.connect(self, QtCore.SIGNAL('urlActivated(const KUrl &)'),
-                self.slot_url_changed)
+                self.slot_set_url)
 
         self.connect(self, QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.slot_url_changed)
-
-    def set_url(self, url):
-        """Public function to set an URL in the combo box.
-
-        Using this function rather than setCurrentText() saves you from having
-        to manually emit an urlActivated() or similar signal.
-        """
-        self.setCurrentText(url)
-        self.slot_url_changed(url)
+                self.slot_set_url)
 
     def slot_focus(self):
         self.setFocus()
         self.lineEdit().selectAll()
 
-    def slot_url_changed(self, url):
+    def slot_set_url(self, url):
         if isinstance(url, kdecore.KUrl):
             # We can only store QStrings
             url = url.pathOrUrl()
