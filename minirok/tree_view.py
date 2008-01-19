@@ -31,7 +31,7 @@ class TreeView(QtGui.QTreeWidget):
         self.header().hide()
         # XXX-KDE4
         # self.setDragEnabled(True)
-        # self.setSelectionModeExt(kdeui.KListView.Extended)
+        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
         self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
                 self.slot_append_selected)
@@ -44,20 +44,13 @@ class TreeView(QtGui.QTreeWidget):
     def selected_files(self):
         """Returns a list of the selected files (reading directory contents)."""
         def _add_item(item):
-            if not item.isVisible():
-                return
-
-            if not item.IS_DIR:
+            if item.IS_DIR:
+                item.repopulate() # meh, I don't like stat()'ing from here
+                for child in _get_children(item):
+                    _add_item(child)
+            else:
                 if item.path not in files:
                     files.append(item.path)
-                return
-
-            item.populate()
-
-            child = item.firstChild()
-            while child:
-                _add_item(child)
-                child = child.nextSibling()
 
         files = []
 
@@ -83,9 +76,11 @@ class TreeView(QtGui.QTreeWidget):
     ##
 
     def slot_append_selected(self, item):
-        minirok.Globals.playlist.add_files(self.selected_files())
+        if item is not None: # maybe overzealous here
+            minirok.Globals.playlist.add_files(self.selected_files())
 
     def slot_append_visible(self, search_string):
+        # XXX-KDE4 Revisit this
         if not unicode(search_string).strip():
             return
 
