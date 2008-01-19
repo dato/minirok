@@ -158,9 +158,9 @@ class TreeView(QtGui.QTreeWidget):
         """
         # make a list of selected and its parents, in order not to close them
         selected = set()
-        iterator = qt.QListViewItemIterator(self,
-                                            qt.QListViewItemIterator.Selected)
-        item = first_selected = iterator.current()
+        iterator = QtGui.QTreeWidgetItemIterator(self,
+                            QtGui.QTreeWidgetItemIterator.Selected)
+        item = first_selected = iterator.value()
         while item:
             selected.add(item)
             parent = item.parent()
@@ -168,21 +168,21 @@ class TreeView(QtGui.QTreeWidget):
                 selected.add(parent)
                 parent = parent.parent()
             iterator += 1
-            item = iterator.current()
+            item = iterator.value()
 
         for item in self.automatically_opened - selected:
-            item.setOpen(False)
+            item.setExpanded(False)
 
-        self.automatically_opened &= selected # not sure this is a good idea
+        self.automatically_opened &= selected # keep them to close later
 
         if null_search:
-            self.ensureItemVisible(first_selected)
+            self.scrollToItem(first_selected)
             return
 
         ##
 
-        is_visible = lambda x: x.isVisible()
-        pending = _get_children(self, is_visible)
+        is_visible = lambda x: not x.isHidden()
+        pending = _get_children(self.invisibleRootItem(), is_visible)
         toplevel_count = len(pending)
         i = 0
         while pending:
@@ -190,10 +190,10 @@ class TreeView(QtGui.QTreeWidget):
             item = pending.pop(0)
             visible_children = _get_children(item, is_visible)
             if ((i <= toplevel_count or len(visible_children) <= 5)
-                    and not item.isOpen()):
-                item.setOpen(True)
+                    and not item.isExpanded()):
+                item.setExpanded(True)
                 self.automatically_opened.add(item)
-            pending.extend(x for x in visible_children if x.isExpandable())
+            pending.extend(x for x in visible_children if x.IS_DIR)
 
     ##
 
