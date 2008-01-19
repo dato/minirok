@@ -313,6 +313,15 @@ class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
         else:
             return True
 
+    def event(self, event):
+        # Do not let KTreeWidgetSearchLine eat our return key
+        if (event.type() == QtCore.QEvent.KeyPress
+                and (event.key() == QtCore.Qt.Key_Enter
+                    or event.key() == QtCore.Qt.Key_Return)):
+            return kdeui.KLineEdit.event(self, event)
+        else:
+            return kdeui.KTreeWidgetSearchLine.event(self, event)
+
 
 class TreeViewSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
     """Same as super class, but with a TreeViewSearchLine widget."""
