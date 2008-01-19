@@ -11,7 +11,7 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kdeui
 
 import minirok
-from minirok import drag, engine, util
+from minirok import engine, util # XXX-KDE4 drag
 
 ##
 
