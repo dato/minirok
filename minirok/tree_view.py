@@ -108,6 +108,7 @@ class TreeView(QtGui.QTreeWidget):
             # Not refreshing
             self.clear()
             self.populate_pending = None
+            self.setSortingEnabled(False) # dog slow otherwise
             self.empty_directories.clear()
             self.automatically_opened.clear()
             self.root = directory
@@ -117,10 +118,15 @@ class TreeView(QtGui.QTreeWidget):
 
         self.populating = True
         _populate_tree(self.invisibleRootItem(), self.root)
+        self.sortItems(0, QtCore.Qt.AscendingOrder) # (¹)
         self.emit(QtCore.SIGNAL('scan_in_progress'), True)
 
         self.populate_pending = _directory_children(self.invisibleRootItem())
         self.timer.start(0)
+
+        # (¹) There seems to be a bug somewhere, that if setSortingEnabled(True)
+        # is called, without calling some function like sortItems() where the
+        # SortOrder is specified, you get Descending by default. Beware.
 
     def slot_refresh(self):
         self.slot_show_directory(self.root)
@@ -134,6 +140,7 @@ class TreeView(QtGui.QTreeWidget):
         except IndexError:
             self.timer.stop()
             self.populating = False
+            self.setSortingEnabled(True)
             for item in self.empty_directories:
                 (item.parent() or self.invisibleRootItem()).removeChild(item)
                 del item # necessary?
@@ -215,10 +222,9 @@ class TreeViewItem(QtGui.QTreeWidgetItem):
         rel_path = re.sub('^%s/*' % re.escape(root), '', path)
         self.unicode_rel_path = util.unicode_from_path(rel_path)
 
-    def compare(self, other, column, asc):
-        # XXX-KDE4 TODO
+    def __lt__(self, other):
         """Sorts directories before files, and by filename after that."""
-        return other.IS_DIR - self.IS_DIR or cmp(self.filename, other.filename)
+        return (other.IS_DIR, self.filename) < (self.IS_DIR, other.filename)
 
 
 class FileItem(TreeViewItem):
@@ -236,10 +242,14 @@ class DirectoryItem(TreeViewItem):
     def repopulate(self):
         """Force a repopulation of this item."""
         _populate_tree(self, self.path, force_refresh=True)
+
         if not self.childCount():
             self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicator)
         else:
             self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+
+        if not self.treeWidget().isSortingEnabled():
+            self.sortChildren(0, QtCore.Qt.AscendingOrder)
 
 ##
 
