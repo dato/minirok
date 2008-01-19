@@ -68,15 +68,15 @@ class TreeView(QtGui.QTreeWidget):
 
     def visible_files(self):
         files = []
-        iterator = qt.QListViewItemIterator(self,
-                                            qt.QListViewItemIterator.Visible)
+        iterator = QtGui.QTreeWidgetItemIterator(self,
+                            QtGui.QTreeWidgetItemIterator.NotHidden)
 
-        item = iterator.current()
+        item = iterator.value()
         while item:
             if not item.IS_DIR:
                 files.append(item.path)
             iterator += 1
-            item = iterator.current()
+            item = iterator.value()
 
         return files
 
