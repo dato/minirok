@@ -13,6 +13,11 @@
       - DBUS is used instead of DCOP, bla bla bla.
 	(TODO)
 
+  FOO
+
+    * XXX Mention the improvement when loading in the tree view a
+      directory which had already been opened.
+
 
 0.8	IN DEVELOPMENT
 
