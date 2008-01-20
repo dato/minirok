@@ -6,6 +6,7 @@
 
 import os
 import re
+import stat
 
 from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
@@ -363,8 +364,8 @@ def _populate_tree(parent, directory, force_refresh=False):
         return
     else:
         parent.mtime = mtime
-        files = set(contents)
         prune_this_parent = True
+        files = set(contents.keys())
 
     # Check filesystem contents against existing children
     # TODO What's up with prune_this_parent when refreshing.
@@ -387,7 +388,7 @@ def _populate_tree(parent, directory, force_refresh=False):
 
     for filename in files:
         path = os.path.join(directory, filename)
-        if os.path.isdir(path):
+        if stat.S_ISDIR(contents[filename].st_mode):
             item = DirectoryItem(parent, path)
             treewidget.empty_directories.add(item)
         elif minirok.Globals.engine.can_play(path):
@@ -399,6 +400,8 @@ def _populate_tree(parent, directory, force_refresh=False):
             treewidget.empty_directories.discard(parent)
             parent = parent.parent()
 
+# This is a dict like:
+# { path: (mtime, { entry1: stat_struct, entry2: stat_struct, ... }), ... }
 _my_listdir_cache = {}
 
 def _my_listdir(path):
@@ -418,7 +421,10 @@ def _my_listdir(path):
             return
         else:
             try:
-                _my_listdir_cache[path] = (mtime, os.listdir(path))
+                _my_listdir_cache[path] = (mtime,
+                        dict((x, os.stat(os.path.join(path, x)))
+                            for x in os.listdir(path)))
             except OSError, e:
+                # XXX can the error come from the stat() as well?
                 minirok.logger.warn('could not listdir: %s', e)
                 _my_listdir_cache[path] = (None, [])
