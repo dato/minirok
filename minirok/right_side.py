@@ -1,36 +1,39 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import qt
-import kdeui
+from PyKDE4 import kdeui
+from PyQt4 import QtGui, QtCore
 
 import minirok
-from minirok import playlist
+from minirok import util # XXX-KDE4 playlist
 
 ##
 
-class RightSide(qt.QVBox):
+class RightSide(QtGui.QWidget):
 
     def __init__(self, *args):
-        qt.QVBox.__init__(self, *args)
+        QtGui.QWidget.__init__(self, *args)
 
-        self.setSpacing(2)
+        # self.playlist = playlist.Playlist()
+        # self.toolbar = kdeui.KToolBar(None)
+        self.playlist = QtGui.QTreeWidget() # XXX-KDE4
+        self.playlist_search = PlaylistSearchLineWidget(None, self.playlist)
 
-        self.playlist_search = PlaylistSearchLineWidget(None, self, 'playlist search')
-        self.playlist = playlist.Playlist(self, 'playlist')
-        self.toolbar = kdeui.KToolBar(self, 'playlist toolbar')
+        layout = QtGui.QVBoxLayout()
+        layout.setSpacing(0)
+        layout.addWidget(self.playlist_search)
+        layout.addWidget(self.playlist)
+        # layout.addWidget(self.toolbar)
+        self.setLayout(layout)
 
-        # see comment in LeftSide.__init__ about this
-        qt.QTimer.singleShot(0, lambda:
-                self.playlist_search.searchLine().setListView(self.playlist))
+        self.connect(self.playlist_search.searchLine(),
+                QtCore.SIGNAL('returnPressed(const QString &)'),
+                lambda: self.playlist.slot_play_first_visible) # XXX-KDE4 lambda
 
-        qt.QTimer.singleShot(0, lambda:
-                self.connect(self.playlist_search.searchLine(),
-                             qt.SIGNAL('returnPressed(const QString &)'),
-                             self.playlist.slot_play_first_visible))
+        return # XXX-KDE4
 
         # populate the toolbar
         self.toolbar.setFullSize(True)
@@ -48,22 +51,23 @@ class RightSide(qt.QVBox):
 
 ##
 
-class PlaylistSearchLine(kdeui.KListViewSearchLine):
+class PlaylistSearchLine(util.SearchLineWithReturnKey):
     """A search line that calls Playlist.slot_list_changed when a search finishes."""
 
-    def __init__(self, *args):
-        kdeui.KListViewSearchLine.__init__(self, *args)
-        self.timer = qt.QTimer(self, 'playlist search line timer')
+    def __init__(self, parent, playlist):
+        util.SearchLineWithReturnKey.__init__(self, parent, playlist)
+        self.timer = QtCore.QTimer(self)
         self.timer.setSingleShot(True)
-        self.connect(self.timer, qt.SIGNAL('timeout()'),
-                lambda: minirok.Globals.playlist.slot_list_changed())
+        self.connect(self.timer, QtCore.SIGNAL('timeout()'),
+                lambda: playlist.slot_list_changed) # XXX-KDE4 lambda
 
     def updateSearch(self, *args):
-        kdeui.KListViewSearchLine.updateSearch(self, *args)
+        util.SearchLineWithReturnKey.updateSearch(self, *args)
         self.timer.start(400)
 
-class PlaylistSearchLineWidget(kdeui.KListViewSearchLineWidget):
+
+class PlaylistSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
     """Same as super class, but with a PlaylistSearchLine widget."""
 
-    def createSearchLine(self, klistview):
-        return PlaylistSearchLine(self, klistview)
+    def createSearchLine(self, qtreewidget):
+        return PlaylistSearchLine(self, qtreewidget)
