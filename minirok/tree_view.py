@@ -249,7 +249,7 @@ class DirectoryItem(TreeViewItem):
 
 ##
 
-class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
+class TreeViewSearchLine(util.SearchLineWithReturnKey):
     """Class to perform matches against a TreeViewItem.
 
     The itemMatches() method is overriden to make a match against the full
@@ -261,7 +261,7 @@ class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
     emitted.
     """
     def __init__(self, *args):
-        kdeui.KTreeWidgetSearchLine.__init__(self, *args)
+        util.SearchLineWithReturnKey.__init__(self, *args)
         self.string = None
         self.regexes = []
         self.timer = QtCore.QTimer(self)
@@ -308,15 +308,6 @@ class TreeViewSearchLine(kdeui.KTreeWidgetSearchLine):
                 return False
         else:
             return True
-
-    def event(self, event):
-        # Do not let KTreeWidgetSearchLine eat our return key
-        if (event.type() == QtCore.QEvent.KeyPress
-                and (event.key() == QtCore.Qt.Key_Enter
-                    or event.key() == QtCore.Qt.Key_Return)):
-            return kdeui.KLineEdit.event(self, event)
-        else:
-            return kdeui.KTreeWidgetSearchLine.event(self, event)
 
 
 class TreeViewSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):

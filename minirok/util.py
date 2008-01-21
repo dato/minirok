@@ -308,3 +308,17 @@ class ThreadedWorker(QtCore.QThread):
                 self._mutex2.unlock()
 
             self.emit(QtCore.SIGNAL('items_ready'))
+
+##
+
+class SearchLineWithReturnKey(kdeui.KTreeWidgetSearchLine):
+    """A search line that doesn't forward Return key to its QTreeWidget."""
+
+    def event(self, event):
+        # Do not let KTreeWidgetSearchLine eat our return key
+        if (event.type() == QtCore.QEvent.KeyPress
+                and (event.key() == QtCore.Qt.Key_Enter
+                    or event.key() == QtCore.Qt.Key_Return)):
+            return kdeui.KLineEdit.event(self, event)
+        else:
+            return kdeui.KTreeWidgetSearchLine.event(self, event)
