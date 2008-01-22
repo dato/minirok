@@ -23,7 +23,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
         self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view)
-        self.right_side = right_side.RightSide(self.main_view)
+        self.right_side = right_side.RightSide(self.main_view, main_window=self)
         # XXX-KDE4 self.statusbar = statusbar.StatusBar(self, 'statusbar')
 
         self.init_systray()
@@ -34,8 +34,9 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check
 
         self.setHelpMenuEnabled(False)
-        self.setupGUI(self.StandardWindowOption(self.Keys | self.Save | self.Create), # XXX-KDE4 self.ToolBar
-                '/home/adeodato/devel/minirok/minirok.kde4/config/minirokui.rc') # XXX-KDE4
+        self.setupGUI(self.StandardWindowOption(
+            self.ToolBar | self.Keys | self.Save | self.Create), # StatusBar out
+            '/home/adeodato/devel/minirok/minirok.kde4/config/minirokui.rc') # XXX-KDE4
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag

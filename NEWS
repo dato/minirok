@@ -7,8 +7,8 @@
       - global keybindings work natively, without needing KHotKeys + DCOP.
 	(TODO)
 
-      - the toolbar can be configured, as in other KDE applications.
-	(TODO)
+      - the buttons that appear in the toolbar can be configured, as in
+	other KDE applications.
 
       - DBUS is used instead of DCOP, bla bla bla.
 	(TODO)

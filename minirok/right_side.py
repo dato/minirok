@@ -8,44 +8,38 @@ from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
 
 import minirok
-from minirok import util # XXX-KDE4 playlist
+from minirok import playlist, util
 
 ##
 
 class RightSide(QtGui.QWidget):
 
-    def __init__(self, *args):
-        QtGui.QWidget.__init__(self, *args)
+    def __init__(self, parent, main_window):
+        QtGui.QWidget.__init__(self, parent)
 
-        # self.playlist = playlist.Playlist()
-        # self.toolbar = kdeui.KToolBar(None)
-        self.playlist = QtGui.QTreeWidget() # XXX-KDE4
+        self.playlist = playlist.Playlist()
+        self.stretchtoolbar = QtGui.QWidget()
+        self.toolbar = kdeui.KToolBar('playlistToolBar', main_window,
+                                                QtCore.Qt.BottomToolBarArea)
         self.playlist_search = PlaylistSearchLineWidget(None, self.playlist)
 
-        layout = QtGui.QVBoxLayout()
-        layout.setSpacing(0)
-        layout.addWidget(self.playlist_search)
-        layout.addWidget(self.playlist)
-        # layout.addWidget(self.toolbar)
-        self.setLayout(layout)
+        vlayout = QtGui.QVBoxLayout()
+        vlayout.setSpacing(0)
+        vlayout.addWidget(self.playlist_search)
+        vlayout.addWidget(self.playlist)
+        vlayout.addWidget(self.stretchtoolbar)
+        self.setLayout(vlayout)
+
+        hlayout = QtGui.QHBoxLayout()
+        hlayout.addStretch()
+        hlayout.addWidget(self.toolbar)
+        self.stretchtoolbar.setLayout(hlayout)
+
+        self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
 
         self.connect(self.playlist_search.searchLine(),
                 QtCore.SIGNAL('returnPressed(const QString &)'),
-                lambda: self.playlist.slot_play_first_visible) # XXX-KDE4 lambda
-
-        return # XXX-KDE4
-
-        # populate the toolbar
-        self.toolbar.setFullSize(True)
-        self.toolbar.setMovingEnabled(False) # this erases the border...
-        self.toolbar.insertWidget(0, 0, qt.QWidget(self.toolbar))
-        self.toolbar.setItemAutoSized(0)
-        self.playlist.action_previous.plug(self.toolbar)
-        self.playlist.action_play_pause.plug(self.toolbar)
-        self.playlist.action_stop.plug(self.toolbar)
-        self.playlist.action_next.plug(self.toolbar)
-        self.toolbar.insertLineSeparator(-1, -1)
-        self.playlist.action_clear.plug(self.toolbar)
+                self.playlist.slot_play_first_visible)
 
         minirok.Globals.playlist = self.playlist
 

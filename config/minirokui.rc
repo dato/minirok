@@ -7,6 +7,15 @@
       <Action name="action_open_directory" />
     </Menu>
   </MenuBar>
+  <ToolBar name="playlistToolBar" >
+    <text>Playlist Toolbar</text>
+    <Action name="action_previous" />
+    <Action name="action_play_pause" />
+    <Action name="action_stop" />
+    <Action name="action_next" />
+    <Separator/>
+    <Action name="action_clear_playlist" />
+  </ToolBar>
 </gui>
 
 <!-- vim: set ft=xml : -->
