@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
@@ -9,25 +9,28 @@ import re
 import sys
 import errno
 
-from PyQt4 import QtCore
-import kdeui
-import kdecore
+from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui, kdecore
 
 import minirok
-from minirok import drag, engine, tag_reader, util
+from minirok import engine, tag_reader, util # XXX-KDE4 drag
 
 ##
 
-class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
+class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
     FIRST_ITEM = object()
 
     def __init__(self, *args):
-        kdeui.KListView.__init__(self, *args)
+        QtGui.QTreeWidget.__init__(self, *args)
         util.HasConfig.__init__(self)
         util.HasGUIConfig.__init__(self)
+
+        # XXX-KDE4
+        self.init_actions()
+        return
 
         self.queue = []
         self.columns = Columns(self)
@@ -81,32 +84,33 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
     ##
 
     def init_actions(self):
-        ac = minirok.Globals.action_collection
+        self.action_play = util.create_action('action_play', 'Play',
+                self.slot_play, 'media-playback-start')
 
-        self.action_play = kdeui.KAction('Play', 'player_play',
-                kdecore.KShortcut.null(), self.slot_play, ac, 'action_play')
+        self.action_pause = util.create_action('action_pause', 'Pause',
+                self.slot_pause, 'media-playback-pause', factory=kdeui.KToggleAction)
 
-        self.action_pause = kdeui.KToggleAction('Pause', 'player_pause',
-                kdecore.KShortcut.null(), self.slot_pause, ac, 'action_pause')
+        self.action_play_pause = util.create_action('action_play_pause', 'Play/Pause',
+                self.slot_play_pause, 'media-playback-start', 'Ctrl+P',# 'Ctrl+Alt+P',
+                factory=kdeui.KToggleAction)
 
-        self.action_play_pause = kdeui.KToggleAction('Play/Pause', 'player_play',
-                kdecore.KShortcut('Ctrl+P'), self.slot_play_pause, ac, 'action_play_pause')
+        self.action_stop = util.create_action('action_stop', 'Stop',
+                self.slot_stop, 'media-playback-stop', 'Ctrl+O',# 'Ctrl+Alt+I,O',
+                factory=StopAction)
 
-        self.action_stop = StopAction('Stop', 'player_stop',
-                kdecore.KShortcut('Ctrl+O'), self.slot_stop, ac, 'action_stop')
+        self.action_next = util.create_action('action_next', 'Next',
+                self.slot_next, 'media-skip-forward', 'Ctrl+N')#, 'Ctrl+Alt+I,N')
 
-        self.action_next = kdeui.KAction('Next', 'player_end',
-                kdecore.KShortcut('Ctrl+N'), self.slot_next, ac, 'action_next')
+        self.action_previous = util.create_action('action_previous', 'Previous',
+                self.slot_previous, 'media-skip-backward', 'Ctrl+I')#, 'Ctrl+Alt+I,P')
 
-        self.action_previous = kdeui.KAction('Previous', 'player_start',
-                kdecore.KShortcut('Ctrl+I'), self.slot_previous, ac, 'action_previous')
+        self.action_clear = util.create_action('action_clear_playlist', 'Clear playlist',
+                self.slot_clear, 'view_remove_xxx', 'Ctrl+L')
 
-        self.action_clear = kdeui.KAction('Clear playlist', 'view_remove',
-                kdecore.KShortcut('Ctrl+L'), self.slot_clear, ac, 'action_clear_playlist')
-
-        self.action_toggle_stop_after_current = kdeui.KAction('Stop after current',
-                'player_stop', kdecore.KShortcut('Ctrl+K'),
-                self.slot_toggle_stop_after_current, ac, 'action_toggle_stop_after_current')
+        self.action_toggle_stop_after_current = util.create_action(
+                'action_toggle_stop_after_current', 'Stop after current',
+                self.slot_toggle_stop_after_current, 'media-playback-stop',
+                'Ctrl+K')#, 'Ctrl+I+K')
 
     def column_index(self, col_name):
         try:
@@ -723,7 +727,9 @@ class StopAction(kdeui.KToolBarPopupAction):
     AFTER_QUEUE = 2
 
     def __init__(self, *args):
-        kdeui.KToolBarPopupAction.__init__(self, *args)
+        kdeui.KToolBarPopupAction.__init__(self, kdeui.KIcon(), "", None)
+
+    def xxx_kde4_disabled(): # XXX-KDE4
         self.popup_menu = self.popupMenu()
 
         self.popup_menu.insertTitle('Stop')
@@ -763,7 +769,7 @@ class StopAction(kdeui.KToolBarPopupAction):
 
 ##
 
-class PlaylistItem(kdeui.KListViewItem):
+class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
 
     ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
 
