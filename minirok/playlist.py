@@ -105,7 +105,7 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
                 self.slot_previous, 'media-skip-backward', 'Ctrl+I')#, 'Ctrl+Alt+I,P')
 
         self.action_clear = util.create_action('action_clear_playlist', 'Clear playlist',
-                self.slot_clear, 'view_remove_xxx', 'Ctrl+L')
+                self.slot_clear, 'edit-clear-list', 'Ctrl+L')
 
         self.action_toggle_stop_after_current = util.create_action(
                 'action_toggle_stop_after_current', 'Stop after current',
