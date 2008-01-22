@@ -33,6 +33,7 @@ class RightSide(QtGui.QWidget):
         hlayout = QtGui.QHBoxLayout()
         hlayout.addStretch()
         hlayout.addWidget(self.toolbar)
+        hlayout.setContentsMargins(0, 0, 0, 0)
         self.stretchtoolbar.setLayout(hlayout)
 
         self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
