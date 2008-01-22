@@ -4,22 +4,23 @@
 # Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import qt
 import mutagen
 import mutagen.id3
 import mutagen.mp3
 import mutagen.easyid3
+
+from PyQt4 import QtCore
 
 import minirok
 from minirok import util
 
 ##
 
-class TagReader(qt.QObject):
+class TagReader(QtCore.QObject):
     """Reads tags from files in a pending queue."""
 
     def __init__(self):
-        qt.QObject.__init__(self)
+        QtCore.QObject.__init__(self)
 
         self.worker = util.ThreadedWorker(lambda item: TagReader.tags(item.path))
         self.connect(self.worker, QtCore.SIGNAL('items_ready'), self.update_done)
