@@ -76,9 +76,10 @@ def get_png(name):
 
 _png_cache = {}
 
-def create_action(name, text, slot, icon=None, shortcut=None, global_shortcut=None):
+def create_action(name, text, slot, icon=None, shortcut=None,
+                        global_shortcut=None, factory=kdeui.KAction):
     """Helper to create KAction objects."""
-    action = kdeui.KAction(None)
+    action = factory(None)
     action.setText(text)
 
     QtCore.QObject.connect(action, QtCore.SIGNAL('triggered(bool)'), slot)
