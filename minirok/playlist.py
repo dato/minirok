@@ -104,8 +104,11 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
         self.action_previous = util.create_action('action_previous', 'Previous',
                 self.slot_previous, 'media-skip-backward', 'Ctrl+I')#, 'Ctrl+Alt+I,P')
 
+        # Note: the icon here is named minirok_foo-bar and not minirok-foo-bar,
+        # because if it isn't found, minirok-* seems to select the minirok.png
+        # icon automatically. And I'd rather have the "unknown icon" icon instead.
         self.action_clear = util.create_action('action_clear_playlist', 'Clear playlist',
-                self.slot_clear, 'edit-clear-list', 'Ctrl+L')
+                self.slot_clear, 'minirok_playlist-clear', 'Ctrl+L')
 
         self.action_toggle_stop_after_current = util.create_action(
                 'action_toggle_stop_after_current', 'Stop after current',

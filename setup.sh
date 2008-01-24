@@ -87,6 +87,7 @@ case "$1" in
 	install_package
 	install_manpage
 	install_icons images/icons "$ICONS"
+	install_icons images/icons/private "$MINIROK/icons"
 	install_file config/minirokrc "$CONFIG"
 	install_file config/minirok.desktop "$DESKTOP"
 	install_file config/minirok.khotkeys "$KHOTKEYS"
