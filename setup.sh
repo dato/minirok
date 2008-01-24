@@ -46,9 +46,8 @@ install_symlink () {
 ##
 
 install_icons () {
-    for size in 16 22 32 48 64 128; do
-    	install_file2 images/icons/hi${size}-app-minirok.png \
-		      "$ICONS/hicolor/${size}x${size}/apps/minirok.png"
+    ( cd "$1" && find -maxdepth 1 -name '*.png' ) | while read file; do
+    	install_file2 "$1/$file" "$2/`echo $file | tr = /`"
     done
 }
 
@@ -84,10 +83,10 @@ mode () {
 
 case "$1" in
     install)
-	install_icons
 	install_images
 	install_package
 	install_manpage
+	install_icons images/icons "$ICONS"
 	install_file config/minirokrc "$CONFIG"
 	install_file config/minirok.desktop "$DESKTOP"
 	install_file config/minirok.khotkeys "$KHOTKEYS"
