@@ -254,8 +254,8 @@ class TreeViewSearchLine(util.SearchLineWithReturnKey):
 
     The itemMatches() method is overriden to make a match against the full
     relative path (with respect to the TreeView root directory) of the items,
-    plus the patter is split in words and all have to match (instead of having
-    to match *in the same order*, as happes in the standard KListViewSearchLine.
+    plus the pattern is split in words and all have to match (instead of having
+    to match *in the same order*, as happens in the standard KListViewSearchLine.
 
     When the user stops typing, a search_finished(bool empty_search) signal is
     emitted.
