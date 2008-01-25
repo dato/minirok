@@ -3,11 +3,11 @@
 <!DOCTYPE kpartgui SYSTEM 'kpartgui.dtd'>
 <gui name="minirok" version="1">
   <MenuBar>
-    <Menu name="file" >
+    <Menu name="file">
       <Action name="action_open_directory" />
     </Menu>
   </MenuBar>
-  <ToolBar name="playlistToolBar" >
+  <ToolBar name="playlistToolBar">
     <text>Playlist Toolbar</text>
     <Action name="action_previous" />
     <Action name="action_play_pause" />
