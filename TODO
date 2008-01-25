@@ -23,6 +23,7 @@ Playlist:
     non-visible items in between.
 
 UI:
+  * save size of the sides of QSplitter
   * connect track change / playlist change with statusbar and caption
 
 Statusbar:
