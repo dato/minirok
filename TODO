@@ -16,6 +16,8 @@ Playlist:
     not show the current item as visible.
   * Limiting the search, and removing all visible items, removes all
     non-visible items in between.
+  * Er, can't drag & drop tracks into the *first position* of the
+    playlist.
 
 UI:
   * connect track change / playlist change with statusbar and caption
