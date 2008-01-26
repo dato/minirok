@@ -33,10 +33,12 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
         return
 
         self.queue = []
+        self.visualizer_rect = None
         self.columns = Columns(self)
         self.stop_mode = StopMode.NONE
         self.random_queue = util.RandomOrderedList()
         self.tag_reader = tag_reader.TagReader()
+        self.kapplication = kdecore.KApplication.kApplication()
 
         # these have a property() below
         self._stop_after = None
@@ -242,6 +244,9 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
 
     def slot_accept_drop(self, event, prev_item):
         if event.source() != self.viewport(): # XXX
+            # If Control is pressed, we want to append at the end:
+            if self.kapplication.keyboardMouseState() & qt.Qt.ControlButton:
+                prev_item = self.lastItem()
             files = drag.FileListDrag.file_list(event)
             self.add_files(files, prev_item)
 
@@ -668,6 +673,27 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
             return True
         else:
             return kdeui.KListView.acceptDrag(self, event)
+
+    def contentsDragMoveEvent(self, event):
+        if (not self.kapplication.keyboardMouseState() & qt.Qt.ControlButton
+                or not drag.FileListDrag.canDecode(event)):
+            if self.visualizer_rect is not None:
+                self.viewport().repaint(self.visualizer_rect, True)
+                self.visualizer_rect = None
+            return kdeui.KListView.contentsDragMoveEvent(self, event)
+        else:
+            try:
+                self.cleanDropVisualizer()
+                self.setDropVisualizer(False)
+                rect = self.drawDropVisualizer(None, None, self.lastChild())
+                if rect != self.visualizer_rect:
+                    self.visualizer_rect = rect
+                    brush = qt.QBrush(qt.Qt.Dense4Pattern)
+                    painter = qt.QPainter(self.viewport())
+                    painter.fillRect(self.visualizer_rect, brush)
+                return kdeui.KListView.contentsDragMoveEvent(self, event)
+            finally:
+                self.setDropVisualizer(True)
 
     def eventFilter(self, object_, event):
         # TODO Avoid so many calls to viewport(), type(), button(), ... ?

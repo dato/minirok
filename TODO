@@ -8,8 +8,6 @@ IMPORTANT:
 Tree View:
   * Remove artifacts in the pointer when dragging (display file count?)
   * Use a regex as well to control the appearance of file names?
-  * If dropping while holding down Control, append instead of inserting
-    (like in Amarok)
 
 Playlist:
   * Undo/redo?
@@ -21,6 +19,8 @@ Playlist:
     not show the current item as visible.
   * Limiting the search, and removing all visible items, removes all
     non-visible items in between.
+  * Er, can't drag & drop tracks into the *first position* of the
+    playlist.
 
 UI:
   * save size of the sides of QSplitter
