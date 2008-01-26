@@ -10,6 +10,11 @@
       dialog the directory to load in the tree view, instead of having
       to type it.
 
+    * Dropping tracks while holding down the Control key will always
+      append them at the end of the playlist, independently of the
+      position they were dropped at.
+
+
   IMPROVEMENTS
 
     * Key shortcuts for toggling random mode (Ctrl+R by default) and
