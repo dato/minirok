@@ -1,8 +1,14 @@
-minirok (0.8-1) UNRELEASED; urgency=low
+minirok (0.8-1) unstable; urgency=low
 
-  * New upstream release.
+  * New upstream release:
+    + provides a "Refresh" button in the tree view. (Closes: #457969)
 
- -- Adeodato Simó <dato@net.com.org.es>  Tue, 04 Dec 2007 17:34:00 +0100
+      (The KDE4 version will also refresh directories when being opened
+      in the tree view. Also, if you'd like for the Refresh action to be
+      accessible from the menu and not only from a button, please let me
+      know.)
+
+ -- Adeodato Simó <dato@net.com.org.es>  Sun, 27 Jan 2008 13:21:21 +0100
 
 minirok (0.7-1) unstable; urgency=low
 

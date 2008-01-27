@@ -1,4 +1,4 @@
-0.8	IN DEVELOPMENT
+0.8	2008-01-27
 
   NEW FEATURES
 
@@ -13,7 +13,6 @@
     * Dropping tracks while holding down the Control key will always
       append them at the end of the playlist, independently of the
       position they were dropped at.
-
 
   IMPROVEMENTS
 
