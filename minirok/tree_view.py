@@ -8,11 +8,11 @@ import os
 import re
 import stat
 
-from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui, kdecore
 
 import minirok
-from minirok import engine, util # XXX-KDE4 drag
+from minirok import engine, util
 
 ##
 
@@ -30,8 +30,7 @@ class TreeView(QtGui.QTreeWidget):
         self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.slot_populate_done)
 
         self.header().hide()
-        # XXX-KDE4
-        # self.setDragEnabled(True)
+        self.setDragDropMode(self.DragOnly)
         self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
         self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
@@ -193,12 +192,18 @@ class TreeView(QtGui.QTreeWidget):
 
     ##
 
-    def startDrag(self):
-        """Create a FileListDrag object for the selecte files."""
-        # XXX If a regular variable is used instead of self.drag_obj,
-        # things go very bad (crash or double-free from libc).
-        self.drag_obj = drag.FileListDrag(self.selected_files(), self)
-        self.drag_obj.dragCopy()
+    def startDrag(self, action):
+        selected_files = self.selected_files()
+
+        if len(selected_files) > 0:
+            mimedata = QtCore.QMimeData()
+            kurllist = kdecore.KUrl.List(
+                    map(util.unicode_from_path, selected_files))
+            kurllist.populateMimeData(mimedata)
+
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(mimedata)
+            drag.exec_(action)
 
 ##
 
