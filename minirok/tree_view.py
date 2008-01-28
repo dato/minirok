@@ -200,7 +200,7 @@ class TreeView(kdeui.KListView):
     ##
 
     def startDrag(self):
-        """Create a FileListDrag object for the selecte files."""
+        """Create a FileListDrag object for the selected files."""
         # XXX If a regular variable is used instead of self.drag_obj,
         # things go very bad (crash or double-free from libc).
         self.drag_obj = drag.FileListDrag(self.selected_files(), self)
