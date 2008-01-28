@@ -8,11 +8,11 @@ import os
 import re
 import stat
 
+from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
-from PyKDE4 import kdeui, kdecore
 
 import minirok
-from minirok import engine, util
+from minirok import drag, engine, util
 
 ##
 
@@ -193,31 +193,8 @@ class TreeView(QtGui.QTreeWidget):
     ##
 
     def startDrag(self, action):
-        selected_files = self.selected_files()
-        nfiles = len(selected_files)
-
-        if nfiles > 0:
-            mimedata = QtCore.QMimeData()
-            kurllist = kdecore.KUrl.List(
-                    map(util.unicode_from_path, selected_files))
-            kurllist.populateMimeData(mimedata)
-
-            # display a "tooltip" with the number of tracks
-            text = '%d track%s' % (nfiles, nfiles > 1 and 's' or '')
-            metrics = self.fontMetrics()
-            width = metrics.width(text)
-            height = metrics.height()
-            ascent = metrics.ascent()
-
-            self.pixmap = QtGui.QPixmap(width+4, height) # self needed
-            self.pixmap.fill(self, 0, 0)
-            painter = QtGui.QPainter(self.pixmap)
-            painter.drawText(2, ascent+1, text)
-
-            drag = QtGui.QDrag(self)
-            drag.setMimeData(mimedata)
-            drag.setPixmap(self.pixmap)
-            drag.exec_(action)
+        dragobj = drag.FileListDrag(self.selected_files(), self)
+        dragobj.exec_(action)
 
 ##
 
