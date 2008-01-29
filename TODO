@@ -1,7 +1,7 @@
 (This list is obviosly not complete, just here to not forget of these.)
 
 Tree View:
-  * Remove artifacts in the pointer when dragging (display file count?)
+  * Display file count when dragging?
   * Use a regex as well to control the appearance of file names?
 
 Playlist:

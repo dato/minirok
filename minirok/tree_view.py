@@ -204,6 +204,7 @@ class TreeView(kdeui.KListView):
         # XXX If a regular variable is used instead of self.drag_obj,
         # things go very bad (crash or double-free from libc).
         self.drag_obj = drag.FileListDrag(self.selected_files(), self)
+        self.drag_obj.setPixmap(qt.QPixmap(1, 1))
         self.drag_obj.dragCopy()
 
 ##
