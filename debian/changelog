@@ -1,3 +1,10 @@
+minirok (0.8.1-1) unstable; urgency=low
+
+  * New upstream bugfix release:
+    + unbreak saving the list of paths from the tree view combo box.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Tue, 29 Jan 2008 17:49:26 +0100
+
 minirok (0.8-1) unstable; urgency=low
 
   * New upstream release:
