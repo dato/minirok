@@ -55,8 +55,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         self.init_undo_stack()
 
         self._items = []
-        self._items = [ 'row%d' % (x,) for x in range(10) ]
-        self._row_count = 10
+        self._row_count = 0
         self._column_count = 1
         self._empty_model_index = QtCore.QModelIndex()
 
@@ -158,7 +157,42 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             return QtCore.Qt.ItemIsDropEnabled
 
     def dropMimeData(self, mimedata, action, row, column, index):
-        return False
+        if mimedata.hasUrls():
+            files = drag.mimedata_playable_files(mimedata)
+
+            if row >= 0:
+                position = row
+            else:
+                position = self._row_count
+
+            InsertItemsCmd(self, position, map(os.path.basename, files))
+            return True
+        else:
+            return False
+
+    ##
+
+    """Adding and removing *items*."""
+
+    def insert_items(self, position, items):
+        try:
+            self.beginInsertRows(QtCore.QModelIndex(),
+                    position, position + len(items) - 1)
+            self._items[position:0] = items
+            self._row_count += len(items)
+        finally:
+            self.endInsertRows()
+
+    def remove_items(self, position, amount):
+        items = self._items[position:position+amount]
+        try:
+            self.beginRemoveRows(QtCore.QModelIndex(),
+                    position, position + amount - 1)
+            self._items[position:position+amount] = []
+            self._row_count -= amount
+            return items
+        finally:
+            self.endRemoveRows()
 
     ##
 
@@ -373,7 +407,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         self.clear()
         self.emit(QtCore.SIGNAL('list_changed'))
 
-    def remove_items(self, items):
+    def xxx_kde4_remove_items(self, items):
         if not items:
             return
 
@@ -535,7 +569,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         elif selected == 1:
             self.toggle_stop_after(item)
         elif selected == 2:
-            self.remove_items(self.unselected_items())
+            self.xxx_kde4_remove_items(self.unselected_items())
 
     def slot_toggle_stop_after_current(self):
         self.toggle_stop_after(self._currently_playing or self.current_item)
@@ -831,7 +865,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     def keyPressEvent(self, event):
         if event.key() == qt.QEvent.Key_Delete:
-            self.remove_items(self.selected_items())
+            self.xxx_kde4_remove_items(self.selected_items())
         else:
             return kdeui.KListView.keyPressEvent(self, event)
 
@@ -1160,3 +1194,43 @@ class Columns(util.HasConfig):
         config.writeEntry(self.CONFIG_ORDER_OPTION, order)
         config.writeEntry(self.CONFIG_WIDTH_OPTION, width)
         config.writeEntry(self.CONFIG_VISIBLE_OPTION, visible)
+
+##
+
+"""Undoable commands to modify the contents of the playlist.
+
+Note that they will add themselves to the model's QUndoStack.
+"""
+
+class InsertItemsCmd(QtGui.QUndoCommand):
+
+    def __init__(self, model, position, items):
+        QtGui.QUndoCommand.__init__(self)
+
+        self.model = model
+        self.position = position
+        self.items = items
+        self.model.undo_stack.push(self)
+
+    def undo(self):
+        self.items = self.model.remove_items(self.position, len(self.items))
+
+    def redo(self):
+        self.model.insert_items(self.position, self.items)
+
+
+class RemoveItemsCmd(QtGui.QUndoCommand):
+
+    def __init__(self, model, position, amount):
+        QtGui.QUndoCommand.__init__(self)
+
+        self.model = model
+        self.position = position
+        self.amount = amount
+        self.model.undo_stack.push(self)
+
+    def undo(self):
+        self.model.insert_items(self.position, self.items)
+
+    def redo(self):
+        self.items = self.model.remove_items(self.position, self.amount)
