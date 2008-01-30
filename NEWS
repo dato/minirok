@@ -19,7 +19,14 @@
       directory which had already been opened.
 
 
-0.8	IN DEVELOPMENT
+0.8.1	2008-01-29
+
+  BUGFIXES
+
+    * Unbreak saving the list of paths from the tree view combo box.
+
+
+0.8	2008-01-27
 
   NEW FEATURES
 
@@ -34,7 +41,6 @@
     * Dropping tracks while holding down the Control key will always
       append them at the end of the playlist, independently of the
       position they were dropped at.
-
 
   IMPROVEMENTS
 

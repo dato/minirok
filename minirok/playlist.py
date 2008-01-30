@@ -38,7 +38,6 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
         self.stop_mode = StopMode.NONE
         self.random_queue = util.RandomOrderedList()
         self.tag_reader = tag_reader.TagReader()
-        self.kapplication = kdecore.KApplication.kApplication()
 
         # these have a property() below
         self._stop_after = None
@@ -245,7 +244,8 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
     def slot_accept_drop(self, event, prev_item):
         if event.source() != self.viewport(): # XXX
             # If Control is pressed, we want to append at the end:
-            if self.kapplication.keyboardMouseState() & qt.Qt.ControlButton:
+            if (kdecore.KApplication.kApplication().keyboardMouseState()
+                    & qt.Qt.ControlButton):
                 prev_item = self.lastItem()
             files = drag.FileListDrag.file_list(event)
             self.add_files(files, prev_item)
@@ -675,7 +675,8 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
             return kdeui.KListView.acceptDrag(self, event)
 
     def contentsDragMoveEvent(self, event):
-        if (not self.kapplication.keyboardMouseState() & qt.Qt.ControlButton
+        if (not (kdecore.KApplication.kApplication().keyboardMouseState()
+                    & qt.Qt.ControlButton)
                 or not drag.FileListDrag.canDecode(event)):
             if self.visualizer_rect is not None:
                 self.viewport().repaint(self.visualizer_rect, True)
