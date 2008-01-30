@@ -745,12 +745,6 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             self._currently_playing_taken = True
         return kdeui.KListView.takeItem(self, item)
 
-    def acceptDrag(self, event):
-        if drag.FileListDrag.canDecode(event):
-            return True
-        else:
-            return kdeui.KListView.acceptDrag(self, event)
-
     def contentsDragMoveEvent(self, event):
         if (not (kdecore.KApplication.kApplication().keyboardMouseState()
                     & qt.Qt.ControlButton)
