@@ -13,23 +13,52 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kdeui, kdecore
 
 import minirok
-from minirok import engine, tag_reader, util # XXX-KDE4 drag
+from minirok import drag, engine, tag_reader, util
 
 ##
 
-class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
+class PlaylistView(QtGui.QTreeView):
+
+    def __init__(self, model):
+        QtGui.QTreeView.__init__(self)
+
+        self.setModel(model)
+        self.setRootIsDecorated(False)
+        self.setDropIndicatorShown(True)
+        self.setDragDropMode(self.DragDrop)
+        self.setSelectionMode(self.ExtendedSelection)
+
+    def startDrag(self, actions):
+        # Override this function to loose the ugly pixmap provided by Qt
+        indexes = self.selectedIndexes()
+        if len(indexes) > 0:
+            mimedata = self.model().mimeData(indexes)
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(mimedata)
+            drag.setPixmap(QtGui.QPixmap(1, 1))
+            drag.exec_(actions)
+
+
+class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
     FIRST_ITEM = object()
 
     def __init__(self, *args):
-        QtGui.QTreeWidget.__init__(self, *args)
-        util.HasConfig.__init__(self)
-        util.HasGUIConfig.__init__(self)
+        QtCore.QAbstractTableModel.__init__(self, *args)
+        # util.HasConfig.__init__(self)
+        # util.HasGUIConfig.__init__(self)
 
         # XXX-KDE4
         self.init_actions()
+
+        self._items = []
+        self._items = [ 'row%d' % (x,) for x in range(10) ]
+        self._row_count = 10
+        self._column_count = 1
+        self._empty_model_index = QtCore.QModelIndex()
+
         return
 
         self.queue = []
@@ -81,6 +110,54 @@ class Playlist(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
         self.init_actions()
         self.apply_preferences()
         self.load_saved_playlist()
+
+    ##
+
+    """Model functions."""
+
+    def rowCount(self, parent):
+        if parent == self._empty_model_index:
+            return self._row_count
+        else:
+            return 0 # as per QAbstractItemModel::rowCount docs
+
+    def columnCount(self, parent=None):
+        return self._column_count
+
+    def data(self, index, role):
+        row = index.row()
+        column = index.column()
+
+        if (role != QtCore.Qt.DisplayRole
+                or not index.isValid()
+                or row > self._row_count
+                or column > self._column_count):
+            return QtCore.QVariant()
+        else:
+            return QtCore.QVariant(QtCore.QString(self._items[row]))
+            # return QtCore.QVariant(QtCore.QString(self._items[row].text(column)))
+
+    ## 
+
+    """Drag and drop functions."""
+
+    def supportedDropActions(self):
+        return QtCore.Qt.CopyAction | QtCore.Qt.MoveAction
+
+    def mimeTypes(self):
+        types = QtCore.QAbstractTableModel.mimeTypes(self)
+        types.append('text/uri-list')
+        return types
+
+    def flags(self, index):
+        if index.isValid():
+            return (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+                    | QtCore.Qt.ItemIsDragEnabled)
+        else:
+            return QtCore.Qt.ItemIsDropEnabled
+
+    def dropMimeData(self, mimedata, action, row, column, index):
+        return False
 
     ##
 

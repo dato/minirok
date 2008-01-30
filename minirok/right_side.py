@@ -19,14 +19,15 @@ class RightSide(QtGui.QWidget):
 
         self.playlist = playlist.Playlist()
         self.stretchtoolbar = QtGui.QWidget()
+        self.playlistview = playlist.PlaylistView(self.playlist)
         self.toolbar = kdeui.KToolBar('playlistToolBar', main_window,
                                                 QtCore.Qt.BottomToolBarArea)
-        self.playlist_search = PlaylistSearchLineWidget(None, self.playlist)
+        # self.playlist_search = PlaylistSearchLineWidget(None, self.playlist)
 
         vlayout = QtGui.QVBoxLayout()
         vlayout.setSpacing(0)
-        vlayout.addWidget(self.playlist_search)
-        vlayout.addWidget(self.playlist)
+        # vlayout.addWidget(self.playlist_search)
+        vlayout.addWidget(self.playlistview)
         vlayout.addWidget(self.stretchtoolbar)
         self.setLayout(vlayout)
 
@@ -38,9 +39,9 @@ class RightSide(QtGui.QWidget):
 
         self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
 
-        self.connect(self.playlist_search.searchLine(),
-                QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.playlist.slot_play_first_visible)
+        # self.connect(self.playlist_search.searchLine(),
+                # QtCore.SIGNAL('returnPressed(const QString &)'),
+                # self.playlist.slot_play_first_visible)
 
         minirok.Globals.playlist = self.playlist
 
