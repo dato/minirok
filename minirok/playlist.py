@@ -85,9 +85,6 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         self.header().installEventFilter(self)
 
-        self.connect(self, qt.SIGNAL('dropped(QDropEvent *, QListViewItem *)'),
-                self.slot_accept_drop)
-
         self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
                 self.slot_new_current_item)
 
@@ -160,10 +157,11 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         if mimedata.hasUrls():
             files = drag.mimedata_playable_files(mimedata)
 
-            if row >= 0:
-                position = row
-            else:
+            if (row < 0 or (QtGui.QApplication.keyboardModifiers() &
+                    QtCore.Qt.ControlModifier)):
                 position = self._row_count
+            else:
+                position = row
 
             InsertItemsCmd(self, position, map(os.path.basename, files))
             return True
@@ -377,15 +375,6 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             self.action_play_pause.setChecked(True)
 
     ##
-
-    def slot_accept_drop(self, event, prev_item):
-        if event.source() != self.viewport(): # XXX
-            # If Control is pressed, we want to append at the end:
-            if (kdecore.KApplication.kApplication().keyboardMouseState()
-                    & qt.Qt.ControlButton):
-                prev_item = self.lastItem()
-            files = drag.FileListDrag.file_list(event)
-            self.add_files(files, prev_item)
 
     def slot_clear(self):
         self.queue[:] = []
