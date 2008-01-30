@@ -208,6 +208,8 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         ac.addAction('action_playlist_redo', self.redo_action)
 
         # Now, we need this for the shortcuts to be configurable...
+        # Note: not using KStandardAction.undo()/redo(), because they'll want
+        # to appear in the main toolbar, and we want that one to be empty.
         self.undo_kaction = util.create_action('kaction_playlist_undo',
                 'Undo', self.undo_stack.undo, 'edit-undo',
                 kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Undo))
