@@ -33,10 +33,11 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         self.setCentralWidget(self.main_view)
         # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check
 
+        import os # XXX-KDE4
         self.setHelpMenuEnabled(False)
         self.setupGUI(self.StandardWindowOption(
             self.ToolBar | self.Keys | self.Save | self.Create), # StatusBar out
-            '/home/adeodato/devel/minirok/minirok.kde4/config/minirokui.rc') # XXX-KDE4
+            os.path.join(os.path.dirname(minirok.__path__[0]), 'config/minirokui.rc')) # XXX-KDE4
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
