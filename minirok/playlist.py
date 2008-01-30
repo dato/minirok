@@ -52,6 +52,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         # XXX-KDE4
         self.init_actions()
+        self.init_undo_stack()
 
         self._items = []
         self._items = [ 'row%d' % (x,) for x in range(10) ]
@@ -192,6 +193,29 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
                 'action_toggle_stop_after_current', 'Stop after current',
                 self.slot_toggle_stop_after_current, 'media-playback-stop',
                 'Ctrl+K')#, 'Ctrl+I+K')
+
+    def init_undo_stack(self):
+        self.undo_stack = QtGui.QUndoStack(self)
+
+        self.undo_action = self.undo_stack.createUndoAction(self)
+        self.redo_action = self.undo_stack.createRedoAction(self)
+
+        self.undo_action.setIcon(kdeui.KIcon('edit-undo'))
+        self.redo_action.setIcon(kdeui.KIcon('edit-redo'))
+
+        ac = minirok.Globals.action_collection
+        ac.addAction('action_playlist_undo', self.undo_action)
+        ac.addAction('action_playlist_redo', self.redo_action)
+
+        # Now, we need this for the shortcuts to be configurable...
+        self.undo_kaction = util.create_action('kaction_playlist_undo',
+                'Undo', self.undo_stack.undo, 'edit-undo',
+                kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Undo))
+        self.redo_kaction = util.create_action('kaction_playlist_redo',
+                'Redo', self.undo_stack.redo, 'edit-redo',
+                kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Redo))
+
+    ##
 
     def column_index(self, col_name):
         try:

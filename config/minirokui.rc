@@ -14,6 +14,9 @@
     <Action name="action_stop" />
     <Action name="action_next" />
     <Separator/>
+    <Action name="action_playlist_undo" />
+    <Action name="action_playlist_redo" />
+    <Separator/>
     <Action name="action_clear_playlist" />
   </ToolBar>
 </gui>
