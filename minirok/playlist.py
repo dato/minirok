@@ -138,12 +138,15 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     """Drag and drop functions."""
 
+    PLAYLIST_DND_MIME_TYPE = 'application/x-minirok-playlist-dnd'
+
     def supportedDropActions(self):
         return QtCore.Qt.CopyAction | QtCore.Qt.MoveAction
 
     def mimeTypes(self):
-        types = QtCore.QAbstractTableModel.mimeTypes(self)
+        types = QtCore.QStringList()
         types.append('text/uri-list')
+        types.append(self.PLAYLIST_DND_MIME_TYPE)
         return types
 
     def flags(self, index):
@@ -152,6 +155,17 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
                     | QtCore.Qt.ItemIsDragEnabled)
         else:
             return QtCore.Qt.ItemIsDropEnabled
+
+    def mimeData(self, indexes):
+        """Encodes a list of the rows in indexes."""
+        mimedata = QtCore.QMimeData()
+        bytearray = QtCore.QByteArray()
+        datastream = QtCore.QDataStream(bytearray, QtCore.QIODevice.WriteOnly)
+        datastream.writeUInt32(len(indexes))
+        for index in indexes:
+            datastream.writeUInt32(index.row())
+        mimedata.setData(self.PLAYLIST_DND_MIME_TYPE, bytearray)
+        return mimedata
 
     def dropMimeData(self, mimedata, action, row, column, index):
         if mimedata.hasUrls():
