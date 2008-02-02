@@ -19,14 +19,17 @@ from minirok import drag, engine, tag_reader, util
 
 class PlaylistView(QtGui.QTreeView):
 
-    def __init__(self, model):
+    def __init__(self, playlist):
         QtGui.QTreeView.__init__(self)
 
-        self.setModel(model)
+        self.setModel(playlist)
         self.setRootIsDecorated(False)
         self.setDropIndicatorShown(True)
         self.setDragDropMode(self.DragDrop)
         self.setSelectionMode(self.ExtendedSelection)
+
+        # ok, this is a bit gross
+        playlist.selection_model = self.selectionModel()
 
     def startDrag(self, actions):
         # Override this function to loose the ugly pixmap provided by Qt
@@ -179,6 +182,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
             InsertItemsCmd(self, position, map(os.path.basename, files))
             return True
+
         elif mimedata.hasFormat(self.PLAYLIST_DND_MIME_TYPE):
             bytearray = mimedata.data(self.PLAYLIST_DND_MIME_TYPE)
             datastream = QtCore.QDataStream(bytearray, QtCore.QIODevice.ReadOnly)
@@ -195,7 +199,19 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
                 InsertItemsCmd(self, row, RemoveItemsCmd(self, rows).get_items())
             finally:
                 self.undo_stack.endMacro()
+
+            # restore the selection: better UI experience
+            top = self.index(row, 0, QtCore.QModelIndex())
+            bottom = self.index(row + len(rows) - 1, 0, QtCore.QModelIndex())
+            self.selection_model.select(QtGui.QItemSelection(top, bottom),
+                    QtGui.QItemSelectionModel.Rows
+                    | QtGui.QItemSelectionModel.ClearAndSelect)
+            self.selection_model.setCurrentIndex(
+                    min(rows) > row and top or bottom, # \o/
+                    QtGui.QItemSelectionModel.Rows
+                    | QtGui.QItemSelectionModel.NoUpdate)
             return True
+
         else:
             return False
 
