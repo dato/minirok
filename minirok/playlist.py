@@ -179,6 +179,23 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
             InsertItemsCmd(self, position, map(os.path.basename, files))
             return True
+        elif mimedata.hasFormat(self.PLAYLIST_DND_MIME_TYPE):
+            bytearray = mimedata.data(self.PLAYLIST_DND_MIME_TYPE)
+            datastream = QtCore.QDataStream(bytearray, QtCore.QIODevice.ReadOnly)
+            rows = [ datastream.readUInt32() for x in range(datastream.readUInt32()) ]
+
+            if row < 0:
+                row = self._row_count
+
+            # now, we remove items after the drop, so...
+            row -= len(filter(lambda r: r <= row, rows))
+
+            self.undo_stack.beginMacro('')
+            try:
+                InsertItemsCmd(self, row, RemoveItemsCmd(self, rows).get_items())
+            finally:
+                self.undo_stack.endMacro()
+            return True
         else:
             return False
 
