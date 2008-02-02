@@ -1206,6 +1206,7 @@ Note that they will add themselves to the model's QUndoStack.
 """
 
 class InsertItemsCmd(QtGui.QUndoCommand):
+    """Command to insert a list of items at a certain position."""
 
     def __init__(self, model, position, items):
         QtGui.QUndoCommand.__init__(self)
@@ -1223,17 +1224,40 @@ class InsertItemsCmd(QtGui.QUndoCommand):
 
 
 class RemoveItemsCmd(QtGui.QUndoCommand):
+    """Command to remove a possibly not contiguous list of rows."""
 
-    def __init__(self, model, position, amount):
+    def __init__(self, model, rows):
         QtGui.QUndoCommand.__init__(self)
 
         self.model = model
-        self.position = position
-        self.amount = amount
+        self.items = {}
+        self.chunks = self.contiguous_chunks(rows)
         self.model.undo_stack.push(self)
 
     def undo(self):
-        self.model.insert_items(self.position, self.items)
+        for position, items in sorted(self.items.items()):
+            self.model.insert_items(position, items)
 
     def redo(self):
-        self.items = self.model.remove_items(self.position, self.amount)
+        for position, amount in reversed(self.chunks):
+            self.items[position] = self.model.remove_items(position, amount)
+
+    def contiguous_chunks(self, intlist):
+        """Calculate a list of contiguous areas in a possibly unsorted list.
+
+        >>> removecmd.contiguous_chunks([2, 9, 3, 5, 8, 1])
+        [ (1, 3), (5, 1), (8, 2) ]
+        """
+        if len(intlist) == 0:
+            return []
+
+        mylist = sorted(intlist)
+        result = [ [mylist[0], 1] ]
+
+        for x in mylist[1:]:
+            if x == sum(result[-1]):
+                result[-1][1] += 1
+            else:
+                result.append([x, 1])
+
+        return map(tuple, result)
