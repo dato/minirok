@@ -1242,6 +1242,13 @@ class RemoveItemsCmd(QtGui.QUndoCommand):
         for position, amount in reversed(self.chunks):
             self.items[position] = self.model.remove_items(position, amount)
 
+    def get_items(self):
+        """Return a list of all items removed by this command."""
+        result = []
+        for position, items in sorted(self.items.items()):
+            result.extend(items)
+        return result
+
     def contiguous_chunks(self, intlist):
         """Calculate a list of contiguous areas in a possibly unsorted list.
 
