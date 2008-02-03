@@ -42,10 +42,11 @@ class PlaylistView(QtGui.QTreeView):
             drag.exec_(actions)
 
 
-class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, util.HasGUIConfig):
+class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
+    # XXX-KDE4 TODO
     FIRST_ITEM = object()
 
     def __init__(self, *args):
@@ -64,6 +65,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         return
 
+        # XXX-KDE4 TODO
         self.queue = []
         self.visualizer_rect = None
         self.columns = Columns(self)
@@ -298,6 +300,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def column_index(self, col_name):
         try:
             return self.columns.index(col_name)
@@ -307,6 +310,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def _set_stop_after(self, value):
         update = lambda: \
                 self._stop_after is not None and self._stop_after.repaint()
@@ -320,18 +324,21 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
+    # XXX-KDE4 TODO
     def _set_repeat_mode(self, value):
         self._repeat_mode = value # TODO Check it's a valid value?
         self.emit(QtCore.SIGNAL('list_changed'))
 
     repeat_mode = property(lambda self: self._repeat_mode, _set_repeat_mode)
 
+    # XXX-KDE4 TODO
     def _set_random_mode(self, value):
         self._random_mode = bool(value)
         self.emit(QtCore.SIGNAL('list_changed'))
 
     random_mode = property(lambda self: self._random_mode, _set_random_mode)
 
+    # XXX-KDE4 TODO
     def _set_current_item(self, value):
         def set_current(current):
             if self.current_item not in (self.FIRST_ITEM, None):
@@ -356,6 +363,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
+    # XXX-KDE4 TODO
     def _get_currently_playing(self):
         """Return a dict of the tags of the currently played track, or None."""
         if self._currently_playing is not None:
@@ -363,6 +371,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         else:
             return None
 
+    # XXX-KDE4 TODO
     def _set_currently_playing(self, item):
         def set_playing(value):
             if self._currently_playing not in (self.FIRST_ITEM, None):
@@ -378,6 +387,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def slot_list_changed(self):
         if self.childCount() == 0:
             self._current_item = None # can't use the property here
@@ -400,6 +410,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         self.slot_engine_status_changed(minirok.Globals.engine.status)
 
+    # XXX-KDE4 TODO
     def slot_engine_status_changed(self, new_status):
         if new_status == engine.State.STOPPED:
             self.action_stop.setEnabled(False)
@@ -423,6 +434,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def slot_clear(self):
         self.queue[:] = []
         self.random_queue[:] = []
@@ -443,6 +455,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         self.clear()
         self.emit(QtCore.SIGNAL('list_changed'))
 
+    # XXX-KDE4 TODO
     def xxx_kde4_remove_items(self, items):
         if not items:
             return
@@ -462,11 +475,13 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
+    # XXX-KDE4 TODO
     def slot_new_current_item(self, item):
         self.maybe_populate_random_queue()
         self.current_item = item
         self.slot_play()
 
+    # XXX-KDE4 TODO
     def slot_play_first_visible(self, search_string):
         if not unicode(search_string).strip():
             return
@@ -476,6 +491,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def slot_play(self):
         if self.current_item is not None:
             if self.current_item is self.FIRST_ITEM:
@@ -494,6 +510,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
             self.emit(QtCore.SIGNAL('new_track'))
 
+    # XXX-KDE4 TODO
     def slot_pause(self):
         e = minirok.Globals.engine
         if e.status == engine.State.PLAYING:
@@ -501,17 +518,20 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         elif e.status == engine.State.PAUSED:
             e.pause(False)
 
+    # XXX-KDE4 TODO
     def slot_play_pause(self):
         if minirok.Globals.engine.status == engine.State.STOPPED:
             self.slot_play()
         else:
             self.slot_pause()
 
+    # XXX-KDE4 TODO
     def slot_stop(self):
         if minirok.Globals.engine.status != engine.State.STOPPED:
             self.currently_playing = None
             minirok.Globals.engine.stop()
 
+    # XXX-KDE4 TODO
     def slot_next(self, force_play=False):
         if self.current_item is not None:
             if self.queue:
@@ -541,6 +561,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
                     or minirok.Globals.engine.status != engine.State.STOPPED):
                     self.slot_play()
 
+    # XXX-KDE4 TODO
     def slot_previous(self):
         if self.current_item not in (self.FIRST_ITEM, None):
             previous = self.current_item.itemAbove()
@@ -549,6 +570,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
                 if minirok.Globals.engine.status != engine.State.STOPPED:
                     self.slot_play()
 
+    # XXX-KDE4 TODO
     def slot_engine_end_of_stream(self, uri):
         self.currently_playing = None
 
@@ -572,6 +594,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def slot_mouse_button_pressed(self, button, item, qpoint, column):
         if button != qt.Qt.RightButton or not item:
             return
@@ -607,9 +630,11 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         elif selected == 2:
             self.xxx_kde4_remove_items(self.unselected_items())
 
+    # XXX-KDE4 TODO
     def slot_toggle_stop_after_current(self):
         self.toggle_stop_after(self._currently_playing or self.current_item)
 
+    # XXX-KDE4 TODO
     def toggle_stop_after(self, item):
         if item in (self.FIRST_ITEM, None):
             return
@@ -620,6 +645,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             self.stop_after = item
             self.stop_mode = StopMode.AFTER_ONE
 
+    # XXX-KDE4 TODO
     def toggle_enqueued(self, item, only_dequeue=False):
         try:
             index = self.queue.index(item)
@@ -646,6 +672,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
+    # XXX-KDE4 TODO
     def queue_pop(self, index):
         """Pops an item from self.queue, and repaints the necessary items."""
         try:
@@ -658,6 +685,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
             return popped
 
+    # XXX-KDE4 TODO
     def my_first_child(self):
         """Return the first item to be played, honouring random_mode."""
         if self.random_mode:
@@ -667,6 +695,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
         else:
             return self.firstChild()
 
+    # XXX-KDE4 TODO
     def maybe_populate_random_queue(self):
         if not self.random_queue:
             item = self.firstChild()
@@ -674,6 +703,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
                 self.random_queue.append(item)
                 item = item.nextSibling()
 
+    # XXX-KDE4 TODO
     def select_items_helper(self, iterator_flags):
         """Return a list of items that match iterator_flags."""
         iterator = qt.QListViewItemIterator(self, iterator_flags)
@@ -685,14 +715,17 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         return items
 
+    # XXX-KDE4 TODO
     def selected_items(self):
         return self.select_items_helper(qt.QListViewItemIterator.Selected)
 
+    # XXX-KDE4 TODO
     def unselected_items(self):
         return self.select_items_helper(qt.QListViewItemIterator.Unselected)
 
     ##
 
+    # XXX-KDE4 TODO
     def apply_preferences(self):
         prefs = minirok.Globals.preferences
 
@@ -712,6 +745,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def slot_save_config(self):
         """Saves the current playlist."""
         items = []
@@ -729,6 +763,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             playlist.write('\0'.join(items))
             playlist.close()
 
+    # XXX-KDE4 TODO
     def load_saved_playlist(self):
         try:
             playlist = file(self.saved_playlist_path())
@@ -744,6 +779,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         self.slot_list_changed()
 
+    # XXX-KDE4 TODO
     @staticmethod
     def saved_playlist_path():
         appdata = str(kdecore.KGlobal.dirs().saveLocation('appdata'))
@@ -751,6 +787,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def add_files(self, files, prev_item=None):
         """Add the given files to the playlist, after prev_item.
 
@@ -762,6 +799,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             prev_item = self.add_file(f, prev_item)
         self.emit(QtCore.SIGNAL('list_changed'))
 
+    # XXX-KDE4 TODO
     def add_files_untrusted(self, files, clear_playlist=False):
         """Add to the playlist those files that exist and are playable."""
         if clear_playlist:
@@ -784,6 +822,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         self.add_files(filter(_can_play_with_warning, files))
 
+    # XXX-KDE4 TODO
     def add_file(self, file_, prev_item):
         tags = self.tags_from_filename(file_)
         if len(tags) == 0 or tags.get('Title', None) is None:
@@ -813,6 +852,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         return item
 
+    # XXX-KDE4 TODO
     def tags_from_filename(self, path):
         if self._regex is None:
             return {}
@@ -832,15 +872,18 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
     ##
 
+    # XXX-KDE4 TODO
     def setColumnWidth(self, col, width):
         self.header().setResizeEnabled(bool(width), col) # Qt does not do this for us
         return kdeui.KListView.setColumnWidth(self, col, width)
 
+    # XXX-KDE4 TODO
     def takeItem(self, item):
         if item == self._currently_playing:
             self._currently_playing_taken = True
         return kdeui.KListView.takeItem(self, item)
 
+    # XXX-KDE4 TODO
     def contentsDragMoveEvent(self, event):
         if (not (kdecore.KApplication.kApplication().keyboardMouseState()
                     & qt.Qt.ControlButton)
@@ -863,6 +906,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
             finally:
                 self.setDropVisualizer(True)
 
+    # XXX-KDE4 TODO
     def eventFilter(self, object_, event):
         # TODO Avoid so many calls to viewport(), type(), button(), ... ?
 
@@ -899,6 +943,7 @@ class Playlist(QtCore.QAbstractTableModel):#(QtGui.QTreeWidget, util.HasConfig, 
 
         return kdeui.KListView.eventFilter(self, object_, event)
 
+    # XXX-KDE4 TODO
     def keyPressEvent(self, event):
         if event.key() == qt.QEvent.Key_Delete:
             self.xxx_kde4_remove_items(self.selected_items())
@@ -926,7 +971,8 @@ class StopAction(kdeui.KToolBarPopupAction):
     def __init__(self, *args):
         kdeui.KToolBarPopupAction.__init__(self, kdeui.KIcon(), "", None)
 
-    def xxx_kde4_disabled(): # XXX-KDE4
+    # XXX-KDE4 TODO
+    def xxx_kde4_disabled():
         self.popup_menu = self.popupMenu()
 
         self.popup_menu.insertTitle('Stop')
@@ -937,6 +983,7 @@ class StopAction(kdeui.KToolBarPopupAction):
         self.connect(self.popup_menu, qt.SIGNAL('aboutToShow()'), self.slot_prepare)
         self.connect(self.popup_menu, qt.SIGNAL('activated(int)'), self.slot_activated)
 
+    # XXX-KDE4 TODO
     def slot_prepare(self):
         playlist = minirok.Globals.playlist
 
@@ -946,6 +993,7 @@ class StopAction(kdeui.KToolBarPopupAction):
         self.popup_menu.setItemChecked(self.AFTER_QUEUE,
                 playlist.stop_mode == StopMode.AFTER_QUEUE)
 
+    # XXX-KDE4 TODO
     def slot_activated(self, selected):
         playlist = minirok.Globals.playlist
 
@@ -970,6 +1018,7 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
 
     ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
 
+    # XXX-KDE4 TODO
     def __init__(self, path, parent, prev_item, tags={}):
         kdeui.KListViewItem.__init__(self, parent, prev_item)
 
@@ -983,14 +1032,17 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
         self.update_tags(tags)
         self.update_display()
 
+    # XXX-KDE4 TODO
     def set_current(self, value=True):
         self._is_current = bool(value)
 
+    # XXX-KDE4 TODO
     def set_playing(self, value=True):
         self._is_playing = bool(value)
 
     ##
 
+    # XXX-KDE4 TODO
     def update_tags(self, tags):
         for tag, value in tags.items():
             if tag not in self._tags:
@@ -1010,6 +1062,7 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
                     continue
             self._tags[tag] = value
 
+    # XXX-KDE4 TODO
     def update_display(self):
         for column in Columns.DEFAULT_ORDER:
             text = self._tags[column]
@@ -1021,6 +1074,7 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
 
     ##
 
+    # XXX-KDE4 TODO
     def paintCell(self, painter, colorgrp, column, width, align):
         """Draws a border for the current item, and the playing item in italics."""
         if self._is_playing:
@@ -1093,6 +1147,7 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
                 painter.setPen(colorgrp.highlightedText())
                 painter.drawText(x, 0, width-x, q_height, qt.Qt.AlignCenter, queue_pos)
 
+    # XXX-KDE4 TODO
     def paintFocus(self, painter, colorgrp, qrect):
         """Only allows focus to be painted in the current item."""
         if not self._is_current:
@@ -1102,6 +1157,7 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
 
 ##
 
+# XXX-KDE4 TODO
 class Columns(util.HasConfig):
 
     DEFAULT_ORDER = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
