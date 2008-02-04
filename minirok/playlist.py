@@ -1040,10 +1040,12 @@ class PlaylistItem(object):
         return self._tags.copy()
 
     def tag_text(self, tag):
-        if tag == 'Length':
-            return util.fmt_seconds(self._tags[tag])
+        value = self._tags[tag]
+
+        if tag == 'Length' and value is not None:
+            return util.fmt_seconds(value)
         else:
-            return self._tags[tag]
+            return value
 
     def update_tags(self, tags):
         for tag, value in tags.items():
