@@ -1310,7 +1310,9 @@ class InsertItemsCmd(QtGui.QUndoCommand):
         self.model = model
         self.position = position
         self.items = items
-        self.model.undo_stack.push(self)
+
+        if len(items) > 0:
+            self.model.undo_stack.push(self)
 
     def undo(self):
         self.items = self.model.remove_items(self.position, len(self.items))
@@ -1328,7 +1330,9 @@ class RemoveItemsCmd(QtGui.QUndoCommand):
         self.model = model
         self.items = {}
         self.chunks = self.contiguous_chunks(rows)
-        self.model.undo_stack.push(self)
+
+        if len(rows) > 0:
+            self.model.undo_stack.push(self)
 
     def undo(self):
         for position, items in sorted(self.items.items()):
