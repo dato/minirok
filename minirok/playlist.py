@@ -1018,7 +1018,7 @@ class PlaylistItem(object):
     ALLOWED_TAGS = {
             'Track':    0,
             'Artist':   1,
-            'Album'     2,
+            'Album':    2,
             'Title':    3,
             'Length':   4,
     }
