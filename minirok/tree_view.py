@@ -401,7 +401,7 @@ def _my_listdir(path):
     try:
         mtime = os.stat(path).st_mtime
     except OSError, e:
-        minirok.logger.warn('cout not stat: %s', e)
+        minirok.logger.warn('cout not stat %r: %s', path, e.strerror)
         _my_listdir_cache.setdefault(path, (None, {}))
     else:
         if mtime == _my_listdir_cache.get(path, (None, None))[0]:
@@ -413,5 +413,6 @@ def _my_listdir(path):
                             for x in os.listdir(path)))
             except OSError, e:
                 # XXX can the error come from the stat() as well?
-                minirok.logger.warn('could not listdir: %s', e)
+                minirok.logger.warn('could not listdir %r: %s',
+                        path, e.strerror)
                 _my_listdir_cache.setdefault(path, (None, {}))
