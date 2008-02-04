@@ -1012,7 +1012,16 @@ class StopAction(kdeui.KToolBarPopupAction):
 
 class PlaylistItem(object):
 
-    ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
+    ALLOWED_TAGS = {
+            'Track':    0,
+            'Artist':   1,
+            'Album'     2,
+            'Title':    3,
+            'Length':   4,
+    }
+
+    # The above dictionary, with reversed key/value pairs
+    TAG_INDICES = dict(map(reversed, ALLOWED_TAGS.items()))
 
     def __init__(self, path, tags=None):
         self.path = path
@@ -1046,6 +1055,9 @@ class PlaylistItem(object):
             return util.fmt_seconds(value)
         else:
             return value
+
+    def tag_by_index(self, index):
+        return self.tag_text(self.TAG_INDICES[index])
 
     def update_tags(self, tags):
         for tag, value in tags.items():
