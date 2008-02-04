@@ -13,6 +13,11 @@
       - DBUS is used instead of DCOP, bla bla bla.
 	(TODO)
 
+  OTHER IMPROVEMENTS
+
+    * Directories can be passed as arguments to minirok, and all playable
+      files underneath will be added, instead of simply ignoring them.
+
   FOO
 
     * XXX Mention the improvement when loading in the tree view a

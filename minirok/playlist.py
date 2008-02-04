@@ -177,7 +177,12 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
     def dropMimeData(self, mimedata, action, row, column, index):
         if mimedata.hasUrls():
-            files = drag.mimedata_playable_files(mimedata)
+            files = map(util.kurl_to_path,
+                            kdecore.KUrl.List.fromMimeData(mimedata))
+
+            if not mimedata.hasFormat(drag.FileListDrag.MIME_TYPE):
+                # Drop does not come from ourselves, so:
+                files = util.playable_from_untrusted(files, warn=False)
 
             if (row < 0 or (QtGui.QApplication.keyboardModifiers() &
                     QtCore.Qt.ControlModifier)):
@@ -806,28 +811,12 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
             prev_item = self.add_file(f, prev_item)
         self.emit(QtCore.SIGNAL('list_changed'))
 
-    # XXX-KDE4 TODO
     def add_files_untrusted(self, files, clear_playlist=False):
         """Add to the playlist those files that exist and are playable."""
         if clear_playlist:
             self.slot_clear()
 
-        def _can_play_with_warning(path):
-            if minirok.Globals.engine.can_play(path):
-                if os.path.isfile(path):
-                    return True
-                else:
-                    if not os.path.exists(path):
-                        minirok.logger.warn('skipping nonexistent file %s', path)
-                    else:
-                        minirok.logger.warn('skipping non regular file %s', path)
-                    return False
-            else:
-                minirok.logger.warn('skipping unplayable file/extension %s',
-                        os.path.basename(path))
-                return False
-
-        self.add_files(filter(_can_play_with_warning, files))
+        self.add_files(util.playable_from_untrusted(files, warn=True))
 
     # XXX-KDE4 TODO
     def add_file(self, file_, prev_item):
