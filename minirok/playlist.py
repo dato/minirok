@@ -26,6 +26,7 @@ class PlaylistView(QtGui.QTreeView):
         self.setModel(playlist)
         self.setRootIsDecorated(False)
         self.setDropIndicatorShown(True)
+        self.setAllColumnsShowFocus(True)
         self.setDragDropMode(self.DragDrop)
         self.setSelectionMode(self.ExtendedSelection)
 
