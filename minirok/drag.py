@@ -78,7 +78,7 @@ def mimedata_playable_files(mimedata):
                 try:
                     contents = sorted(os.listdir(path))
                 except OSError, e:
-                    minirok.logger.warn('could not list directory %r: %s', e)
+                    minirok.logger.warn('could not list directory %r: %s', path, e)
                 else:
                     for entry in contents:
                         append_path(os.path.join(path, entry))
