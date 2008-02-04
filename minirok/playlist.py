@@ -9,6 +9,7 @@ import re
 import sys
 import errno
 
+from PyQt4.QtCore import Qt
 from PyQt4 import QtGui, QtCore
 from PyKDE4 import kdeui, kdecore
 
@@ -134,7 +135,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
         row = index.row()
         column = index.column()
 
-        if (role != QtCore.Qt.DisplayRole
+        if (role != Qt.DisplayRole
                 or not index.isValid()
                 or row > self._row_count
                 or column > self._column_count):
@@ -144,8 +145,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
                         self._items[row].tag_by_index(column) or ''))
 
     def headerData(self, section, orientation, role):
-        if (role == QtCore.Qt.DisplayRole
-                and orientation == QtCore.Qt.Horizontal):
+        if (role == Qt.DisplayRole and orientation == Qt.Horizontal):
             return QtCore.QVariant(
                     QtCore.QString(PlaylistItem.TAG_INDICES[section]))
         else:
@@ -158,7 +158,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
     PLAYLIST_DND_MIME_TYPE = 'application/x-minirok-playlist-dnd'
 
     def supportedDropActions(self):
-        return QtCore.Qt.CopyAction | QtCore.Qt.MoveAction
+        return Qt.CopyAction | Qt.MoveAction
 
     def mimeTypes(self):
         types = QtCore.QStringList()
@@ -168,10 +168,9 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
     def flags(self, index):
         if index.isValid():
-            return (QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-                    | QtCore.Qt.ItemIsDragEnabled)
+            return (Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled)
         else:
-            return QtCore.Qt.ItemIsDropEnabled
+            return Qt.ItemIsDropEnabled
 
     def mimeData(self, indexes):
         """Encodes a list of the rows in indexes."""
@@ -193,8 +192,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
                 # Drop does not come from ourselves, so:
                 files = util.playable_from_untrusted(files, warn=False)
 
-            if (QtGui.QApplication.keyboardModifiers()
-                    & QtCore.Qt.ControlModifier):
+            if (QtGui.QApplication.keyboardModifiers() & Qt.ControlModifier):
                 row = -1
 
             self.add_files(files, position=row)
