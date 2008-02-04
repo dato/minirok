@@ -143,6 +143,14 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
             return QtCore.QVariant(QtCore.QString(
                         self._items[row].tag_by_index(column) or ''))
 
+    def headerData(self, section, orientation, role):
+        if (role == QtCore.Qt.DisplayRole
+                and orientation == QtCore.Qt.Horizontal):
+            return QtCore.QVariant(
+                    QtCore.QString(PlaylistItem.TAG_INDICES[section]))
+        else:
+            return QtCore.QVariant()
+
     ## 
 
     """Drag and drop functions."""
