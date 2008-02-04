@@ -375,7 +375,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
     def _get_currently_playing(self):
         """Return a dict of the tags of the currently played track, or None."""
         if self._currently_playing is not None:
-            return self._currently_playing._tags # XXX Private member!
+            return self._currently_playing.tags()
         else:
             return None
 
@@ -511,10 +511,10 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
             self.currently_playing = self.current_item
             minirok.Globals.engine.play(self.current_item.path)
 
-            if self.current_item._tags['Length'] is None:
+            if self.current_item.tags()['Length'] is None:
                 tags = tag_reader.TagReader.tags(self.current_item.path)
                 self.current_item.update_tags({'Length': tags.get('Length', 0)})
-                self.current_item.update_display()
+                self.current_item.update_display() # XXX-KDE4
 
             self.emit(QtCore.SIGNAL('new_track'))
 
@@ -1010,23 +1010,21 @@ class StopAction(kdeui.KToolBarPopupAction):
 
 ##
 
-class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
+class PlaylistItem(object):
 
     ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
 
-    # XXX-KDE4 TODO
-    def __init__(self, path, parent, prev_item, tags={}):
-        kdeui.KListViewItem.__init__(self, parent, prev_item)
-
+    def __init__(self, path, tags=None):
         self.path = path
-        self.playlist = parent
 
-        self._is_current = False
-        self._is_playing = False
+        # XXX-KDE4
+        # self._is_current = False
+        # self._is_playing = False
 
         self._tags = dict((tag, None) for tag in self.ALLOWED_TAGS)
-        self.update_tags(tags)
-        self.update_display()
+
+        if tags is not None:
+            self.update_tags(tags)
 
     # XXX-KDE4 TODO
     def set_current(self, value=True):
@@ -1038,7 +1036,15 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
 
     ##
 
-    # XXX-KDE4 TODO
+    def tags(self):
+        return self._tags.copy()
+
+    def tag_text(self, tag):
+        if tag == 'Length':
+            return util.fmt_seconds(self._tags[tag])
+        else:
+            return self._tags[tag]
+
     def update_tags(self, tags):
         for tag, value in tags.items():
             if tag not in self._tags:
@@ -1056,17 +1062,8 @@ class PlaylistItem:#XXX-KDE4 (kdeui.KListViewItem):
                 except ValueError:
                     minirok.logger.warn('invalid length: %r', value)
                     continue
-            self._tags[tag] = value
 
-    # XXX-KDE4 TODO
-    def update_display(self):
-        for column in Columns.DEFAULT_ORDER:
-            text = self._tags[column]
-            if text is not None:
-                if column == 'Length':
-                    text = util.fmt_seconds(text)
-                index = self.playlist.column_index(column)
-                self.setText(index, text)
+            self._tags[tag] = value
 
     ##
 
