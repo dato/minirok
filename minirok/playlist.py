@@ -58,12 +58,13 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
         self.init_actions()
         self.init_undo_stack()
         self.apply_preferences()
+        self.tag_reader = tag_reader.TagReader()
 
         # Core model stuff
         self._items = []
         self._row_count = 0
-        self._column_count = 1
         self._empty_model_index = QtCore.QModelIndex()
+        self._column_count = len(PlaylistItem.ALLOWED_TAGS)
 
         return
 
@@ -139,8 +140,8 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
                 or column > self._column_count):
             return QtCore.QVariant()
         else:
-            return QtCore.QVariant(QtCore.QString(self._items[row]))
-            # return QtCore.QVariant(QtCore.QString(self._items[row].text(column)))
+            return QtCore.QVariant(QtCore.QString(
+                        self._items[row].tag_by_index(column) or ''))
 
     ## 
 
@@ -184,13 +185,11 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
                 # Drop does not come from ourselves, so:
                 files = util.playable_from_untrusted(files, warn=False)
 
-            if (row < 0 or (QtGui.QApplication.keyboardModifiers() &
-                    QtCore.Qt.ControlModifier)):
-                position = self._row_count
-            else:
-                position = row
+            if (QtGui.QApplication.keyboardModifiers()
+                    & QtCore.Qt.ControlModifier):
+                row = -1
 
-            InsertItemsCmd(self, position, map(os.path.basename, files))
+            self.add_files(files, position=row)
             return True
 
         elif mimedata.hasFormat(self.PLAYLIST_DND_MIME_TYPE):
@@ -799,17 +798,18 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
-    def add_files(self, files, prev_item=None):
-        """Add the given files to the playlist, after prev_item.
+    def add_files(self, files, position=-1):
+        """Add the given files to the playlist at a given position.
 
-        If prev_item is None, files will be added at the end of the playlist.
+        If position is < 0, files will be added at the end of the playlist.
         """
-        if prev_item is None:
-            prev_item = self.lastItem()
-        for f in files:
-            prev_item = self.add_file(f, prev_item)
-        self.emit(QtCore.SIGNAL('list_changed'))
+        if position < 0:
+            position = self._row_count
+
+        if files:
+            items = map(self.create_item, files)
+            InsertItemsCmd(self, position, items)
+            self.emit(QtCore.SIGNAL('list_changed'))
 
     def add_files_untrusted(self, files, clear_playlist=False):
         """Add to the playlist those files that exist and are playable."""
@@ -817,6 +817,10 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
             self.slot_clear()
 
         self.add_files(util.playable_from_untrusted(files, warn=True))
+
+    def create_item(self, path):
+        tags = self.tag_reader.tags(path) # XXX-KDE4
+        return PlaylistItem(path, tags)
 
     # XXX-KDE4 TODO
     def add_file(self, file_, prev_item):
