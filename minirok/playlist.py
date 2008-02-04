@@ -848,7 +848,6 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
         return item
 
-    # XXX-KDE4 TODO
     def tags_from_filename(self, path):
         if self._regex is None:
             return {}
