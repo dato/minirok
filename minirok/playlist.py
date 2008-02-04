@@ -57,7 +57,9 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
         # XXX-KDE4
         self.init_actions()
         self.init_undo_stack()
+        self.apply_preferences()
 
+        # Core model stuff
         self._items = []
         self._row_count = 0
         self._column_count = 1
@@ -110,6 +112,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
                 self.slot_engine_end_of_stream)
 
         self.init_actions()
+        self.init_undo_stack()
         self.apply_preferences()
         self.load_saved_playlist()
 
@@ -727,6 +730,10 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
     # XXX-KDE4 TODO
     def apply_preferences(self):
+        self._regex = None
+        self._regex_mode = 'Always'
+        return # XXX-KDE4
+
         prefs = minirok.Globals.preferences
 
         if prefs.tags_from_regex:
