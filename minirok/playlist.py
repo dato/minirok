@@ -24,6 +24,7 @@ class PlaylistView(QtGui.QTreeView):
         QtGui.QTreeView.__init__(self)
 
         self.setModel(playlist)
+        self.setHeader(Columns(self))
         self.setRootIsDecorated(False)
         self.setDropIndicatorShown(True)
         self.setAllColumnsShowFocus(True)
@@ -311,16 +312,6 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
         self.redo_kaction = util.create_action('kaction_playlist_redo',
                 'Redo', self.undo_stack.redo, 'edit-redo',
                 kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Redo))
-
-    ##
-
-    # XXX-KDE4 TODO
-    def column_index(self, col_name):
-        try:
-            return self.columns.index(col_name)
-        except Columns.NoSuchColumn:
-            minirok.logger.critical('column %r not found', col_name)
-            sys.exit(1)
 
     ##
 
@@ -916,15 +907,6 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
     def eventFilter(self, object_, event):
         # TODO Avoid so many calls to viewport(), type(), button(), ... ?
 
-        if (object_ == self.header()
-                and event.type() == qt.QEvent.MouseButtonPress
-                and event.button() == qt.QEvent.RightButton):
-
-            # Creates a menu for hiding/showing columns
-            self.columns.exec_popup(event.globalPos())
-
-            return True
-
         # Handle Ctrl+MouseClick: RightButton: enqueue, MidButton: stop after
         if (object_ == self.viewport()
                 and event.type() == qt.QEvent.MouseButtonPress
@@ -1174,8 +1156,7 @@ class PlaylistItem(object):
 
 ##
 
-# XXX-KDE4 TODO
-class Columns(util.HasConfig):
+class Columns(QtGui.QHeaderView):#, util.HasConfig):
 
     DEFAULT_ORDER = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
     DEFAULT_WIDTH = {
@@ -1203,8 +1184,21 @@ class Columns(util.HasConfig):
     class NoSuchColumn(Exception):
         pass
 
-    def __init__(self, playlist):
-        util.HasConfig.__init__(self)
+    def __init__(self, parent):
+        QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
+        # util.HasConfig.__init__(self)
+
+        self.setMovable(True)
+        self.setStretchLastSection(False)
+        self.setDefaultAlignment(Qt.AlignLeft)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        self.connect(self,
+                QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'),
+                self.exec_popup)
+
+        return # XXX-KDE4
+
         config = minirok.Globals.config(self.CONFIG_SECTION)
 
         def _read_list_entry(option):
@@ -1271,23 +1265,29 @@ class Columns(util.HasConfig):
             raise self.NoSuchColumn(name)
 
     def exec_popup(self, position):
-        popup = kdeui.KPopupMenu()
-        popup.setCheckable(True)
+        model = self.model()
+        menu = kdeui.KMenu(self)
+        menu.addTitle('Columns')
 
-        for i, column in enumerate(self._order):
-            pos = self.playlist.header().mapToIndex(i)
-            popup.insertItem(column, i, pos)
-            popup.setItemChecked(i, bool(self.playlist.columnWidth(i)))
+        for i in range(model.columnCount()):
+            logindex = self.logicalIndex(i)
+            name = model.headerData(logindex,
+                    Qt.Horizontal, Qt.DisplayRole).toString()
+            action = menu.addAction(name)
+            action.setCheckable(True)
+            action.setData(QtCore.QVariant(logindex))
+            action.setChecked(not self.isSectionHidden(logindex))
 
-        selected = popup.exec_loop(position)
+        selected_action = menu.exec_(self.mapToGlobal(position))
 
-        if self.playlist.columnWidth(selected) != 0:
-            self.playlist.setColumnWidth(selected, 0)
-        else:
-            self.playlist.setColumnWidth(selected, self._width[selected])
+        if selected_action is not None:
+            hide = not selected_action.isChecked()
+            column = selected_action.data().toInt()[0]
+            self.setSectionHidden(column, hide)
 
     ##
 
+    # XXX-KDE4 TODO
     def slot_save_config(self):
         config = minirok.Globals.config(self.CONFIG_SECTION)
         header = self.playlist.header()
