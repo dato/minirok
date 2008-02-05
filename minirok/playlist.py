@@ -1181,9 +1181,6 @@ class Columns(QtGui.QHeaderView):#, util.HasConfig):
     CONFIG_WIDTH_OPTION = 'Width'
     CONFIG_VISIBLE_OPTION = 'Visible'
 
-    class NoSuchColumn(Exception):
-        pass
-
     def __init__(self, parent):
         QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
         # util.HasConfig.__init__(self)
@@ -1257,12 +1254,6 @@ class Columns(QtGui.QHeaderView):#, util.HasConfig):
         self.playlist = playlist
 
     ##
-
-    def index(self, name):
-        try:
-            return self._order.index(name)
-        except ValueError:
-            raise self.NoSuchColumn(name)
 
     def exec_popup(self, position):
         model = self.model()
