@@ -149,7 +149,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
     def headerData(self, section, orientation, role):
         if (role == Qt.DisplayRole and orientation == Qt.Horizontal):
             return QtCore.QVariant(
-                    QtCore.QString(PlaylistItem.TAG_INDICES[section]))
+                    QtCore.QString(PlaylistItem.ALLOWED_TAGS[section]))
         else:
             return QtCore.QVariant()
 
@@ -1004,16 +1004,9 @@ class StopAction(kdeui.KToolBarPopupAction):
 
 class PlaylistItem(object):
 
-    ALLOWED_TAGS = {
-            'Track':    0,
-            'Artist':   1,
-            'Album':    2,
-            'Title':    3,
-            'Length':   4,
-    }
+    # This class should be considered sort of private to the model
 
-    # The above dictionary, with reversed key/value pairs
-    TAG_INDICES = dict(map(reversed, ALLOWED_TAGS.items()))
+    ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
 
     def __init__(self, path, tags=None):
         self.path = path
@@ -1049,7 +1042,7 @@ class PlaylistItem(object):
             return value
 
     def tag_by_index(self, index):
-        return self.tag_text(self.TAG_INDICES[index])
+        return self.tag_text(self.ALLOWED_TAGS[index])
 
     def update_tags(self, tags):
         for tag, value in tags.items():
