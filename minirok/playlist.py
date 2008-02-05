@@ -30,12 +30,12 @@ class PlaylistView(QtGui.QTreeView):
         self.setDragDropMode(self.DragDrop)
         self.setSelectionMode(self.ExtendedSelection)
 
-        # ok, this is a bit gross
-        playlist.selection_model = self.selectionModel()
-
         columns = Columns(self)
         self.setHeader(columns)
         columns.setup_from_config()
+
+        # ok, this is a bit gross
+        playlist.selection_model = self.selectionModel()
 
     def startDrag(self, actions):
         # Override this function to loose the ugly pixmap provided by Qt
