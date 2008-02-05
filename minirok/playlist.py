@@ -24,7 +24,6 @@ class PlaylistView(QtGui.QTreeView):
         QtGui.QTreeView.__init__(self)
 
         self.setModel(playlist)
-        self.setHeader(Columns(self))
         self.setRootIsDecorated(False)
         self.setDropIndicatorShown(True)
         self.setAllColumnsShowFocus(True)
@@ -33,6 +32,10 @@ class PlaylistView(QtGui.QTreeView):
 
         # ok, this is a bit gross
         playlist.selection_model = self.selectionModel()
+
+        columns = Columns(self)
+        self.setHeader(columns)
+        columns.setup_from_config()
 
     def startDrag(self, actions):
         # Override this function to loose the ugly pixmap provided by Qt
@@ -152,6 +155,9 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
                     QtCore.QString(PlaylistItem.ALLOWED_TAGS[section]))
         else:
             return QtCore.QVariant()
+
+    def sorted_column_names(self):
+        return PlaylistItem.ALLOWED_TAGS[:]
 
     ## 
 
@@ -1151,28 +1157,13 @@ class PlaylistItem(object):
 
 class Columns(QtGui.QHeaderView):#, util.HasConfig):
 
-    DEFAULT_ORDER = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
-    DEFAULT_WIDTH = {
-            'Track': 50,
-            'Artist': 200,
-            'Album': 200,
-            'Title': 300,
-            'Length': 75,
-    }
-
-    # The configuration for Playlist Columns has three options:
-    #   * Order: a list specifying the order in which the columns must be
-    #     displayed; should contain all known columns, but if some are missing,
-    #     they will be added at the end
-    #   * Visible: a list of the columns that should be displayed; order of
-    #     this list is not relevant
-    #   * Width: a list of "ColumnName:Width" pairs, specifying the width of
-    #     each column. Important: no width here should be zero!, even if the
-    #     column is not visible. Pairs with width set to 0 will be ignored.
-    CONFIG_SECTION = 'Playlist Columns'
-    CONFIG_ORDER_OPTION = 'Order'
-    CONFIG_WIDTH_OPTION = 'Width'
-    CONFIG_VISIBLE_OPTION = 'Visible'
+    # We use a single configuration option, which contains the order in which
+    # columns are to be displayed, their width, and whether they are hidden or
+    # not.
+    CONFIG_SECTION = 'Playlist'
+    CONFIG_OPTION = 'Columns'
+    CONFIG_OPTION_DEFAULT = \
+            'Track:50:1,Artist:200:1,Album:200:0,Title:300:1,Length:75:1'
 
     def __init__(self, parent):
         QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
@@ -1187,64 +1178,74 @@ class Columns(QtGui.QHeaderView):#, util.HasConfig):
                 QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'),
                 self.exec_popup)
 
-        return # XXX-KDE4
+    def setup_from_config(self):
+        """Read config, sanitize it, and apply."""
 
-        config = minirok.Globals.config(self.CONFIG_SECTION)
+        class FakeConfingUntilPyKDE4Fixed:
+            def hasKey(self, key):
+                return False
 
-        def _read_list_entry(option):
-            return map(str, config.readListEntry(option))
+        config = FakeConfingUntilPyKDE4Fixed()
+        # config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
 
-        ##
-
-        if config.hasKey(self.CONFIG_ORDER_OPTION):
-            self._order = _read_list_entry(self.CONFIG_ORDER_OPTION)
-            # self._order must contain all available columns, so ensure that
-            for c in self.DEFAULT_ORDER:
-                if c not in self._order:
-                    self._order.append(c)
+        if config.hasKey(self.CONFIG_OPTION):
+            entries = map(str, config.readListEntry(self.CONFIG_OPTION)) # XXX-KDE4
         else:
-            self._order = self.DEFAULT_ORDER
+            entries = self.CONFIG_OPTION_DEFAULT.split(',')
+
+        columns = []
+        warn = minirok.logger.warn
+        known_columns = set(self.model().sorted_column_names())
+
+        for entry in entries:
+            try:
+                name, width, visible = entry.split(':', 2)
+            except ValueError:
+                warn('skipping invalid entry in column config: %r', entry)
+                continue
+
+            try:
+                width = int(width)
+            except ValueError:
+                warn('invalid column width for %s: %r', name, width)
+                continue
+
+            # TODO Maybe this one ought to be more flexible
+            try:
+                visible = bool(int(visible))
+            except ValueError:
+                warn('invalid visibility value for %s: %r', name, visible)
+                continue
+                    
+            try:
+                known_columns.remove(name)
+            except KeyError:
+                warn('skipping unknown or duplicated column: %r', name)
+                continue
+
+            columns.append((name, width, visible))
+
+        if len(known_columns) > 0:
+            defaults = dict((x.split(':')[0], map(int, x.split(':')[1:]))
+                                for x in self.CONFIG_OPTION_DEFAULT.split(','))
+            for c in known_columns:
+                warn('column %s missing in config, adding with default values', c)
+                width, visible = defaults[c]
+                columns.append((c, width, visible))
 
         ##
 
-        if config.hasKey(self.CONFIG_VISIBLE_OPTION):
-            self._visible = _read_list_entry(self.CONFIG_VISIBLE_OPTION)
-        else:
-            self._visible = self.DEFAULT_ORDER
+        model_columns = self.model().sorted_column_names()
 
-        ##
+        for visual, (name, width, visible) in enumerate(columns):
+            logical = model_columns.index(name)
+            current = self.visualIndex(logical)
 
-        configured_width = self.DEFAULT_WIDTH.copy()
+            if current != visual:
+                self.moveSection(current, visual)
 
-        if config.hasKey(self.CONFIG_WIDTH_OPTION):
-            for pair in _read_list_entry(self.CONFIG_WIDTH_OPTION):
-                name, width = pair.split(':', 1)
-                name = name.strip()
-                try:
-                    width = int(width)
-                except ValueError:
-                    minirok.logger.error('invalid width %r for column %s',
-                            width, name)
-                else:
-                    if width != 0:
-                        configured_width[name] = width
-
-        self._width = [ configured_width[c] for c in self._order ]
-
-        ##
-
-        for index, name in enumerate(self._order):
-            playlist.addColumn(name, 1) # width=1 to enfore WidthMode: Manual
-            if name in self._visible:
-                playlist.setColumnWidth(index, self._width[index])
-            else:
-                playlist.setColumnWidth(index, 0)
-            if name == 'Track':
-                playlist.setColumnAlignment(index, qt.Qt.AlignHCenter)
-            elif name == 'Length':
-                playlist.setColumnAlignment(index, qt.Qt.AlignRight)
-
-        self.playlist = playlist
+            self.resizeSection(logical, width)
+            self.setSectionHidden(logical, not visible)
 
     ##
 

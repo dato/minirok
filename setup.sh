@@ -18,7 +18,6 @@ PREFIX=`kde4-config --prefix`
 BIN=`kde4-config --expandvars --install exe`
 APPS=`kde4-config --expandvars --install data`
 ICONS=`kde4-config --expandvars --install icon`
-CONFIG=`kde4-config --expandvars --install config`
 DESKTOP=`kde4-config --expandvars --install xdgdata-apps`
 MINIROK="$APPS/minirok"
 KHOTKEYS="$APPS/khotkeys" # XXX-KDE4
@@ -88,7 +87,6 @@ case "$1" in
 	install_manpage
 	install_icons images/icons "$ICONS"
 	install_icons images/icons/private "$MINIROK/icons"
-	install_file config/minirokrc "$CONFIG"
 	install_file config/minirok.desktop "$DESKTOP"
 	install_file config/minirok.khotkeys "$KHOTKEYS"
 	install_file config/khotkeys_minirok.upd "$KCONF_UPDATE"
