@@ -1155,7 +1155,7 @@ class PlaylistItem(object):
 
 ##
 
-class Columns(QtGui.QHeaderView):#, util.HasConfig):
+class Columns(QtGui.QHeaderView, util.HasConfig):
 
     # We use a single configuration option, which contains the order in which
     # columns are to be displayed, their width, and whether they are hidden or
@@ -1167,7 +1167,7 @@ class Columns(QtGui.QHeaderView):#, util.HasConfig):
 
     def __init__(self, parent):
         QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
-        # util.HasConfig.__init__(self)
+        util.HasConfig.__init__(self)
 
         self.setMovable(True)
         self.setStretchLastSection(False)
@@ -1272,22 +1272,19 @@ class Columns(QtGui.QHeaderView):#, util.HasConfig):
 
     ##
 
-    # XXX-KDE4 TODO
     def slot_save_config(self):
-        config = minirok.Globals.config(self.CONFIG_SECTION)
-        header = self.playlist.header()
-        order = []
-        width = []
-        visible = []
-        for i, name in enumerate(self._order):
-            order.append(self._order[header.mapToSection(i)])
-            w = self.playlist.columnWidth(i)
-            if w != 0:
-                visible.append(name)
-                width.append('%s:%d' % (name, w))
-        config.writeEntry(self.CONFIG_ORDER_OPTION, order)
-        config.writeEntry(self.CONFIG_WIDTH_OPTION, width)
-        config.writeEntry(self.CONFIG_VISIBLE_OPTION, visible)
+        entries = [None] * self.count()
+
+        for logical, name in enumerate(self.model().sorted_column_names()):
+            width = self.sectionSize(logical) # TODO BUG: returns 0 if hidden
+            visible = int(not self.isSectionHidden(logical))
+            entry = '%s:%d:%d' % (name, width, visible)
+            entries[self.visualIndex(logical)] = entry
+
+        return # XXX-KDE4
+
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writeEntry(self.CONFIG_OPTION, entries)
 
 ##
 
