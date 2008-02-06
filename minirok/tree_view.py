@@ -83,8 +83,7 @@ class TreeView(QtGui.QTreeWidget):
         if not unicode(search_string).strip():
             return
 
-        # XXX-KDE4 childCount()
-        playlist_was_empty = bool(minirok.Globals.playlist.childCount() == 0)
+        playlist_was_empty = bool(minirok.Globals.playlist.rowCount() == 0)
         minirok.Globals.playlist.add_files(self.visible_files())
 
         if (playlist_was_empty
