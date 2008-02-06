@@ -89,7 +89,7 @@ class TreeView(QtGui.QTreeWidget):
 
         if (playlist_was_empty
                 and minirok.Globals.engine.status == engine.State.STOPPED):
-            minirok.Globals.action_collection.action('action_play').activate()
+            minirok.Globals.action_collection.action('action_play').trigger()
 
     ##
 

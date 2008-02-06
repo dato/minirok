@@ -177,7 +177,7 @@ class Systray(kdeui.KSystemTrayIcon):
         # NB: Filtering for middle button clicks in eventFilter() below does
         # not seem to work.
         if reason == QtGui.QSystemTrayIcon.MiddleClick:
-            minirok.Globals.action_collection.action('action_play_pause').activate()
+            minirok.Globals.action_collection.action('action_play_pause').trigger()
 
     def eventFilter(self, object_, event):
         if (object_ == self
