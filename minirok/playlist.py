@@ -757,7 +757,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         else:
             files = re.split(r'\0+', playlist.read())
             if files != ['']: # empty saved playlist
-                self.add_files_untrusted(files)
+                # add_files_untrusted() will use InsertItemsCmd, and here
+                # that wouldn't be appropriate: cook up the code ourselves.
+                self.insert_items(0, map(self.create_item,
+                    util.playable_from_untrusted(files, warn=True)))
 
         self.slot_list_changed()
 
