@@ -907,13 +907,6 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
         return kdeui.KListView.eventFilter(self, object_, event)
 
-    # XXX-KDE4 TODO
-    def keyPressEvent(self, event):
-        if event.key() == qt.QEvent.Key_Delete:
-            self.xxx_kde4_remove_items(self.selected_items())
-        else:
-            return kdeui.KListView.keyPressEvent(self, event)
-
 ##
 
 class RepeatMode:
@@ -1006,6 +999,15 @@ class PlaylistView(QtGui.QTreeView):
             drag.setMimeData(mimedata)
             drag.setPixmap(QtGui.QPixmap(1, 1))
             drag.exec_(actions)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Delete:
+            event.accept()
+            RemoveItemsCmd(self.model(),
+                    # careful: one index per column, hence the set
+                    set(x.row() for x in self.selectedIndexes()))
+        else:
+            return QtGui.QTreeView.keyPressEvent(self, event)
 
 ##
 
