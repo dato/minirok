@@ -18,36 +18,6 @@ from minirok import drag, engine, tag_reader, util
 
 ##
 
-class PlaylistView(QtGui.QTreeView):
-
-    def __init__(self, playlist):
-        QtGui.QTreeView.__init__(self)
-
-        self.setModel(playlist)
-        self.setRootIsDecorated(False)
-        self.setDropIndicatorShown(True)
-        self.setAllColumnsShowFocus(True)
-        self.setDragDropMode(self.DragDrop)
-        self.setSelectionMode(self.ExtendedSelection)
-
-        columns = Columns(self)
-        self.setHeader(columns)
-        columns.setup_from_config()
-
-        # ok, this is a bit gross
-        playlist.selection_model = self.selectionModel()
-
-    def startDrag(self, actions):
-        # Override this function to loose the ugly pixmap provided by Qt
-        indexes = self.selectedIndexes()
-        if len(indexes) > 0:
-            mimedata = self.model().mimeData(indexes)
-            drag = QtGui.QDrag(self)
-            drag.setMimeData(mimedata)
-            drag.setPixmap(QtGui.QPixmap(1, 1))
-            drag.exec_(actions)
-
-
 class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
@@ -1005,6 +975,37 @@ class StopAction(kdeui.KToolBarPopupAction):
                 playlist.stop_mode = StopMode.AFTER_QUEUE
                 if playlist.queue:
                     playlist.stop_after = playlist.queue[-1]
+
+##
+
+class PlaylistView(QtGui.QTreeView):
+
+    def __init__(self, playlist):
+        QtGui.QTreeView.__init__(self)
+
+        self.setModel(playlist)
+        self.setRootIsDecorated(False)
+        self.setDropIndicatorShown(True)
+        self.setAllColumnsShowFocus(True)
+        self.setDragDropMode(self.DragDrop)
+        self.setSelectionMode(self.ExtendedSelection)
+
+        columns = Columns(self)
+        self.setHeader(columns)
+        columns.setup_from_config()
+
+        # ok, this is a bit gross
+        playlist.selection_model = self.selectionModel()
+
+    def startDrag(self, actions):
+        # Override this function to loose the ugly pixmap provided by Qt
+        indexes = self.selectedIndexes()
+        if len(indexes) > 0:
+            mimedata = self.model().mimeData(indexes)
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(mimedata)
+            drag.setPixmap(QtGui.QPixmap(1, 1))
+            drag.exec_(actions)
 
 ##
 
