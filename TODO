@@ -4,6 +4,8 @@ IMPORTANT:
   * As we ship icons, we have to "touch `kde4-config --expandvars
     --install icon`/hicolor", both in setup.sh and postinst! (postrm
     too?)
+  * Using util.playable_from_untrusted in load_saved_playlist()
+    eliminates duplicates.
 
 Tree View:
   * Use a regex as well to control the appearance of file names?
