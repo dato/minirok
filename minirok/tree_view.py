@@ -80,10 +80,10 @@ class TreeView(QtGui.QTreeWidget):
             minirok.Globals.playlist.add_files(self.selected_files())
 
     def slot_append_visible(self, search_string):
-        # XXX-KDE4 Revisit this
         if not unicode(search_string).strip():
             return
 
+        # XXX-KDE4 childCount()
         playlist_was_empty = bool(minirok.Globals.playlist.childCount() == 0)
         minirok.Globals.playlist.add_files(self.visible_files())
 
