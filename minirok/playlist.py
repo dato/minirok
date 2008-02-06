@@ -848,34 +848,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             finally:
                 self.setDropVisualizer(True)
 
-    # XXX-KDE4 TODO -> move to the view (slot_clicked_item)
-    def eventFilter(self, object_, event):
-        # TODO Avoid so many calls to viewport(), type(), button(), ... ?
-
-        # Handle Ctrl+MouseClick: RightButton: enqueue, MidButton: stop after
-        if (object_ == self.viewport()
-                and event.type() == qt.QEvent.MouseButtonPress
-                and event.state() == qt.Qt.ControlButton):
-            item = self.itemAt(event.pos())
-            if item is not None:
-                if event.button() == qt.QEvent.MidButton:
-                    self.toggle_stop_after(item)
-                elif event.button() == qt.QEvent.RightButton:
-                    self.toggle_enqueued(item)
-                elif event.button() == qt.QEvent.LeftButton:
-                    kdeui.KListView.eventFilter(self, object_, event)
-            return True
-
-        # Play/Pause when middle-click on the current playing track
-        if (object_ == self.viewport()
-                and event.type() == qt.QEvent.MouseButtonPress
-                and event.button() == qt.QEvent.MidButton
-                and self.itemAt(event.pos()) == self.current_item):
-            self.slot_pause()
-            return True
-
-        return kdeui.KListView.eventFilter(self, object_, event)
-
 ##
 
 class RepeatMode:
@@ -959,14 +931,8 @@ class PlaylistView(QtGui.QTreeView):
         self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
                 playlist.slot_activate_index)
 
-        self.connect(self, QtCore.SIGNAL('clicked(const QModelIndex &)'),
-                self.slot_clicked_item)
-
         # ok, this is a bit gross
         playlist.selection_model = self.selectionModel()
-
-    def slot_clicked_item(self, index):
-        pass
 
     ##
 
@@ -988,6 +954,32 @@ class PlaylistView(QtGui.QTreeView):
                     set(x.row() for x in self.selectedIndexes()))
         else:
             return QtGui.QTreeView.keyPressEvent(self, event)
+
+    def mousePressEvent(self, event):
+        button = event.button()
+        keymod = QtGui.QApplication.keyboardModifiers()
+        index = self.indexAt(event.pos())
+
+        # TODO: accept event?
+
+        if not index.isValid():
+            # click on viewport
+            self.clearSelection()
+
+        if keymod & Qt.ControlModifier:
+            # XXX-KDE4 TODO
+            if button & Qt.RightButton:
+                print 'toggle enqueued'
+            elif button & Qt.MidButton:
+                print 'toggle stop after'
+
+        elif button & Qt.MidButton:
+            # XXX-KDE4 TODO
+            # if index == self.model().current_index():
+                print 'self.model().slot_pause()'
+
+        else:
+            return QtGui.QTreeView.mousePressEvent(self, event)
 
 ##
 
