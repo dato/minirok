@@ -936,6 +936,17 @@ class PlaylistView(QtGui.QTreeView):
 
     ##
 
+    def selected_rows(self):
+        # The set is needed here because there is an index per row/column
+        return set(x.row() for x in self.selectedIndexes())
+
+    def unselected_rows(self):
+        selected = self.selected_rows()
+        all = set(range(self.model().rowCount()))
+        return all - selected
+
+    ##
+
     def startDrag(self, actions):
         # Override this function to loose the ugly pixmap provided by Qt
         indexes = self.selectedIndexes()
@@ -949,9 +960,7 @@ class PlaylistView(QtGui.QTreeView):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
             event.accept()
-            RemoveItemsCmd(self.model(),
-                    # careful: one index per column, hence the set
-                    set(x.row() for x in self.selectedIndexes()))
+            RemoveItemsCmd(self.model(), self.selected_rows())
         else:
             return QtGui.QTreeView.keyPressEvent(self, event)
 
