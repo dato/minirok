@@ -1128,7 +1128,7 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
             painter.drawEllipse(width - items_width - e_width/2, e_margin, e_width, e_height)
             painter.drawRect(width - items_width, e_margin, items_width, e_height)
             painter.setPen(option.palette.highlight().color())
-            painter.drawLine(width - items_width, e_margin+1, width - items_width, e_height)
+            painter.drawLine(width - items_width, e_margin+1, width - items_width, e_height+1)
 
             x = width - items_width - e_margin
 
