@@ -30,27 +30,17 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         util.HasConfig.__init__(self)
         # util.HasGUIConfig.__init__(self)
 
-        # XXX-KDE4
-        self.init_actions()
-        self.init_undo_stack()
-        self.apply_preferences()
-        self.tag_reader = tag_reader.TagReader()
-
         # Core model stuff
         self._items = []
         self._row_count = 0
         self._empty_model_index = QtCore.QModelIndex()
         self._column_count = len(PlaylistItem.ALLOWED_TAGS)
 
-        return
-
-        # XXX-KDE4 TODO
         self.queue = []
         self.visualizer_rect = None
-        self.columns = Columns(self)
         self.stop_mode = StopMode.NONE
-        self.random_queue = util.RandomOrderedList()
         self.tag_reader = tag_reader.TagReader()
+        self.random_queue = util.RandomOrderedList()
 
         # these have a property() below
         self._stop_after = None
@@ -60,25 +50,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._currently_playing = None
 
         self._currently_playing_taken = False
-
-        self.setSorting(-1)
-        self.setAcceptDrops(True)
-        self.setDragEnabled(True)
-        self.setAllColumnsShowFocus(True)
-        self.setSelectionModeExt(kdeui.KListView.Extended)
-
-        self.header().installEventFilter(self)
-
-        self.connect(self, qt.SIGNAL('returnPressed(QListViewItem *)'),
-                self.slot_new_current_item)
-
-        self.connect(self, qt.SIGNAL('doubleClicked(QListViewItem *, const QPoint &, int)'),
-                self.slot_new_current_item)
-
-        self.connect(self, qt.SIGNAL('mouseButtonPressed(int, QListViewItem *, const QPoint &, int)'),
-                self.slot_mouse_button_pressed)
-
-        self.connect(self, qt.SIGNAL('moved()'), self.slot_list_changed)
 
         self.connect(self, QtCore.SIGNAL('list_changed'), self.slot_list_changed)
 
@@ -461,7 +432,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.emit(QtCore.SIGNAL('list_changed'))
 
     # XXX-KDE4 TODO
-    def slot_new_current_item(self, item):
+    def slot_activate_index(self, index):
         self.maybe_populate_random_queue()
         self.current_item = item
         self.slot_play()
@@ -579,7 +550,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
+    # XXX-KDE4 TODO -> move to the view (slot_clicked_item)
     def slot_mouse_button_pressed(self, button, item, qpoint, column):
         if button != qt.Qt.RightButton or not item:
             return
@@ -877,7 +848,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             finally:
                 self.setDropVisualizer(True)
 
-    # XXX-KDE4 TODO
+    # XXX-KDE4 TODO -> move to the view (slot_clicked_item)
     def eventFilter(self, object_, event):
         # TODO Avoid so many calls to viewport(), type(), button(), ... ?
 
@@ -985,8 +956,19 @@ class PlaylistView(QtGui.QTreeView):
         self.setHeader(columns)
         columns.setup_from_config()
 
+        self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
+                playlist.slot_activate_index)
+
+        self.connect(self, QtCore.SIGNAL('clicked(const QModelIndex &)'),
+                self.slot_clicked_item)
+
         # ok, this is a bit gross
         playlist.selection_model = self.selectionModel()
+
+    def slot_clicked_item(self, index):
+        pass
+
+    ##
 
     def startDrag(self, actions):
         # Override this function to loose the ugly pixmap provided by Qt
