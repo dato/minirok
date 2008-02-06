@@ -550,42 +550,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO -> move to the view (slot_clicked_item)
-    def slot_mouse_button_pressed(self, button, item, qpoint, column):
-        if button != qt.Qt.RightButton or not item:
-            return
-
-        popup = kdeui.KPopupMenu()
-        popup.setCheckable(True)
-
-        selected_items = self.selected_items()
-
-        if not selected_items: # what gives?
-            selected_items = [ item ]
-        else:
-            assert item in selected_items
-
-        if len(selected_items) == 1:
-            popup.insertItem('Enqueue track', 0)
-            popup.setItemChecked(0, bool(item in self.queue))
-        else:
-            popup.insertItem('Enqueue/Dequeue tracks', 0)
-
-        popup.insertItem('Stop playing after this track', 1)
-        popup.setItemChecked(1, bool(item == self.stop_after))
-
-        popup.insertItem('Crop tracks', 2)
-
-        selected = popup.exec_loop(qt.QCursor.pos())
-
-        if selected == 0:
-            for item in selected_items:
-                self.toggle_enqueued(item)
-        elif selected == 1:
-            self.toggle_stop_after(item)
-        elif selected == 2:
-            self.xxx_kde4_remove_items(self.unselected_items())
-
     # XXX-KDE4 TODO
     def slot_toggle_stop_after_current(self):
         self.toggle_stop_after(self._currently_playing or self.current_item)
@@ -658,26 +622,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             while item:
                 self.random_queue.append(item)
                 item = item.nextSibling()
-
-    # XXX-KDE4 TODO
-    def select_items_helper(self, iterator_flags):
-        """Return a list of items that match iterator_flags."""
-        iterator = qt.QListViewItemIterator(self, iterator_flags)
-
-        items = []
-        while iterator.current():
-            items.append(iterator.current())
-            iterator += 1
-
-        return items
-
-    # XXX-KDE4 TODO
-    def selected_items(self):
-        return self.select_items_helper(qt.QListViewItemIterator.Selected)
-
-    # XXX-KDE4 TODO
-    def unselected_items(self):
-        return self.select_items_helper(qt.QListViewItemIterator.Unselected)
 
     ##
 
@@ -988,6 +932,43 @@ class PlaylistView(QtGui.QTreeView):
             # XXX-KDE4 TODO
             # if index == self.model().current_index():
                 print 'self.model().slot_pause()'
+
+        elif button & Qt.RightButton:
+            QtGui.QTreeView.mousePressEvent(self, event)
+
+            menu = kdeui.KMenu(self)
+            selected_rows = self.selected_rows()
+            assert len(selected_rows) > 0 # or maybe use itemAt()
+
+            if len(selected_rows) == 1:
+                enqueue_action = menu.addAction('Enqueue track')
+                if False: # XXX-KDE4 (item in self.queue)
+                    enqueue_action.setCheckable(True)
+                    enqueue_action.setChecked(True)
+            else:
+                enqueue_action = menu.addAction('Enqueue/Dequeue tracks')
+
+            stop_after_action = menu.addAction('Stop playing after this track')
+
+            if False: # XXX-KDE4 (item == self.stop_after)
+                stop_after_action.setCheckable(True)
+                stop_after_action.setChecked(True)
+
+            crop_action = menu.addAction('Crop tracks')
+
+            ##
+
+            selected_action = menu.exec_(event.globalPos())
+
+            if selected_action == enqueue_action:
+                # for row in selected_rows: toggle_enqueued(row)
+                # self.model().toggle_enqueued_many(selected_rows)
+                pass # XXX-KDE4 TODO
+            elif selected_action == stop_after_action:
+                # self.model().toggle_stop_after(index.row())
+                pass # XXX-KDE4 TODO
+            elif selected_action == crop_action:
+                RemoveItemsCmd(self.model(), self.unselected_rows())
 
         else:
             return QtGui.QTreeView.mousePressEvent(self, event)
