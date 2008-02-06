@@ -100,6 +100,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def sorted_column_names(self):
         return PlaylistItem.ALLOWED_TAGS[:]
 
+    def queue_position(self, row):
+        return row + 1 # XXX-KDE4
+
+    def is_stop_after(self, row):
+        return True # XXX-KDE4
+
     ## 
 
     """Drag and drop functions."""
@@ -872,6 +878,11 @@ class PlaylistView(QtGui.QTreeView):
         self.setHeader(columns)
         columns.setup_from_config()
 
+        self.track_delegate = PlaylistTrackDelegate()
+        self.setItemDelegateForColumn(
+                self.model().sorted_column_names().index('Track'),
+                self.track_delegate)
+
         self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
                 playlist.slot_activate_index)
 
@@ -1064,20 +1075,38 @@ class PlaylistItem(object):
                             qt.QRect(qt.QPoint(-prev_width, 0),
                                      qt.QSize(full_width, self.height())))
 
-        # Now draw an ellipse with the stop after track icon and queue
-        # position. Code comes from Amarok's PlaylistItem::paintCell().
-        draw_stop = bool(self == self.playlist.stop_after)
-        try:
-            queue_pos = str(self.playlist.queue.index(self) + 1)
-        except ValueError:
-            queue_pos = None
+    # XXX-KDE4 TODO
+    def paintFocus(self, painter, colorgrp, qrect):
+        """Only allows focus to be painted in the current item."""
+        if not self._is_current:
+            return
+        else:
+            kdeui.KListViewItem.paintFocus(self, painter, colorgrp, qrect)
 
-        if ((draw_stop or queue_pos)
-                and self.playlist.header().mapToIndex(column) == 0):
+##
+
+class PlaylistTrackDelegate(QtGui.QItemDelegate):
+    """Paints the track number and the "stop after/queue pos" ellipse.
+    
+    Code originally comes from PlaylistItem::paintCell() in Amarok 1.4.
+    """
+
+    def paint(self, painter, option, index):
+        QtGui.QItemDelegate.paint(self, painter, option, index)
+
+        draw_stop = index.model().is_stop_after(index.row())
+        queue_pos = index.model().queue_position(index.row())
+
+        if draw_stop or queue_pos:
+            painter.save()
+            painter.translate(option.rect.x(), option.rect.y())
+
+            width = option.rect.width()
+            height = option.rect.height()
 
             e_width = 16
             e_margin = 2
-            e_height = self.height() - e_margin*2
+            e_height = height - e_margin*2
 
             if draw_stop:
                 s_width = 8
@@ -1086,6 +1115,7 @@ class PlaylistItem(object):
                 s_width = s_height = 0
 
             if queue_pos:
+                queue_pos = str(queue_pos)
                 q_width = painter.fontMetrics().width(queue_pos)
                 q_height = painter.fontMetrics().height()
             else:
@@ -1093,32 +1123,26 @@ class PlaylistItem(object):
 
             items_width = s_width + q_width
 
-            painter.setBrush(colorgrp.highlight())
-            painter.setPen(colorgrp.highlight().dark())
+            painter.setBrush(option.palette.highlight())
+            painter.setPen(option.palette.highlight().color().dark())
             painter.drawEllipse(width - items_width - e_width/2, e_margin, e_width, e_height)
             painter.drawRect(width - items_width, e_margin, items_width, e_height)
-            painter.setPen(colorgrp.highlight())
+            painter.setPen(option.palette.highlight().color())
             painter.drawLine(width - items_width, e_margin+1, width - items_width, e_height)
 
             x = width - items_width - e_margin
 
             if draw_stop:
                 y = e_height / 2 - s_height / 2 + e_margin
-                painter.setBrush(qt.QColor(0, 0, 0))
+                painter.setBrush(QtGui.QColor(0, 0, 0))
                 painter.drawRect(x, y, s_width, s_height)
                 x += s_width + e_margin/2
 
             if queue_pos:
-                painter.setPen(colorgrp.highlightedText())
-                painter.drawText(x, 0, width-x, q_height, qt.Qt.AlignCenter, queue_pos)
+                painter.setPen(option.palette.highlightedText().color())
+                painter.drawText(x, 0, width-x, q_height, Qt.AlignCenter, queue_pos)
 
-    # XXX-KDE4 TODO
-    def paintFocus(self, painter, colorgrp, qrect):
-        """Only allows focus to be painted in the current item."""
-        if not self._is_current:
-            return
-        else:
-            kdeui.KListViewItem.paintFocus(self, painter, colorgrp, qrect)
+            painter.restore()
 
 ##
 
