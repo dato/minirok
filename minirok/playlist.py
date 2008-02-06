@@ -972,6 +972,8 @@ class PlaylistView(QtGui.QTreeView):
                 print 'toggle enqueued'
             elif button & Qt.MidButton:
                 print 'toggle stop after'
+            else:
+                return QtGui.QTreeView.mousePressEvent(self, event)
 
         elif button & Qt.MidButton:
             # XXX-KDE4 TODO
