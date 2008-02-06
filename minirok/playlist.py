@@ -68,8 +68,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     """Model functions."""
 
-    def rowCount(self, parent):
-        if parent == self._empty_model_index:
+    def rowCount(self, parent=None):
+        if parent is None or parent == self._empty_model_index:
             return self._row_count
         else:
             return 0 # as per QAbstractItemModel::rowCount docs
