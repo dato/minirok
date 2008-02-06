@@ -18,7 +18,7 @@ from minirok import drag, engine, tag_reader, util
 
 ##
 
-class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig):
+class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
@@ -27,7 +27,7 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
     def __init__(self, *args):
         QtCore.QAbstractTableModel.__init__(self, *args)
-        # util.HasConfig.__init__(self)
+        util.HasConfig.__init__(self)
         # util.HasGUIConfig.__init__(self)
 
         # XXX-KDE4
@@ -734,25 +734,18 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
     def slot_save_config(self):
         """Saves the current playlist."""
-        items = []
-        item = self.firstChild()
-
-        while item:
-            items.append(item.path)
-            item = item.nextSibling()
+        paths = [ item.path for item in self._items ]
 
         try:
             playlist = file(self.saved_playlist_path(), 'w')
         except IOError, e:
             minirok.logger.error('could not save playlist: %s', e)
         else:
-            playlist.write('\0'.join(items))
+            playlist.write('\0'.join(paths))
             playlist.close()
 
-    # XXX-KDE4 TODO
     def load_saved_playlist(self):
         try:
             playlist = file(self.saved_playlist_path())
@@ -768,7 +761,6 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
 
         self.slot_list_changed()
 
-    # XXX-KDE4 TODO
     @staticmethod
     def saved_playlist_path():
         appdata = str(kdecore.KGlobal.dirs().saveLocation('appdata'))
