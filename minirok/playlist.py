@@ -885,9 +885,8 @@ class PlaylistItem(kdeui.KListViewItem):
             e_height = self.height() - e_margin*2
 
             if draw_stop:
-                stop_pixmap = util.get_png('black_tiny_stop')
-                s_width = stop_pixmap.width()
-                s_height = stop_pixmap.height()
+                s_width = 8
+                s_height = 8
             else:
                 s_width = s_height = 0
 
@@ -910,7 +909,8 @@ class PlaylistItem(kdeui.KListViewItem):
 
             if draw_stop:
                 y = e_height / 2 - s_height / 2 + e_margin
-                painter.drawPixmap(x, y, stop_pixmap)
+                painter.setBrush(qt.QColor(0, 0, 0))
+                painter.drawRect(x, y, s_width, s_height)
                 x += s_width + e_margin/2
 
             if queue_pos:
