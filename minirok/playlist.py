@@ -221,6 +221,8 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
         finally:
             self.endInsertRows()
 
+        self.emit(QtCore.SIGNAL('list_changed'))
+
     def remove_items(self, position, amount):
         items = self._items[position:position+amount]
         try:
@@ -231,6 +233,8 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
             return items
         finally:
             self.endRemoveRows()
+
+        self.emit(QtCore.SIGNAL('list_changed'))
 
     ##
 
@@ -783,7 +787,6 @@ class Playlist(QtCore.QAbstractTableModel):#, util.HasConfig, util.HasGUIConfig)
         if files:
             items = map(self.create_item, files)
             InsertItemsCmd(self, position, items)
-            self.emit(QtCore.SIGNAL('list_changed'))
 
     def add_files_untrusted(self, files, clear_playlist=False):
         """Add to the playlist those files that exist and are playable."""
