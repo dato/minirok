@@ -80,16 +80,16 @@ class TreeView(QtGui.QTreeWidget):
             minirok.Globals.playlist.add_files(self.selected_files())
 
     def slot_append_visible(self, search_string):
-        # XXX-KDE4 Revisit this
         if not unicode(search_string).strip():
             return
 
+        # XXX-KDE4 childCount()
         playlist_was_empty = bool(minirok.Globals.playlist.childCount() == 0)
         minirok.Globals.playlist.add_files(self.visible_files())
 
         if (playlist_was_empty
                 and minirok.Globals.engine.status == engine.State.STOPPED):
-            minirok.Globals.action_collection.action('action_play').activate()
+            minirok.Globals.action_collection.action('action_play').trigger()
 
     ##
 
@@ -401,7 +401,7 @@ def _my_listdir(path):
     try:
         mtime = os.stat(path).st_mtime
     except OSError, e:
-        minirok.logger.warn('cout not stat: %s', e)
+        minirok.logger.warn('cout not stat %r: %s', path, e.strerror)
         _my_listdir_cache.setdefault(path, (None, {}))
     else:
         if mtime == _my_listdir_cache.get(path, (None, None))[0]:
@@ -413,5 +413,6 @@ def _my_listdir(path):
                             for x in os.listdir(path)))
             except OSError, e:
                 # XXX can the error come from the stat() as well?
-                minirok.logger.warn('could not listdir: %s', e)
+                minirok.logger.warn('could not listdir %r: %s',
+                        path, e.strerror)
                 _my_listdir_cache.setdefault(path, (None, {}))

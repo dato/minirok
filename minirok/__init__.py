@@ -158,8 +158,6 @@ class Globals(object):
     """
     @staticmethod
     def config(group='General'):
-        config = kdeui.KApplication.kApplication().config()
-        config.setGroup(group)
-        return config
+        return kdecore.KGlobal.config().group(group)
 
 Globals = Globals()
