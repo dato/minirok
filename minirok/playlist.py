@@ -132,9 +132,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         mimedata = QtCore.QMimeData()
         bytearray = QtCore.QByteArray()
         datastream = QtCore.QDataStream(bytearray, QtCore.QIODevice.WriteOnly)
-        datastream.writeUInt32(len(indexes))
-        for index in indexes:
-            datastream.writeUInt32(index.row())
+        rows = set(x.row() for x in indexes)
+        datastream.writeUInt32(len(rows))
+        for row in rows:
+            datastream.writeUInt32(row)
         mimedata.setData(self.PLAYLIST_DND_MIME_TYPE, bytearray)
         return mimedata
 
@@ -156,7 +157,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         elif mimedata.hasFormat(self.PLAYLIST_DND_MIME_TYPE):
             bytearray = mimedata.data(self.PLAYLIST_DND_MIME_TYPE)
             datastream = QtCore.QDataStream(bytearray, QtCore.QIODevice.ReadOnly)
-            rows = [ datastream.readUInt32() for x in range(datastream.readUInt32()) ]
+            rows = set(datastream.readUInt32()
+                        for x in range(datastream.readUInt32()))
 
             if row < 0:
                 row = self._row_count
