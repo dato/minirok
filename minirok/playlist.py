@@ -213,11 +213,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                     position, position + amount - 1)
             self._items[position:position+amount] = []
             self._row_count -= amount
-            return items
         finally:
             self.endRemoveRows()
 
         self.emit(QtCore.SIGNAL('list_changed'))
+        return items
 
     ##
 
