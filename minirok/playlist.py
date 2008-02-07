@@ -6,7 +6,6 @@
 
 import os
 import re
-import sys
 import errno
 
 from PyQt4.QtCore import Qt
