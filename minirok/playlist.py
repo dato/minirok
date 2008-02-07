@@ -999,7 +999,7 @@ class PlaylistView(QtGui.QTreeView):
 
             stop_after_action = menu.addAction('Stop playing after this track')
 
-            if False: # XXX-KDE4 (item == self.stop_after)
+            if index.model().is_stop_after(index.row()):
                 stop_after_action.setCheckable(True)
                 stop_after_action.setChecked(True)
 
