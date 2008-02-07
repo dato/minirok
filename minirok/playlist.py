@@ -366,46 +366,44 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
+    """Maintain the state of actions current."""
+
     def slot_list_changed(self):
-        if self.childCount() == 0:
+        if self._row_count == 0:
             self._current_item = None # can't use the property here
             self.action_next.setEnabled(False)
             self.action_clear.setEnabled(False)
             self.action_previous.setEnabled(False)
         else:
             if self.current_item is None:
-                self._current_item = self.FIRST_ITEM
-            if self.current_item is self.FIRST_ITEM:
-                current = self.firstChild()
+                current = 0
             else:
                 current = self.current_item
             self.action_clear.setEnabled(True)
-            self.action_previous.setEnabled(bool(current.itemAbove()))
+            self.action_previous.setEnabled(current > 0)
             self.action_next.setEnabled(bool(self.queue
                     or self.repeat_mode == RepeatMode.PLAYLIST
-                    or ((self.random_mode and self.random_queue)
-                        or (not self.random_mode and current.itemBelow()))))
+                    or (self.random_mode and self.random_queue)
+                    or (not self.random_mode and current+1 < self._row_count)))
 
         self.slot_engine_status_changed(minirok.Globals.engine.status)
 
-    # XXX-KDE4 TODO
     def slot_engine_status_changed(self, new_status):
         if new_status == engine.State.STOPPED:
             self.action_stop.setEnabled(False)
             self.action_pause.setEnabled(False)
             self.action_pause.setChecked(False)
-            self.action_play.setEnabled(bool(self.current_item))
+            self.action_play.setEnabled(self._row_count > 0)
             self.action_play_pause.setChecked(False)
-            self.action_play_pause.setIcon('player_play')
-            self.action_play_pause.setEnabled(bool(self.current_item))
+            self.action_play_pause.setEnabled(self._row_count > 0)
+            self.action_play_pause.setIcon(kdeui.KIcon('media-playback-start'))
 
         elif new_status == engine.State.PLAYING:
             self.action_stop.setEnabled(True)
             self.action_pause.setEnabled(True)
             self.action_pause.setChecked(False)
             self.action_play_pause.setChecked(False)
-            self.action_play_pause.setIcon('player_pause')
+            self.action_play_pause.setIcon(kdeui.KIcon('media-playback-pause'))
 
         elif new_status == engine.State.PAUSED:
             self.action_pause.setChecked(True)
