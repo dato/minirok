@@ -96,6 +96,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         else:
             return QtCore.QVariant()
 
+    ##
+
+    """Methods used by the view, header, and delegate."""
+
     def sorted_column_names(self):
         return PlaylistItem.ALLOWED_TAGS[:]
 
@@ -103,7 +107,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         return row + 1 # XXX-KDE4
 
     def is_stop_after(self, row):
-        return True # XXX-KDE4
+        assert 0 <= row < self._row_count
+        return self._items[row] == self.stop_after
 
     ## 
 
@@ -216,6 +221,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
+    """Initialization."""
+
     def init_actions(self):
         self.action_play = util.create_action('action_play', 'Play',
                 self.slot_play, 'media-playback-start')
@@ -273,17 +280,26 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
-    def _set_stop_after(self, value):
-        update = lambda: \
-                self._stop_after is not None and self._stop_after.repaint()
+    """Properties."""
 
-        update()
+    def _set_stop_after(self, value):
+        rows = []
+
+        def dry():
+            """Don't repeat yourself."""
+            if self._stop_after is not None:
+                rows.append(self._items.index(self._stop_after))
+
+        dry()
         self._stop_after = value
-        update()
+        dry()
 
         if value is None:
             self.stop_mode = StopMode.NONE
+
+        rows.sort()
+        self.my_emit_dataChanged(
+                rows[0], rows[-1], PlaylistItem.TRACK_COLUMN_INDEX)
 
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
@@ -561,10 +577,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def slot_toggle_stop_after_current(self):
         self.toggle_stop_after(self._currently_playing or self.current_item)
 
-    # XXX-KDE4 TODO
-    def toggle_stop_after(self, item):
-        if item in (self.FIRST_ITEM, None):
-            return
+    def toggle_stop_after(self, row):
+        assert 0 <= row < self._row_count
+
+        item = self._items[row]
 
         if item == self.stop_after:
             self.stop_after = None
@@ -799,6 +815,28 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             finally:
                 self.setDropVisualizer(True)
 
+    ##
+
+    """Misc. helpers."""
+
+    def my_emit_dataChanged(self, row1, row2, column=None):
+        """Emit dataChanged() from row1 to row2 (or viceversa).
+
+        If :param column: is not none, only include that column in the signal.
+        """
+        if row1 > row2:
+            row1, row2 = row2, row1
+
+        if column is None:
+            col1 = 0
+            col2 = self.columnCount() - 1
+        else:
+            col1 = col2 = column
+
+        self.emit(QtCore.SIGNAL(
+                    'dataChanged(const QModelIndex &, const QModelIndex &)'),
+                    self.index(row1, col1), self.index(row2, col2))
+
 ##
 
 class RepeatMode:
@@ -937,7 +975,7 @@ class PlaylistView(QtGui.QTreeView):
             if button & Qt.RightButton:
                 print 'toggle enqueued'
             elif button & Qt.MidButton:
-                print 'toggle stop after'
+                self.model().toggle_stop_after(index.row())
             else:
                 return QtGui.QTreeView.mousePressEvent(self, event)
 
@@ -978,8 +1016,7 @@ class PlaylistView(QtGui.QTreeView):
                 # self.model().toggle_enqueued_many(selected_rows)
                 pass # XXX-KDE4 TODO
             elif selected_action == stop_after_action:
-                # self.model().toggle_stop_after(index.row())
-                pass # XXX-KDE4 TODO
+                self.model().toggle_stop_after(index.row())
             elif selected_action == crop_action:
                 RemoveItemsCmd(self.model(), self.unselected_rows())
 
@@ -993,6 +1030,8 @@ class PlaylistItem(object):
     # This class should be considered sort of private to the model
 
     ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
+
+    TRACK_COLUMN_INDEX = 0 # used by the model
 
     def __init__(self, path, tags=None):
         self.path = path
