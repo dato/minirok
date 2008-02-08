@@ -531,7 +531,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.currently_playing = None
             minirok.Globals.engine.stop()
 
-    # XXX-KDE4 TODO
     def slot_next(self, force_play=False):
         if self.current_item is not None:
             if self.queue:
@@ -545,7 +544,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             elif self.current_item is self.FIRST_ITEM:
                 next = self.my_first_child()
             else:
-                next = self.current_item.itemBelow()
+                index = self._itemdict[self.current_item] + 1
+                if index < self._row_count:
+                    next = self._itemlist[index]
+                else:
+                    next = None
 
             if next is None and self.repeat_mode is RepeatMode.PLAYLIST:
                 next = self.my_first_child()
@@ -561,12 +564,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                     or minirok.Globals.engine.status != engine.State.STOPPED):
                     self.slot_play()
 
-    # XXX-KDE4 TODO
     def slot_previous(self):
         if self.current_item not in (self.FIRST_ITEM, None):
-            previous = self.current_item.itemAbove()
-            if previous is not None:
-                self.current_item = previous
+            index = self._itemdict[self.current_item] - 1
+            if index >= 0:
+                self.current_item = self._itemlist[index]
                 if minirok.Globals.engine.status != engine.State.STOPPED:
                     self.slot_play()
 
