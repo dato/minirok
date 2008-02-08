@@ -241,6 +241,11 @@ class RandomOrderedList(list):
     def append(self, item):
         self.insert(random.randrange(len(self)+1), item)
 
+    def extend(self, seq):
+        seq = list(seq)
+        random.shuffle(seq)
+        list.extend(self, seq)
+
 ##
 
 def needs_lock(mutex_name):
