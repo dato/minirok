@@ -488,7 +488,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
+    """Actions."""
+
     def slot_play(self):
         if self.current_item is not None:
             if self.current_item is self.FIRST_ITEM:
@@ -503,11 +504,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             if self.current_item.tags()['Length'] is None:
                 tags = tag_reader.TagReader.tags(self.current_item.path)
                 self.current_item.update_tags({'Length': tags.get('Length', 0)})
-                self.current_item.update_display() # XXX-KDE4
+                self.my_emit_dataChanged(self._itemdict[self.current_item])
 
             self.emit(QtCore.SIGNAL('new_track'))
 
-    # XXX-KDE4 TODO
     def slot_pause(self):
         e = minirok.Globals.engine
         if e.status == engine.State.PLAYING:
@@ -515,14 +515,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         elif e.status == engine.State.PAUSED:
             e.pause(False)
 
-    # XXX-KDE4 TODO
     def slot_play_pause(self):
         if minirok.Globals.engine.status == engine.State.STOPPED:
             self.slot_play()
         else:
             self.slot_pause()
 
-    # XXX-KDE4 TODO
     def slot_stop(self):
         if minirok.Globals.engine.status != engine.State.STOPPED:
             self.currently_playing = None
