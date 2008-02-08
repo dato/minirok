@@ -105,7 +105,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         return PlaylistItem.ALLOWED_TAGS[:]
 
     def queue_position(self, row):
-        return row + 1 # XXX-KDE4
+        return False # XXX-KDE4
 
     def is_stop_after(self, row):
         assert 0 <= row < self._row_count
