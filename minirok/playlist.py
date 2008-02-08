@@ -30,7 +30,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         # util.HasGUIConfig.__init__(self)
 
         # Core model stuff
-        self._items = []
+        self._itemlist = []
+        self._itemdict = {} # { item: position, ... }
         self._row_count = 0
         self._empty_model_index = QtCore.QModelIndex()
         self._column_count = len(PlaylistItem.ALLOWED_TAGS)
@@ -87,7 +88,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             return QtCore.QVariant()
         else:
             return QtCore.QVariant(QtCore.QString(
-                        self._items[row].tag_by_index(column) or ''))
+                        self._itemlist[row].tag_by_index(column) or ''))
 
     def headerData(self, section, orientation, role):
         if (role == Qt.DisplayRole and orientation == Qt.Horizontal):
@@ -108,7 +109,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def is_stop_after(self, row):
         assert 0 <= row < self._row_count
-        return self._items[row] == self.stop_after
+        return self._itemlist[row] == self.stop_after
 
     ## 
 
@@ -193,25 +194,42 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    """Adding and removing *items*."""
+    """Adding and removing *items*.
+    
+    This updates both _itemlist and _itemdict. No other functions should modify
+    these two variables.
+    """
 
     def insert_items(self, position, items):
         try:
+            nitems = len(items)
+            if position < self._row_count: # not appending
+                for item, row in self._itemdict.iteritems():
+                    if row >= position:
+                        self._itemdict[item] += nitems
+            self._itemdict.update((item, position+i)
+                    for i, item in enumerate(items))
             self.beginInsertRows(QtCore.QModelIndex(),
-                    position, position + len(items) - 1)
-            self._items[position:0] = items
-            self._row_count += len(items)
+                                 position, position + nitems - 1)
+            self._itemlist[position:0] = items
+            self._row_count += nitems
         finally:
             self.endInsertRows()
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, position, amount):
-        items = self._items[position:position+amount]
+        items = self._itemlist[position:position+amount]
         try:
+            for item in items:
+                del self._itemdict[item]
+            if position + amount <= self._row_count: # not tail removal
+                for item, row in self._itemdict.iteritems():
+                    if row > position:
+                        self._itemdict[item] -= amount
             self.beginRemoveRows(QtCore.QModelIndex(),
-                    position, position + amount - 1)
-            self._items[position:position+amount] = []
+                                 position, position + amount - 1)
+            self._itemlist[position:position+amount] = []
             self._row_count -= amount
         finally:
             self.endRemoveRows()
@@ -288,7 +306,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         def dry():
             """Don't repeat yourself."""
             if self._stop_after is not None:
-                rows.append(self._items.index(self._stop_after))
+                rows.append(self._itemdict[self._stop_after])
 
         dry()
         self._stop_after = value
@@ -578,7 +596,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def toggle_stop_after(self, row):
         assert 0 <= row < self._row_count
 
-        item = self._items[row]
+        item = self._itemlist[row]
 
         if item == self.stop_after:
             self.stop_after = None
@@ -672,7 +690,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def slot_save_config(self):
         """Saves the current playlist."""
-        paths = [ item.path for item in self._items ]
+        paths = [ item.path for item in self._itemlist ]
 
         try:
             playlist = file(self.saved_playlist_path(), 'w')
