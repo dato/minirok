@@ -394,9 +394,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.action_previous.setEnabled(False)
         else:
             if self.current_item is None:
+                self._current_item = self.FIRST_ITEM
+            if self.current_item is self.FIRST_ITEM:
                 current = 0
             else:
-                current = self.current_item
+                current = self._itemdict[self.current_item]
             self.action_clear.setEnabled(True)
             self.action_previous.setEnabled(current > 0)
             self.action_next.setEnabled(bool(self.queue
