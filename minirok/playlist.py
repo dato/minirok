@@ -337,6 +337,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     # XXX-KDE4 TODO
     def _set_current_item(self, value):
+        self._current_item = value
+        return
         def set_current(current):
             if self.current_item not in (self.FIRST_ITEM, None):
                 if current:
@@ -370,6 +372,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     # XXX-KDE4 TODO
     def _set_currently_playing(self, item):
+        self._currently_playing = item
+        return
         def set_playing(value):
             if self._currently_playing not in (self.FIRST_ITEM, None):
                 self._currently_playing.set_playing(value)
