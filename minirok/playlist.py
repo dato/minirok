@@ -338,6 +338,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     # XXX-KDE4 TODO
     def _set_current_item(self, value):
         self._current_item = value
+        self.emit(QtCore.SIGNAL('list_changed'))
         return
         def set_current(current):
             if self.current_item not in (self.FIRST_ITEM, None):
