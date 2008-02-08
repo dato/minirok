@@ -831,12 +831,15 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     """Misc. helpers."""
 
-    def my_emit_dataChanged(self, row1, row2, column=None):
+    def my_emit_dataChanged(self, row1, row2=None, column=None):
         """Emit dataChanged() from row1 to row2 (or viceversa).
 
-        If :param column: is not none, only include that column in the signal.
+        If :param row2: is None, it will default to row1.
+        If :param column: is not None, only include that column in the signal.
         """
-        if row1 > row2:
+        if row2 is None:
+            row2 = row1
+        elif row1 > row2:
             row1, row2 = row2, row1
 
         if column is None:
