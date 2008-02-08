@@ -646,23 +646,17 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
             return popped
 
-    # XXX-KDE4 TODO
     def my_first_child(self):
         """Return the first item to be played, honouring random_mode."""
         if self.random_mode:
-            if not self.random_queue:
-                self.maybe_populate_random_queue()
+            self.maybe_populate_random_queue()
             return self.random_queue.pop(0)
         else:
-            return self.firstChild()
+            return self._itemlist[0]
 
-    # XXX-KDE4 TODO
     def maybe_populate_random_queue(self):
         if not self.random_queue:
-            item = self.firstChild()
-            while item:
-                self.random_queue.append(item)
-                item = item.nextSibling()
+            self.random_queue.extend(self._itemlist)
 
     ##
 
