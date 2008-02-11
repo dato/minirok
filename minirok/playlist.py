@@ -104,10 +104,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def sorted_column_names(self):
         return PlaylistItem.ALLOWED_TAGS[:]
 
-    def queue_position(self, row):
+    def row_queue_position(self, row):
+        assert 0 <= row < self._row_count
         return False # XXX-KDE4
 
-    def is_stop_after(self, row):
+    def row_is_stop_after(self, row):
         assert 0 <= row < self._row_count
         return self._itemlist[row] == self.stop_after
 
@@ -1021,7 +1022,7 @@ class PlaylistView(QtGui.QTreeView):
 
             stop_after_action = menu.addAction('Stop playing after this track')
 
-            if index.model().is_stop_after(index.row()):
+            if index.model().row_is_stop_after(index.row()):
                 stop_after_action.setCheckable(True)
                 stop_after_action.setChecked(True)
 
@@ -1155,8 +1156,8 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
     def paint(self, painter, option, index):
         QtGui.QItemDelegate.paint(self, painter, option, index)
 
-        draw_stop = index.model().is_stop_after(index.row())
-        queue_pos = index.model().queue_position(index.row())
+        draw_stop = index.model().row_is_stop_after(index.row())
+        queue_pos = index.model().row_queue_position(index.row())
 
         if draw_stop or queue_pos:
             painter.save()
