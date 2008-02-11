@@ -22,6 +22,7 @@ class RightSide(QtGui.QWidget):
         self.playlistview = playlist.PlaylistView(self.playlist)
         self.toolbar = kdeui.KToolBar('playlistToolBar', main_window,
                                                 QtCore.Qt.BottomToolBarArea)
+        # XXX-KDE4
         # self.playlist_search = PlaylistSearchLineWidget(None, self.playlist)
 
         vlayout = QtGui.QVBoxLayout()
@@ -39,6 +40,7 @@ class RightSide(QtGui.QWidget):
 
         self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
 
+        # XXX-KDE4
         # self.connect(self.playlist_search.searchLine(),
                 # QtCore.SIGNAL('returnPressed(const QString &)'),
                 # self.playlist.slot_play_first_visible)
