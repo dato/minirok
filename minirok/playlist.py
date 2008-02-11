@@ -110,7 +110,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def row_is_stop_after(self, row):
         assert 0 <= row < self._row_count
-        return self._itemlist[row] == self.stop_after
+        return self._itemlist[row] is self.stop_after
 
     ## 
 
