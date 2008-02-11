@@ -1036,9 +1036,8 @@ class PlaylistView(QtGui.QTreeView):
                 return QtGui.QTreeView.mousePressEvent(self, event)
 
         elif button & Qt.MidButton:
-            # XXX-KDE4 TODO
-            # if index == self.model().current_index():
-                print 'self.model().slot_pause()'
+            if self.model().row_is_playing(index.row()):
+                self.model().slot_pause()
 
         elif button & Qt.RightButton:
             QtGui.QTreeView.mousePressEvent(self, event)
