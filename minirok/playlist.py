@@ -340,14 +340,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
-    # XXX-KDE4 TODO
     def _set_repeat_mode(self, value):
         self._repeat_mode = value # TODO Check it's a valid value?
         self.emit(QtCore.SIGNAL('list_changed'))
 
     repeat_mode = property(lambda self: self._repeat_mode, _set_repeat_mode)
 
-    # XXX-KDE4 TODO
     def _set_random_mode(self, value):
         self._random_mode = bool(value)
         self.emit(QtCore.SIGNAL('list_changed'))
