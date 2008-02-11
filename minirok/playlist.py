@@ -501,7 +501,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         for item, tags in self.tag_reader.pop_done():
             item.update_tags(tags)
-            rows.append(self._itemdict[item])
+            try:
+                rows.append(self._itemdict[item])
+            except KeyError:
+                pass # race condition
 
         if rows:
             rows.sort()
