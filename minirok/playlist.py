@@ -369,19 +369,19 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
-    # XXX-KDE4 TODO
     def _set_currently_playing(self, item):
-        self._currently_playing = item
-        return
-        def set_playing(value):
-            if self._currently_playing not in (self.FIRST_ITEM, None):
-                self._currently_playing.set_playing(value)
-                self._currently_playing.repaint()
+        rows = []
 
-        set_playing(False)
+        def dry():
+            if self._currently_playing not in (self.FIRST_ITEM, None):
+                rows.append(self._itemdict[self._currently_playing])
+
+        dry()
         self._currently_playing = item
-        self._currently_playing_taken = False
-        set_playing(True)
+        self._currently_playing_taken = False # XXX-KDE4 Needed?
+        dry()
+
+        self.my_emit_dataChanged(rows[0], rows[-1])
 
     currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
 
