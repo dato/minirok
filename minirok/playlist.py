@@ -329,8 +329,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         if value is None:
             self.stop_mode = StopMode.NONE
 
-        self.my_emit_dataChanged(
-                rows[0], rows[-1], PlaylistItem.TRACK_COLUMN_INDEX)
+        if rows:
+            self.my_emit_dataChanged(
+                    rows[0], rows[-1], PlaylistItem.TRACK_COLUMN_INDEX)
 
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
@@ -369,7 +370,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         dry()
 
         self.emit(QtCore.SIGNAL('list_changed'))
-        self.my_emit_dataChanged(rows[0], rows[-1])
+        self.my_emit_dataChanged(rows[0], rows[-1]) # XXX if rows?
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
@@ -385,7 +386,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._currently_playing_taken = False # XXX-KDE4 Needed?
         dry()
 
-        self.my_emit_dataChanged(rows[0], rows[-1])
+        self.my_emit_dataChanged(rows[0], rows[-1]) # XXX if rows?
 
     currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
 
