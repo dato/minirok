@@ -316,7 +316,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         if value is None:
             self.stop_mode = StopMode.NONE
 
-        rows.sort()
         self.my_emit_dataChanged(
                 rows[0], rows[-1], PlaylistItem.TRACK_COLUMN_INDEX)
 
@@ -838,7 +837,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     """Misc. helpers."""
 
     def my_emit_dataChanged(self, row1, row2=None, column=None):
-        """Emit dataChanged() from row1 to row2 (or viceversa).
+        """Emit dataChanged() between sorted([row1, row2]).
 
         If :param row2: is None, it will default to row1.
         If :param column: is not None, only include that column in the signal.
