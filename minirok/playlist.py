@@ -42,6 +42,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.tag_reader = tag_reader.TagReader()
         self.random_queue = util.RandomOrderedList()
 
+        self.tag_reader.start()
+
         # these have a property() below
         self._stop_after = None
         self._repeat_mode = RepeatMode.NONE
@@ -52,6 +54,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._currently_playing_taken = False
 
         self.connect(self, QtCore.SIGNAL('list_changed'), self.slot_list_changed)
+
+        self.connect(self.tag_reader, QtCore.SIGNAL('items_ready'),
+                self.slot_update_tags)
 
         self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
                 self.slot_engine_status_changed)
@@ -442,7 +447,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def slot_clear(self):
         self.queue[:] = []
         self.random_queue[:] = []
-        self.tag_reader.worker.clear_queue()
+        self.tag_reader.clear_queue()
 
         if self._currently_playing not in (self.FIRST_ITEM, None):
             # We don't want the currently playing item to be deleted,
@@ -466,7 +471,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         for item in items:
             self.takeItem(item)
-            self.tag_reader.worker.dequeue(item)
+            self.tag_reader.dequeue(item)
             self.toggle_enqueued(item, only_dequeue=True)
             try:
                 self.random_queue.remove(item)
@@ -492,6 +497,17 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.current_item = qt.QListViewItemIterator(self,
                 qt.QListViewItemIterator.Visible).current()
         self.slot_play()
+
+    def slot_update_tags(self):
+        rows = []
+
+        for item, tags in self.tag_reader.pop_done():
+            item.update_tags(tags)
+            rows.append(self._itemdict[item])
+
+        if rows:
+            rows.sort()
+            self.my_emit_dataChanged(rows[0], rows[-1])
 
     ##
 
@@ -773,7 +789,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         if self._regex_mode == 'Always' or (regex_failed
                 and self._regex_mode == 'OnRegexFail'):
-            self.tag_reader.worker.queue(item)
+            self.tag_reader.queue(item)
 
         return item
 
