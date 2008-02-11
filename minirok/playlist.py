@@ -663,7 +663,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         except IndexError:
             minirok.logger.warn('invalid index %r in queue_pop()', index)
         else:
-            rows = map(self._itemdict.get, [ popped ] + self.queue[index:])
+            rows = [ self._itemdict[i] for i in [popped] + self.queue[index:] ]
             rows.sort()
             self.my_emit_dataChanged(rows[0], rows[-1],
                                      PlaylistItem.TRACK_COLUMN_INDEX)
