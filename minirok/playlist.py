@@ -21,7 +21,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
-    # XXX-KDE4 TODO
     FIRST_ITEM = object()
 
     def __init__(self, *args):
