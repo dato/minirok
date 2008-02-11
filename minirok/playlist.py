@@ -1026,7 +1026,7 @@ class PlaylistView(QtGui.QTreeView):
             # click on viewport
             self.clearSelection()
 
-        if keymod & Qt.ControlModifier:
+        elif keymod & Qt.ControlModifier:
             # XXX-KDE4 TODO
             if button & Qt.RightButton:
                 print 'toggle enqueued'
