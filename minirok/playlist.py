@@ -748,20 +748,16 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.add_files(util.playable_from_untrusted(files, warn=True))
 
     def create_item(self, path):
-        tags = self.tag_reader.tags(path) # XXX-KDE4
-        return PlaylistItem(path, tags)
-
-    # XXX-KDE4 TODO
-    def add_file(self, file_, prev_item):
-        tags = self.tags_from_filename(file_)
+        tags = self.tags_from_filename(path)
         if len(tags) == 0 or tags.get('Title', None) is None:
             regex_failed = True
-            dirname, filename = os.path.split(file_)
+            dirname, filename = os.path.split(path)
             tags['Title'] = util.unicode_from_path(filename)
         else:
             regex_failed = False
 
         if (self._currently_playing_taken
+                and False # XXX-KDE4
                 and self._currently_playing is not None
                 and self._currently_playing.path == file_):
             item = self._currently_playing
@@ -770,7 +766,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.current_item = item
             self.currently_playing = item # unsets _currently_playing_taken
         else:
-            item = PlaylistItem(file_, self, prev_item, tags)
+            item = PlaylistItem(path, tags)
             self.random_queue.append(item)
 
         assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
