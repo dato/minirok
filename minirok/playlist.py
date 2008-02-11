@@ -109,10 +109,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def sorted_column_names(self):
         return PlaylistItem.ALLOWED_TAGS[:]
 
-    def row_queue_position(self, row):
-        assert 0 <= row < self._row_count
-        return False # XXX-KDE4
-
     def row_is_stop_after(self, row):
         assert 0 <= row < self._row_count
         return self._itemlist[row] is self.stop_after
@@ -124,6 +120,16 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def row_is_playing(self, row):
         assert 0 <= row < self._row_count
         return self._itemlist[row] is self.currently_playing
+
+    def row_queue_position(self, row):
+        if not self.queue:
+            return 0
+        else:
+            assert 0 <= row < self._row_count
+            try:
+                return self.queue.index(self._itemlist[row]) + 1
+            except ValueError:
+                return 0
 
     ## 
 
@@ -627,21 +633,21 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.stop_after = item
             self.stop_mode = StopMode.AFTER_ONE
 
-    # XXX-KDE4 TODO
-    def toggle_enqueued(self, item, only_dequeue=False):
+    def toggle_enqueued(self, row, only_dequeue=False):
+        assert 0 <= row < self._row_count
+
+        item = self._itemlist[row]
         try:
             index = self.queue.index(item)
         except ValueError:
             if only_dequeue:
-                # XXX this implicitly skips the emit() below, which is what we
-                # want (so that not every removed item triggers a list_changed
-                # signal), but feels very dirty.
-                return
+                return # do not emit list_changed
             self.queue.append(item)
             if self.stop_mode == StopMode.AFTER_QUEUE:
                 self.stop_after = item # this repaints
             else:
-                item.repaint()
+                self.my_emit_dataChanged(row, row,
+                        PlaylistItem.TRACK_COLUMN_INDEX)
         else:
             item = self.queue_pop(index)
             if (index == len(self.queue) # not len-1, 'coz we already popped()
@@ -654,7 +660,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
-    # XXX-KDE4 TODO
     def queue_pop(self, index):
         """Pops an item from self.queue, and repaints the necessary items."""
         try:
@@ -662,8 +667,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         except IndexError:
             minirok.logger.warn('invalid index %r in queue_pop()', index)
         else:
-            for item in [ popped ] + self.queue[index:]:
-                item.repaint()
+            rows = map(self._itemdict.get, [ popped ] + self.queue[index:])
+            rows.sort()
+            self.my_emit_dataChanged(rows[0], rows[-1],
+                                     PlaylistItem.TRACK_COLUMN_INDEX)
 
             return popped
 
@@ -1028,9 +1035,8 @@ class PlaylistView(QtGui.QTreeView):
             self.clearSelection()
 
         elif keymod & Qt.ControlModifier:
-            # XXX-KDE4 TODO
             if button & Qt.RightButton:
-                print 'toggle enqueued'
+                self.model().toggle_enqueued(index.row())
             elif button & Qt.MidButton:
                 self.model().toggle_stop_after(index.row())
             else:
@@ -1049,7 +1055,7 @@ class PlaylistView(QtGui.QTreeView):
 
             if len(selected_rows) == 1:
                 enqueue_action = menu.addAction('Enqueue track')
-                if False: # XXX-KDE4 (item in self.queue)
+                if self.model().row_queue_position(index.row()) > 0:
                     enqueue_action.setCheckable(True)
                     enqueue_action.setChecked(True)
             else:
@@ -1068,9 +1074,9 @@ class PlaylistView(QtGui.QTreeView):
             selected_action = menu.exec_(event.globalPos())
 
             if selected_action == enqueue_action:
-                # for row in selected_rows: toggle_enqueued(row)
-                # self.model().toggle_enqueued_many(selected_rows)
-                pass # XXX-KDE4 TODO
+                model = self.model()
+                for row in selected_rows:
+                    model.toggle_enqueued(row)
             elif selected_action == stop_after_action:
                 self.model().toggle_stop_after(index.row())
             elif selected_action == crop_action:
