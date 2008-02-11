@@ -999,7 +999,7 @@ class PlaylistView(QtGui.QTreeView):
             painter.save()
             r = styleopt.rect
             painter.setPen(styleopt.palette.highlight().color())
-            painter.drawRect(r.x(), r.y(), r.width(), r.height())
+            painter.drawRect(r.x(), r.y(), r.width(), r.height()-1)
             painter.restore()
 
     def startDrag(self, actions):
