@@ -112,6 +112,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         assert 0 <= row < self._row_count
         return self._itemlist[row] is self.stop_after
 
+    def row_is_current(self, row):
+        assert 0 <= row < self._row_count
+        return self._itemlist[row] is self.current_item
+
     ## 
 
     """Drag and drop functions."""
@@ -337,17 +341,13 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     # XXX-KDE4 TODO
     def _set_current_item(self, value):
-        self._current_item = value
-        self.emit(QtCore.SIGNAL('list_changed'))
-        return
-        def set_current(current):
-            if self.current_item not in (self.FIRST_ITEM, None):
-                if current:
-                    self.ensureItemVisible(self.current_item)
-                self.current_item.set_current(current)
-                self.current_item.repaint()
+        rows = []
 
-        set_current(False)
+        def dry():
+            if self._current_item not in (self.FIRST_ITEM, None):
+                rows.append(self._itemdict[self._current_item])
+
+        dry()
 
         if not (value is self.FIRST_ITEM and self.childCount() == 0):
             self._current_item = value
@@ -358,8 +358,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         else:
             self._current_item = None
 
-        set_current(True)
+        dry()
+
         self.emit(QtCore.SIGNAL('list_changed'))
+        self.my_emit_dataChanged(rows[0], rows[-1])
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
@@ -961,6 +963,16 @@ class PlaylistView(QtGui.QTreeView):
         return all - selected
 
     ##
+
+    def drawRow(self, painter, styleopt, index):
+        QtGui.QTreeView.drawRow(self, painter, styleopt, index)
+
+        if self.model().row_is_current(index.row()):
+            painter.save()
+            r = styleopt.rect
+            painter.setPen(styleopt.palette.highlight().color())
+            painter.drawRect(r.x(), r.y(), r.width(), r.height())
+            painter.restore()
 
     def startDrag(self, actions):
         # Override this function to loose the ugly pixmap provided by Qt
