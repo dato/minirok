@@ -924,7 +924,7 @@ class StopAction(kdeui.KToolBarPopupAction):
         playlist = minirok.Globals.playlist
 
         if action is self.action_now:
-            minirok.Globals.action_collection.action('action_stop').trigger()
+            self.trigger()
 
         elif action is self.action_after_current:
             playlist.slot_toggle_stop_after_current()
