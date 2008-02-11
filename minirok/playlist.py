@@ -483,10 +483,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
-    # XXX-KDE4 TODO
     def slot_activate_index(self, index):
         self.maybe_populate_random_queue()
-        self.current_item = item
+        self.current_item = self._itemlist[index.row()]
         self.slot_play()
 
     # XXX-KDE4 TODO
