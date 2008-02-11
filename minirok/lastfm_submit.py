@@ -57,7 +57,7 @@ class LastfmSubmitter(QtCore.QObject, util.HasGUIConfig):
         func(self.timer, QtCore.SIGNAL('timeout()'), self.slot_submit)
 
     def slot_new_track(self):
-        all_tags = minirok.Globals.playlist.currently_playing
+        all_tags = minirok.Globals.playlist.get_current_tags()
         self.data = dict((k.lower(), v) for k, v in all_tags.items()
                                         if k in ['Title', 'Artist', 'Length'])
 

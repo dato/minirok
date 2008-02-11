@@ -370,14 +370,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     current_item = property(lambda self: self._current_item, _set_current_item)
 
     # XXX-KDE4 TODO
-    def _get_currently_playing(self):
-        """Return a dict of the tags of the currently played track, or None."""
-        if self._currently_playing is not None:
-            return self._currently_playing.tags()
-        else:
-            return None
-
-    # XXX-KDE4 TODO
     def _set_currently_playing(self, item):
         self._currently_playing = item
         return
@@ -391,7 +383,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._currently_playing_taken = False
         set_playing(True)
 
-    currently_playing = property(_get_currently_playing, _set_currently_playing)
+    currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
 
     ##
 
@@ -614,7 +606,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     ##
 
     def slot_toggle_stop_after_current(self):
-        current = self._currently_playing or self.current_item
+        current = self.currently_playing or self.current_item
 
         if current not in (self.FIRST_ITEM, None):
             self.toggle_stop_after(self._itemdict[current])
@@ -872,6 +864,15 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                     'dataChanged(const QModelIndex &, const QModelIndex &)'),
                     self.index(row1, col1), self.index(row2, col2))
 
+    ##
+
+    def get_current_tags(self):
+        """Return the tags of the currently played item, if any."""
+        if self.currently_playing is not None:
+            return self.currently_playing.tags()
+        else:
+            return {}
+
 ##
 
 class RepeatMode:
@@ -903,7 +904,7 @@ class StopAction(kdeui.KToolBarPopupAction):
         playlist = minirok.Globals.playlist
 
         if (playlist.stop_mode == StopMode.AFTER_ONE
-                and playlist.stop_after == playlist._currently_playing): # XXX!
+                and playlist.stop_after == playlist.currently_playing):
             self.action_after_current.setCheckable(True)
             self.action_after_current.setChecked(True)
         else:
