@@ -11,7 +11,6 @@ Tree View:
   * Use a regex as well to control the appearance of file names?
 
 Playlist:
-  * Undo/redo?
   * Tabs??
   * Previous button behaves more like a "Back" button: does not go to
     the item above the current item, but to the item played right before
@@ -21,6 +20,7 @@ Playlist:
   * Limiting the search, and removing all visible items, removes all
     non-visible items in between.
   * Allow "read tags when item visible", à-la-xmms?
+  * Make Undo preserve stuff like the "stop after" and queue state.
 
 UI:
   * save size of the sides of QSplitter
