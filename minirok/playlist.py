@@ -613,9 +613,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
     def slot_toggle_stop_after_current(self):
-        self.toggle_stop_after(self._currently_playing or self.current_item)
+        current = self._currently_playing or self.current_item
+
+        if current not in (self.FIRST_ITEM, None):
+            self.toggle_stop_after(self._itemdict[current])
 
     def toggle_stop_after(self, row):
         assert 0 <= row < self._row_count
