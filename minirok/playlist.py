@@ -344,7 +344,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     random_mode = property(lambda self: self._random_mode, _set_random_mode)
 
-    # XXX-KDE4 TODO
     def _set_current_item(self, value):
         rows = []
 
@@ -354,7 +353,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         dry()
 
-        if not (value is self.FIRST_ITEM and self.childCount() == 0):
+        if not (value is self.FIRST_ITEM and self._row_count == 0):
             self._current_item = value
             try:
                 self.random_queue.remove(value)
