@@ -886,46 +886,45 @@ class StopMode:
 
 class StopAction(kdeui.KToolBarPopupAction):
 
-    NOW = 0
-    AFTER_CURRENT = 1
-    AFTER_QUEUE = 2
-
     def __init__(self, *args):
         kdeui.KToolBarPopupAction.__init__(self, kdeui.KIcon(), "", None)
 
-    # XXX-KDE4 TODO
-    def xxx_kde4_disabled():
-        self.popup_menu = self.popupMenu()
+        menu = self.menu()
+        menu.addTitle('Stop')
 
-        self.popup_menu.insertTitle('Stop')
-        self.popup_menu.insertItem('Now', self.NOW)
-        self.popup_menu.insertItem('After current', self.AFTER_CURRENT)
-        self.popup_menu.insertItem('After queue', self.AFTER_QUEUE)
+        self.action_now = menu.addAction('Now')
+        self.action_after_current = menu.addAction('After current')
+        self.action_after_queue = menu.addAction('After queue')
 
-        self.connect(self.popup_menu, qt.SIGNAL('aboutToShow()'), self.slot_prepare)
-        self.connect(self.popup_menu, qt.SIGNAL('activated(int)'), self.slot_activated)
+        self.connect(menu, QtCore.SIGNAL('aboutToShow()'), self.slot_prepare)
+        self.connect(menu, QtCore.SIGNAL('triggered(QAction *)'), self.slot_activated)
 
-    # XXX-KDE4 TODO
     def slot_prepare(self):
         playlist = minirok.Globals.playlist
 
-        self.popup_menu.setItemChecked(self.AFTER_CURRENT,
-                playlist.stop_mode == StopMode.AFTER_ONE and
-                playlist.stop_after == playlist._currently_playing)
-        self.popup_menu.setItemChecked(self.AFTER_QUEUE,
-                playlist.stop_mode == StopMode.AFTER_QUEUE)
+        if (playlist.stop_mode == StopMode.AFTER_ONE
+                and playlist.stop_after == playlist._currently_playing): # XXX!
+            self.action_after_current.setCheckable(True)
+            self.action_after_current.setChecked(True)
+        else:
+            self.action_after_current.setCheckable(False)
 
-    # XXX-KDE4 TODO
-    def slot_activated(self, selected):
+        if playlist.stop_mode == StopMode.AFTER_QUEUE:
+            self.action_after_queue.setCheckable(True)
+            self.action_after_queue.setChecked(True)
+        else:
+            self.action_after_queue.setCheckable(False)
+
+    def slot_activated(self, action):
         playlist = minirok.Globals.playlist
 
-        if selected == self.NOW:
-            minirok.Globals.action_collection.action('action_stop').activate()
+        if action is self.action_now:
+            minirok.Globals.action_collection.action('action_stop').trigger()
 
-        elif selected == self.AFTER_CURRENT:
+        elif action is self.action_after_current:
             playlist.slot_toggle_stop_after_current()
 
-        elif selected == self.AFTER_QUEUE:
+        elif action is self.action_after_queue:
             if playlist.stop_mode == StopMode.AFTER_QUEUE:
                 playlist.stop_after = None
             else:
