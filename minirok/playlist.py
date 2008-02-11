@@ -121,6 +121,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         assert 0 <= row < self._row_count
         return self._itemlist[row] is self.current_item
 
+    def row_is_playing(self, row):
+        assert 0 <= row < self._row_count
+        return self._itemlist[row] is self.currently_playing
+
     ## 
 
     """Drag and drop functions."""
@@ -978,9 +982,16 @@ class PlaylistView(QtGui.QTreeView):
     ##
 
     def drawRow(self, painter, styleopt, index):
+        row = index.row()
+        model = self.model()
+
+        if model.row_is_playing(row):
+            styleopt = QtGui.QStyleOptionViewItem(styleopt) # make a copy
+            styleopt.font.setItalic(True)
+
         QtGui.QTreeView.drawRow(self, painter, styleopt, index)
 
-        if self.model().row_is_current(index.row()):
+        if model.row_is_current(row):
             painter.save()
             r = styleopt.rect
             painter.setPen(styleopt.palette.highlight().color())
@@ -1135,12 +1146,6 @@ class PlaylistItem(object):
             self._tags[tag] = value
 
     ##
-
-    # XXX-KDE4 TODO
-    def paintCell(self, painter, colorgrp, column, width, align):
-        """Draws a border for the current item, and the playing item in italics."""
-        if self._is_playing:
-            painter.font().setItalic(True)
 
     # XXX-KDE4 TODO
     def paintFocus(self, painter, colorgrp, qrect):
