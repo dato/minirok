@@ -1095,22 +1095,10 @@ class PlaylistItem(object):
     def __init__(self, path, tags=None):
         self.path = path
 
-        # XXX-KDE4
-        # self._is_current = False
-        # self._is_playing = False
-
         self._tags = dict((tag, None) for tag in self.ALLOWED_TAGS)
 
         if tags is not None:
             self.update_tags(tags)
-
-    # XXX-KDE4 TODO
-    def set_current(self, value=True):
-        self._is_current = bool(value)
-
-    # XXX-KDE4 TODO
-    def set_playing(self, value=True):
-        self._is_playing = bool(value)
 
     ##
 
