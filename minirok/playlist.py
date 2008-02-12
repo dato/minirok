@@ -236,6 +236,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.endInsertRows()
 
         self.random_queue.extend([ x for x in items if not x.already_played ])
+        self.tag_reader.queue_many([ x for x in items if x.needs_tag_reader ])
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, position, amount):
@@ -244,7 +245,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         for i, item in enumerate(items):
             if not tag_reader_empty:
-                self.tag_reader.dequeue(item) # TODO: Requeue
+                self.tag_reader.dequeue(item)
             if not item.already_played:
                 try:
                     self.random_queue.remove(item)
@@ -502,6 +503,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 pass # race condition
             else:
                 item.update_tags(tags)
+                item.needs_tag_reader = False
 
         if rows:
             rows.sort()
@@ -792,7 +794,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         if self._regex_mode == 'Always' or (regex_failed
                 and self._regex_mode == 'OnRegexFail'):
-            self.tag_reader.queue(item)
+            item.needs_tag_reader = True
+        else:
+            item.needs_tag_reader = False
 
         return item
 
@@ -1095,12 +1099,15 @@ class PlaylistItem(object):
 
     def __init__(self, path, tags=None):
         self.path = path
-        self.already_played = False
 
         self._tags = dict((tag, None) for tag in self.ALLOWED_TAGS)
 
         if tags is not None:
             self.update_tags(tags)
+
+        # these are maintained up to date by the model
+        self.already_played = False
+        self.needs_tag_reader = True
 
     ##
 
