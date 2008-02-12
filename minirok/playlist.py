@@ -240,13 +240,28 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def remove_items(self, position, amount):
         items = self._itemlist[position:position+amount]
+        tag_reader_empty = self.tag_reader.is_empty() # optimize common case
+
+        for i, item in enumerate(items):
+            if not tag_reader_empty:
+                self.tag_reader.dequeue(item) # TODO: Requeue
+            if not item.already_played:
+                try:
+                    self.random_queue.remove(item)
+                except ValueError:
+                    pass
+            if item is self.current_item:
+                self.current_item = self.FIRST_ITEM
+            # TODO self.toggle_enqueued(position+i, only_dequeue=True)
+
+            del self._itemdict[item] # this must come last
+
+        if position + amount <= self._row_count: # not tail removal
+            for item, row in self._itemdict.iteritems():
+                if row > position:
+                    self._itemdict[item] -= amount
+
         try:
-            for item in items:
-                del self._itemdict[item]
-            if position + amount <= self._row_count: # not tail removal
-                for item, row in self._itemdict.iteritems():
-                    if row > position:
-                        self._itemdict[item] -= amount
             self.beginRemoveRows(QtCore.QModelIndex(),
                                  position, position + amount - 1)
             self._itemlist[position:position+amount] = []
@@ -462,26 +477,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 self._stop_after = None # don't touch stop_mode
 
         self.clear()
-        self.emit(QtCore.SIGNAL('list_changed'))
-
-    # XXX-KDE4 TODO
-    def xxx_kde4_remove_items(self, items):
-        if not items:
-            return
-
-        for item in items:
-            self.takeItem(item)
-            self.tag_reader.dequeue(item)
-            self.toggle_enqueued(item, only_dequeue=True)
-            try:
-                self.random_queue.remove(item)
-            except ValueError:
-                pass
-            if item == self.current_item:
-                self.current_item = self.FIRST_ITEM
-            if item != self._currently_playing:
-                del item # maybe memory gets freed even without this?
-
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def slot_activate_index(self, index):
