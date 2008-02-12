@@ -237,6 +237,16 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         self.random_queue.extend(x for x in items if not x.already_played)
         self.tag_reader.queue_many(x for x in items if x.needs_tag_reader)
+
+        for position, item in sorted((item.queue_position, item)
+                for item in items if item.queue_position):
+            # TODO Rewrite this altering queue directly? (no toggle_enqueued)
+            # TODO Think about invalidating the position if the queue changes
+            # between a removal and its undo.
+            tail = [ self._itemdict[x] for x in self.queue[position-1:] ]
+            for x in tail + [self._itemdict[item]] + tail:
+                self.toggle_enqueued(x)
+
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, position, amount):
@@ -251,9 +261,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                     self.random_queue.remove(item)
                 except ValueError:
                     pass
+            if item.queue_position:
+                self.toggle_enqueued(position+i, only_invisible_dequeue=True)
             if item is self.current_item:
                 self.current_item = self.FIRST_ITEM
-            # TODO self.toggle_enqueued(position+i, only_dequeue=True)
 
             del self._itemdict[item] # this must come last
 
@@ -632,16 +643,23 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.stop_after = item
             self.stop_mode = StopMode.AFTER_ONE
 
-    def toggle_enqueued(self, row, only_dequeue=False):
+    def toggle_enqueued(self, row, only_invisible_dequeue=False):
+        """Toggle a row from being in the queue.
+
+        If :param only_invisible_dequeue: is True, only a dequeue
+            (if applicable) will be performed, *and* the "queue_position"
+            attribute of the item will be left intact.
+        """
         assert 0 <= row < self._row_count
 
         item = self._itemlist[row]
         try:
             index = self.queue.index(item)
         except ValueError:
-            if only_dequeue:
+            if only_invisible_dequeue:
                 return # do not emit list_changed
             self.queue.append(item)
+            item.queue_position = len(self.queue)
             if self.stop_mode == StopMode.AFTER_QUEUE:
                 self.stop_after = item # this repaints both
             else:
@@ -649,6 +667,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                         PlaylistItem.TRACK_COLUMN_INDEX)
         else:
             item = self.queue_pop(index)
+            if not only_invisible_dequeue:
+                item.queue_position = None
             if (index == len(self.queue) # not len-1, 'coz we already popped()
                     and self.stop_mode == StopMode.AFTER_QUEUE):
                 try:
@@ -1106,6 +1126,7 @@ class PlaylistItem(object):
             self.update_tags(tags)
 
         # these are maintained up to date by the model
+        self.queue_position = None
         self.already_played = False
         self.needs_tag_reader = True
 
