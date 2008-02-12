@@ -235,8 +235,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         finally:
             self.endInsertRows()
 
-        self.random_queue.extend([ x for x in items if not x.already_played ])
-        self.tag_reader.queue_many([ x for x in items if x.needs_tag_reader ])
+        self.random_queue.extend(x for x in items if not x.already_played)
+        self.tag_reader.queue_many(x for x in items if x.needs_tag_reader)
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, position, amount):
@@ -715,7 +715,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def slot_save_config(self):
         """Saves the current playlist."""
-        paths = [ item.path for item in self._itemlist ]
+        paths = (item.path for item in self._itemlist)
 
         try:
             playlist = file(self.saved_playlist_path(), 'w')
