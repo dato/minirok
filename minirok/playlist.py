@@ -643,7 +643,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 return # do not emit list_changed
             self.queue.append(item)
             if self.stop_mode == StopMode.AFTER_QUEUE:
-                self.stop_after = item # this repaints
+                self.stop_after = item # this repaints both
             else:
                 self.my_emit_dataChanged(row, row,
                         PlaylistItem.TRACK_COLUMN_INDEX)
