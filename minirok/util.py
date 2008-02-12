@@ -242,8 +242,8 @@ class ThreadedWorker(QtCore.QThread):
 
     @needs_lock('_mutex')
     def queue_many(self, items):
-        if len(items) > 0:
-            self._queue.extend(items)
+        self._queue.extend(items)
+        if len(self._queue) > 0:
             self._pending.wakeAll()
 
     @needs_lock('_mutex')
