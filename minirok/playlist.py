@@ -235,6 +235,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         finally:
             self.endInsertRows()
 
+        self.random_queue.extend([ x for x in items if not x.already_played ])
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, position, amount):
@@ -523,6 +524,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                     self.current_item = self.my_first_child()
 
             self.currently_playing = self.current_item
+            self.currently_playing.already_played = True
             minirok.Globals.engine.play(self.current_item.path)
 
             if self.current_item.tags()['Length'] is None:
@@ -684,6 +686,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def maybe_populate_random_queue(self):
         if not self.random_queue:
             self.random_queue.extend(self._itemlist)
+            for item in self._itemlist:
+                self.already_played = False
 
     ##
 
@@ -787,7 +791,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.currently_playing = item # unsets _currently_playing_taken
         else:
             item = PlaylistItem(path, tags)
-            self.random_queue.append(item)
 
         assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
 
@@ -1096,6 +1099,7 @@ class PlaylistItem(object):
 
     def __init__(self, path, tags=None):
         self.path = path
+        self.already_played = False
 
         self._tags = dict((tag, None) for tag in self.ALLOWED_TAGS)
 
