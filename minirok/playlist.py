@@ -689,10 +689,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         except IndexError:
             minirok.logger.warn('invalid index %r in queue_pop()', index)
         else:
-            rows = [ self._itemdict[i] for i in [popped] + self.queue[index:] ]
-            rows.sort()
-            # XXX dataChanged() abuse
-            self.my_emit_dataChanged(rows[0], rows[-1],
+            row = self._itemdict[popped]
+            # XXX dataChanged() abuse; but note that we do not emit the
+            # signal for all truly "affected" rows, since that's dog slow and
+            # emitting it for a couple rows seems to refresh all the visible
+            # part anyway.
+            self.my_emit_dataChanged(row, row+1,
                                      PlaylistItem.TRACK_COLUMN_INDEX)
 
             return popped
