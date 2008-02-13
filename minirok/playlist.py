@@ -68,6 +68,16 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.apply_preferences()
         self.load_saved_playlist()
 
+        # XXX This is dataChanged() abuse: there are a bunch of places in which
+        # the model wants to say: "my state (but not my data) changed somehow,
+        # you may want to redraw your visible parts if you're paying attention
+        # to state". I don't know of a method in the view that will do that
+        # (redisplay the visible part calling with the appropriate drawRow()
+        # and Delegate.paint() calls, without needing to refetch data()), so
+        # I'm abusing dataChanged(0, 1) for this purpose, which seems to work!
+        self.connect(self, QtCore.SIGNAL('repaint_needed'),
+                            lambda: self.my_emit_dataChanged(0, 1))
+
     ##
 
     """Model functions."""
@@ -362,10 +372,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         if value is None:
             self.stop_mode = StopMode.NONE
 
-        if rows:
-            # XXX dataChanged() abuse
-            self.my_emit_dataChanged(
-                    rows[0], rows[-1], PlaylistItem.TRACK_COLUMN_INDEX)
+        self.emit(QtCore.SIGNAL('repaint_needed'))
 
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
@@ -402,8 +409,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         dry()
 
         self.emit(QtCore.SIGNAL('list_changed'))
-        # XXX dataChanged() abuse
-        self.my_emit_dataChanged(rows[0], rows[-1]) # XXX if rows?
+        self.emit(QtCore.SIGNAL('repaint_needed'))
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
@@ -419,8 +425,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._currently_playing_taken = False # XXX-KDE4 Needed?
         dry()
 
-        # XXX dataChanged() abuse
-        self.my_emit_dataChanged(rows[0], rows[-1]) # XXX if rows?
+        self.emit(QtCore.SIGNAL('repaint_needed'))
 
     currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
 
@@ -665,9 +670,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             if self.stop_mode == StopMode.AFTER_QUEUE:
                 self.stop_after = item # this repaints both
             else:
-                # XXX dataChanged() abuse
-                self.my_emit_dataChanged(row, row,
-                        PlaylistItem.TRACK_COLUMN_INDEX)
+                self.emit(QtCore.SIGNAL('repaint_needed'))
         else:
             item = self.queue_pop(index)
             if not only_invisible_dequeue:
@@ -689,14 +692,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         except IndexError:
             minirok.logger.warn('invalid index %r in queue_pop()', index)
         else:
-            row = self._itemdict[popped]
-            # XXX dataChanged() abuse; but note that we do not emit the
-            # signal for all truly "affected" rows, since that's dog slow and
-            # emitting it for a couple rows seems to refresh all the visible
-            # part anyway.
-            self.my_emit_dataChanged(row, row+1,
-                                     PlaylistItem.TRACK_COLUMN_INDEX)
-
+            self.emit(QtCore.SIGNAL('repaint_needed'))
             return popped
 
     def my_first_child(self):
@@ -889,13 +885,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         If :param row2: is None, it will default to row1.
         If :param column: is not None, only include that column in the signal.
         """
-        # About dataChanged() abuse: there are a bunch of places in which the
-        # model wants to say: "my state (but not my data) changed somehow, you
-        # may want to redraw your visible parts if you're paying attention to
-        # state". I don't know of a method in the view that will do that
-        # (redisplay the visible part calling with the appropriate drawRow()
-        # and Delegate.paint() calls, without needing to refetch data()), so
-        # I'm abusing dataChanged() for this purpose.
         if row2 is None:
             row2 = row1
         elif row1 > row2:
