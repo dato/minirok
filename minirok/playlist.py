@@ -240,12 +240,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         for position, item in sorted((item.queue_position, item)
                 for item in items if item.queue_position):
-            # TODO Rewrite this altering queue directly? (no toggle_enqueued)
+            # TODO Rewrite this altering queue directly? (no toggle_enqueued_row)
             # TODO Think about invalidating the position if the queue changes
             # between a removal and its undo.
             tail = [ self._itemdict[x] for x in self.queue[position-1:] ]
             for x in tail + [self._itemdict[item]] + tail:
-                self.toggle_enqueued(x)
+                self.toggle_enqueued_row(x)
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
@@ -262,7 +262,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 except ValueError:
                     pass
             if item.queue_position:
-                self.toggle_enqueued(position+i, only_invisible_dequeue=True)
+                self.toggle_enqueued_row(position+i, only_invisible_dequeue=True)
             if item is self.current_item:
                 self.current_item = self.FIRST_ITEM
 
@@ -632,9 +632,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         current = self.currently_playing or self.current_item
 
         if current not in (self.FIRST_ITEM, None):
-            self.toggle_stop_after(self._itemdict[current])
+            self.toggle_stop_after_row(self._itemdict[current])
 
-    def toggle_stop_after(self, row):
+    def toggle_stop_after_row(self, row):
         assert 0 <= row < self._row_count
 
         item = self._itemlist[row]
@@ -645,7 +645,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.stop_after = item
             self.stop_mode = StopMode.AFTER_ONE
 
-    def toggle_enqueued(self, row, only_invisible_dequeue=False):
+    def toggle_enqueued_row(self, row, only_invisible_dequeue=False):
         """Toggle a row from being in the queue.
 
         If :param only_invisible_dequeue: is True, only a dequeue
@@ -1071,9 +1071,9 @@ class PlaylistView(QtGui.QTreeView):
 
         elif keymod & Qt.ControlModifier:
             if button & Qt.RightButton:
-                self.model().toggle_enqueued(index.row())
+                self.model().toggle_enqueued_row(index.row())
             elif button & Qt.MidButton:
-                self.model().toggle_stop_after(index.row())
+                self.model().toggle_stop_after_row(index.row())
             else:
                 return QtGui.QTreeView.mousePressEvent(self, event)
 
@@ -1111,9 +1111,9 @@ class PlaylistView(QtGui.QTreeView):
             if selected_action == enqueue_action:
                 model = self.model()
                 for row in selected_rows:
-                    model.toggle_enqueued(row)
+                    model.toggle_enqueued_row(row)
             elif selected_action == stop_after_action:
-                self.model().toggle_stop_after(index.row())
+                self.model().toggle_stop_after_row(index.row())
             elif selected_action == crop_action:
                 RemoveItemsCmd(self.model(), self.unselected_rows())
 
