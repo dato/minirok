@@ -363,6 +363,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.stop_mode = StopMode.NONE
 
         if rows:
+            # XXX dataChanged() abuse
             self.my_emit_dataChanged(
                     rows[0], rows[-1], PlaylistItem.TRACK_COLUMN_INDEX)
 
@@ -401,6 +402,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         dry()
 
         self.emit(QtCore.SIGNAL('list_changed'))
+        # XXX dataChanged() abuse
         self.my_emit_dataChanged(rows[0], rows[-1]) # XXX if rows?
 
     current_item = property(lambda self: self._current_item, _set_current_item)
@@ -417,6 +419,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._currently_playing_taken = False # XXX-KDE4 Needed?
         dry()
 
+        # XXX dataChanged() abuse
         self.my_emit_dataChanged(rows[0], rows[-1]) # XXX if rows?
 
     currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
@@ -662,6 +665,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             if self.stop_mode == StopMode.AFTER_QUEUE:
                 self.stop_after = item # this repaints both
             else:
+                # XXX dataChanged() abuse
                 self.my_emit_dataChanged(row, row,
                         PlaylistItem.TRACK_COLUMN_INDEX)
         else:
@@ -687,6 +691,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         else:
             rows = [ self._itemdict[i] for i in [popped] + self.queue[index:] ]
             rows.sort()
+            # XXX dataChanged() abuse
             self.my_emit_dataChanged(rows[0], rows[-1],
                                      PlaylistItem.TRACK_COLUMN_INDEX)
 
@@ -882,6 +887,13 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         If :param row2: is None, it will default to row1.
         If :param column: is not None, only include that column in the signal.
         """
+        # About dataChanged() abuse: there are a bunch of places in which the
+        # model wants to say: "my state (but not my data) changed somehow, you
+        # may want to redraw your visible parts if you're paying attention to
+        # state". I don't know of a method in the view that will do that
+        # (redisplay the visible part calling with the appropriate drawRow()
+        # and Delegate.paint() calls, without needing to refetch data()), so
+        # I'm abusing dataChanged() for this purpose.
         if row2 is None:
             row2 = row1
         elif row1 > row2:
