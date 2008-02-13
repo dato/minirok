@@ -517,8 +517,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 item.needs_tag_reader = False
 
         if rows:
-            rows.sort()
-            self.my_emit_dataChanged(rows[0], rows[-1])
+            self.my_emit_dataChanged(min(rows), max(rows))
 
     ##
 
