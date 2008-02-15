@@ -1117,7 +1117,7 @@ class PlaylistView(QtGui.QTreeView):
             selected_action = menu.exec_(event.globalPos())
 
             if selected_action == enqueue_action:
-                self.model().toggle_enqueued_many_rows(selected_rows)
+                self.model().toggle_enqueued_many_rows(sorted(selected_rows))
             elif selected_action == stop_after_action:
                 self.model().toggle_stop_after_row(index.row())
             elif selected_action == crop_action:
