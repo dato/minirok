@@ -1267,15 +1267,12 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
     def setup_from_config(self):
         """Read config, sanitize it, and apply."""
 
-        class FakeConfingUntilPyKDE4Fixed:
-            def hasKey(self, key):
-                return False
+        self.config = kdecore.KGlobal.config()
+        group = self.config.group(self.CONFIG_SECTION)
 
-        config = FakeConfingUntilPyKDE4Fixed()
-        # config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-
-        if config.hasKey(self.CONFIG_OPTION):
-            entries = map(str, config.readListEntry(self.CONFIG_OPTION)) # XXX-KDE4
+        if group.hasKey(self.CONFIG_OPTION):
+            entries = map(str, group.readEntry(
+                                self.CONFIG_OPTION, QtCore.QStringList()))
         else:
             entries = self.CONFIG_OPTION_DEFAULT.split(',')
 
@@ -1367,10 +1364,9 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
             entry = '%s:%d:%d' % (name, width, visible)
             entries[self.visualIndex(logical)] = entry
 
-        return # XXX-KDE4
-
-        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-        config.writeEntry(self.CONFIG_OPTION, entries)
+        self.config = kdecore.KGlobal.config()
+        self.config.group(self.CONFIG_SECTION).writeEntry(
+                                self.CONFIG_OPTION, entries)
 
 ##
 
