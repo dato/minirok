@@ -1359,8 +1359,11 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
         entries = [None] * self.count()
 
         for logical, name in enumerate(self.model().sorted_column_names()):
-            width = self.sectionSize(logical) # TODO BUG: returns 0 if hidden
             visible = int(not self.isSectionHidden(logical))
+            if not visible:
+                # gross, but sectionSize() would return 0 otherwise :-(
+                self.setSectionHidden(logical, False)
+            width = self.sectionSize(logical)
             entry = '%s:%d:%d' % (name, width, visible)
             entries[self.visualIndex(logical)] = entry
 
