@@ -147,17 +147,15 @@ del _not_found
 
 class Globals(object):
     """Singleton object to hold pointers to various pieces of the program.
-
-    At the moment, the following are accesible:
-
-        * Globals.engine
-        * Globals.playlist
-        * Globals.preferences
-        * Globals.action_collection
-        * Globals.config()
+    
+    See the __slots__ variable for a list of available attributes.
     """
-    @staticmethod
-    def config(group='General'):
-        return kdecore.KGlobal.config().group(group)
+
+    __slots__ = [
+            'engine',
+            'playlist',
+            'preferences',
+            'action_collection',
+    ]
 
 Globals = Globals()
