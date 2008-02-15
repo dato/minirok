@@ -154,10 +154,7 @@ class Globals(object):
         * Globals.playlist
         * Globals.preferences
         * Globals.action_collection
-        * Globals.config()
     """
-    @staticmethod
-    def config(group='General'):
-        return kdecore.KGlobal.config().group(group)
+    pass
 
 Globals = Globals()

@@ -69,9 +69,6 @@ class LeftSide(QtGui.QWidget):
             self.path_combo.emit(QtCore.SIGNAL('returnPressed(const QString &)'),
                     self.path_combo.currentText())
         else:
-            self.path_combo.emit(QtCore.SIGNAL('returnPressed(const QString &)'),
-                    '/home/adeodato/mp3/artists')
-            return # XXX-KDE4
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
             self.path_combo.setEditText(text)
@@ -92,10 +89,10 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         self.completion_object = kio.KUrlCompletion(kio.KUrlCompletion.DirCompletion)
         self.setCompletionObject(self.completion_object)
 
-        # XXX-KDE4
-        # config = minirok.Globals.config(self.CONFIG_SECTION)
-        # urls = config.readPathListEntry(self.CONFIG_HISTORY_OPTION)
-        # self.setURLs(urls)
+        self.config = kdecore.KGlobal.config()
+        urls = self.config.group(self.CONFIG_SECTION).readPathEntry(
+                            self.CONFIG_HISTORY_OPTION, QtCore.QStringList())
+        self.setUrls(urls)
 
         self.connect(self, QtCore.SIGNAL('urlActivated(const KUrl &)'),
                 self.slot_set_url)
@@ -123,6 +120,5 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         self.emit(QtCore.SIGNAL('new_directory_selected'), directory)
 
     def slot_save_config(self):
-        return # XXX-KDE4
-        config = minirok.Globals.config(self.CONFIG_SECTION)
-        config.writePathEntry(self.CONFIG_HISTORY_OPTION, self.urls())
+        self.config.group(self.CONFIG_SECTION).writePathEntry(
+                            self.CONFIG_HISTORY_OPTION, self.urls())
