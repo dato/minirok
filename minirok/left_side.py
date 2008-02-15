@@ -120,5 +120,6 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         self.emit(QtCore.SIGNAL('new_directory_selected'), directory)
 
     def slot_save_config(self):
+        self.config = kdecore.KGlobal.config()
         self.config.group(self.CONFIG_SECTION).writePathEntry(
                             self.CONFIG_HISTORY_OPTION, self.urls())
