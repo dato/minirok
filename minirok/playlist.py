@@ -248,14 +248,14 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.random_queue.extend(x for x in items if not x.already_played)
         self.tag_reader.queue_many(x for x in items if x.needs_tag_reader)
 
+        # TODO Think whether to invalidate these queue positions if the
+        # queue changes between a removal and its undo.
         for position, item in sorted((item.queue_position, item)
                 for item in items if item.queue_position):
-            # TODO Rewrite this altering queue directly? (no toggle_enqueued_row)
-            # TODO Think about invalidating the position if the queue changes
-            # between a removal and its undo.
-            tail = [ self._itemdict[x] for x in self.queue[position-1:] ]
-            for x in tail + [self._itemdict[item]] + tail:
-                self.toggle_enqueued_row(x)
+            item.queue_position = None # \o/
+            tail = self.queue[position-1:]
+            self.toggle_enqueued_many(tail + [item])
+            self.toggle_enqueued_many(tail)
 
         self.emit(QtCore.SIGNAL('list_changed'))
 
@@ -263,7 +263,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         items = self._itemlist[position:position+amount]
         tag_reader_empty = self.tag_reader.is_empty() # optimize common case
 
-        for i, item in enumerate(items):
+        self.toggle_enqueued_many([item for item in items
+            if item.queue_position], keep_queue_position_attr=True)
+
+        for item in items:
             if not tag_reader_empty:
                 self.tag_reader.dequeue(item)
             if not item.already_played:
@@ -271,8 +274,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                     self.random_queue.remove(item)
                 except ValueError:
                     pass
-            if item.queue_position:
-                self.toggle_enqueued_row(position+i, only_invisible_dequeue=True)
             if item is self.current_item:
                 self.current_item = self.FIRST_ITEM
 
@@ -650,49 +651,67 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             self.stop_after = item
             self.stop_mode = StopMode.AFTER_ONE
 
-    def toggle_enqueued_row(self, row, only_invisible_dequeue=False):
-        """Toggle a row from being in the queue.
-
-        If :param only_invisible_dequeue: is True, only a dequeue
-            (if applicable) will be performed, *and* the "queue_position"
-            attribute of the item will be left intact.
-        """
+    def toggle_enqueued_row(self, row):
         assert 0 <= row < self._row_count
+        self.toggle_enqueued_many([ self._itemlist[row] ])
 
-        item = self._itemlist[row]
-        try:
-            index = self.queue.index(item)
-        except ValueError:
-            if only_invisible_dequeue:
-                return # do not emit list_changed
-            self.queue.append(item)
-            item.queue_position = len(self.queue)
-            if self.stop_mode == StopMode.AFTER_QUEUE:
-                self.stop_after = item # this repaints both
-            else:
-                self.emit(QtCore.SIGNAL('repaint_needed'))
-        else:
-            item = self.queue_pop(index)
-            if not only_invisible_dequeue:
-                item.queue_position = None
-            if (index == len(self.queue) # not len-1, 'coz we already popped()
-                    and self.stop_mode == StopMode.AFTER_QUEUE):
-                try:
-                    self.stop_after = self.queue[-1]
-                except IndexError:
-                    self.stop_after = None
-                    self.stop_mode = StopMode.AFTER_QUEUE
+    def toggle_enqueued_many_rows(self, rows):
+        self.toggle_enqueued_many([ self._itemlist[row] for row in rows ])
+
+    def toggle_enqueued_many(self, items, keep_queue_position_attr=False):
+        """Toggle a list of items from being in the queue.
+
+        If :param keep_queue_position_attr: is True, the "queue_position"
+            attribute of the *dequeued* items will be left intact (but the
+            items whose position changes because of them will be updated as
+            usual; enqueued items are not affected by this parameter).
+        """
+        # items to queue, and items to dequeue
+        enqueue = [ item for item in items if not item.queue_position ]
+        dequeue = [ item for item in items if item.queue_position ]
+
+        # marks the position after which items need queue_position updated
+        recalculatepos = len(self.queue)
+
+        if dequeue:
+            for item in dequeue:
+                index = self.queue.index(item)
+                self.queue.pop(index)
+                if index < recalculatepos:
+                    recalculatepos = index
+                if not keep_queue_position_attr:
+                    item.queue_position = None
+
+            amount = len(dequeue)
+            for item in self.queue[recalculatepos:]:
+                # XXX This. Is. Buggy. (But not exposed by the *current*
+                # row_queue_position() implementation.)
+                item.queue_position -= amount
+
+        if enqueue:
+            size = len(self.queue)
+            self.queue.extend(enqueue)
+            for i, item in enumerate(enqueue):
+                item.queue_position = size+i+1
+
+        if self.stop_mode == StopMode.AFTER_QUEUE:
+            if not self.queue:
+                self.stop_after = None
+                self.stop_mode = StopMode.AFTER_QUEUE
+            elif self.queue[-1] is not self.stop_after:
+                self.stop_after = self.queue[-1]
 
         self.emit(QtCore.SIGNAL('list_changed'))
+        self.emit(QtCore.SIGNAL('repaint_needed'))
 
     def queue_pop(self, index):
-        """Pops an item from self.queue, and repaints the necessary items."""
+        """Convenience function to dequeue and return an item from the queue."""
         try:
-            popped = self.queue.pop(index)
+            popped = self.queue[index]
         except IndexError:
             minirok.logger.warn('invalid index %r in queue_pop()', index)
         else:
-            self.emit(QtCore.SIGNAL('repaint_needed'))
+            self.toggle_enqueued_many([ popped ])
             return popped
 
     def my_first_child(self):
@@ -1098,9 +1117,7 @@ class PlaylistView(QtGui.QTreeView):
             selected_action = menu.exec_(event.globalPos())
 
             if selected_action == enqueue_action:
-                model = self.model()
-                for row in selected_rows:
-                    model.toggle_enqueued_row(row)
+                self.model().toggle_enqueued_many_rows(selected_rows)
             elif selected_action == stop_after_action:
                 self.model().toggle_stop_after_row(index.row())
             elif selected_action == crop_action:
