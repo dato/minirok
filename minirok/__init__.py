@@ -147,14 +147,15 @@ del _not_found
 
 class Globals(object):
     """Singleton object to hold pointers to various pieces of the program.
-
-    At the moment, the following are accesible:
-
-        * Globals.engine
-        * Globals.playlist
-        * Globals.preferences
-        * Globals.action_collection
+    
+    See the __slots__ variable for a list of available attributes.
     """
-    pass
+
+    __slots__ = [
+            'engine',
+            'playlist',
+            'preferences',
+            'action_collection',
+    ]
 
 Globals = Globals()
