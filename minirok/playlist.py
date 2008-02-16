@@ -1438,7 +1438,7 @@ class RemoveItemsCmd(QtGui.QUndoCommand):
             self.model.undo_stack.push(self)
 
     def undo(self):
-        for position, items in sorted(self.items.items()):
+        for position, items in sorted(self.items.iteritems()):
             self.model.insert_items(position, items)
 
     def redo(self):
@@ -1448,7 +1448,7 @@ class RemoveItemsCmd(QtGui.QUndoCommand):
     def get_items(self):
         """Return a list of all items removed by this command."""
         result = []
-        for position, items in sorted(self.items.items()):
+        for position, items in sorted(self.items.iteritems()):
             result.extend(items)
         return result
 
