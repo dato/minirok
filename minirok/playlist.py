@@ -131,14 +131,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         return self._itemlist[row] is self.currently_playing
 
     def row_queue_position(self, row):
-        if not self.queue:
-            return 0
-        else:
-            assert 0 <= row < self._row_count
-            try:
-                return self.queue.index(self._itemlist[row]) + 1
-            except ValueError:
-                return 0
+        assert 0 <= row < self._row_count
+        return self._itemlist[row].queue_position or 0
 
     ## 
 
