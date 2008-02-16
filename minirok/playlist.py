@@ -668,25 +668,40 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         """
         # items to queue, and items to dequeue
         enqueue = [ item for item in items if not item.queue_position ]
-        dequeue = [ item for item in items if item.queue_position ]
-
-        # marks the position after which items need queue_position updated
-        recalculatepos = len(self.queue)
+        dequeue = sorted((item for item in items if item.queue_position),
+                            key=lambda item: item.queue_position, reverse=True)
 
         if dequeue:
+            # Ok, this is a tad hairy, but should be fairly efficient, I think.
+            # We pop() the items based on their queue_position attribute, which
+            # is faster than removing them based on value. For this to work, we
+            # remove the later items *first*.
+            # To later recalculate the positions of items affected by these
+            # removals, we keep in "pairs" information about the *contiguous*
+            # chunks we removed (in (position, amount) pairs), so that items
+            # starting at each index have to be decremented "amount" positions.
+            pairs = [(len(self.queue), 0)]
+
             for item in dequeue:
-                index = self.queue.index(item)
+                index = item.queue_position - 1
                 self.queue.pop(index)
-                if index < recalculatepos:
-                    recalculatepos = index
                 if not keep_queue_position_attr:
                     item.queue_position = None
 
-            amount = len(dequeue)
-            for item in self.queue[recalculatepos:]:
-                # XXX This. Is. Buggy. (But not exposed by the *current*
-                # row_queue_position() implementation.)
-                item.queue_position -= amount
+                if index == pairs[-1][0] - 1: # contiguous removal
+                    pairs[-1] = (index, pairs[-1][1] + 1)
+                else:
+                    pairs.append((index, 1))
+
+            # NOTE that we have to adjust each index here, because we saved the
+            # position *before* previous items were removed. So we start in the
+            # beginning now, so that we'll know how much adjusting the index
+            # needs.
+            adjval = 0
+            for index, amount in reversed(pairs):
+                for item in self.queue[index-adjval:]:
+                    item.queue_position -= amount
+                adjval += amount
 
         if enqueue:
             size = len(self.queue)
