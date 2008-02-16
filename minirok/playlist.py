@@ -196,7 +196,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
             self.undo_stack.beginMacro('')
             try:
-                InsertItemsCmd(self, row, RemoveItemsCmd(self, rows).get_items())
+                InsertItemsCmd(self, row,
+                        RemoveItemsCmdNoQueue(self, rows).get_items())
             finally:
                 self.undo_stack.endMacro()
 
@@ -242,23 +243,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.random_queue.extend(x for x in items if not x.already_played)
         self.tag_reader.queue_many(x for x in items if x.needs_tag_reader)
 
-        # TODO Think whether to invalidate these queue positions if the
-        # queue changes between a removal and its undo.
-        for position, item in sorted((item.queue_position, item)
-                for item in items if item.queue_position):
-            item.queue_position = None # \o/
-            tail = self.queue[position-1:]
-            self.toggle_enqueued_many(tail + [item])
-            self.toggle_enqueued_many(tail)
-
         self.emit(QtCore.SIGNAL('list_changed'))
 
     def remove_items(self, position, amount):
         items = self._itemlist[position:position+amount]
         tag_reader_empty = self.tag_reader.is_empty() # optimize common case
-
-        self.toggle_enqueued_many([item for item in items
-            if item.queue_position], keep_queue_position_attr=True)
 
         for item in items:
             if not tag_reader_empty:
@@ -652,14 +641,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def toggle_enqueued_many_rows(self, rows):
         self.toggle_enqueued_many([ self._itemlist[row] for row in rows ])
 
-    def toggle_enqueued_many(self, items, keep_queue_position_attr=False):
-        """Toggle a list of items from being in the queue.
-
-        If :param keep_queue_position_attr: is True, the "queue_position"
-            attribute of the *dequeued* items will be left intact (but the
-            items whose position changes because of them will be updated as
-            usual; enqueued items are not affected by this parameter).
-        """
+    def toggle_enqueued_many(self, items):
+        """Toggle a list of items from being in the queue."""
         # items to queue, and items to dequeue
         enqueue = [ item for item in items if not item.queue_position ]
         dequeue = sorted((item for item in items if item.queue_position),
@@ -679,8 +662,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             for item in dequeue:
                 index = item.queue_position - 1
                 self.queue.pop(index)
-                if not keep_queue_position_attr:
-                    item.queue_position = None
+                item.queue_position = None
 
                 if index == pairs[-1][0] - 1: # contiguous removal
                     pairs[-1] = (index, pairs[-1][1] + 1)
@@ -1424,10 +1406,17 @@ class InsertItemsCmd(QtGui.QUndoCommand):
         self.model.insert_items(self.position, self.items)
 
 
-class RemoveItemsCmd(QtGui.QUndoCommand):
-    """Command to remove a possibly not contiguous list of rows."""
-
+class RemoveItemsCmdNoQueue(QtGui.QUndoCommand):
+    """Base class to remove items from the playlist.
+    
+    Only use this class directly if you want for the playlist's queue
+    not to be modified at all, useful e.g. for internal drag'n'drop.
+    """
     def __init__(self, model, rows):
+        """Create the command.
+
+        :param rows: A possibly unsorted list of row indices to remove.
+        """
         QtGui.QUndoCommand.__init__(self)
 
         self.model = model
@@ -1471,3 +1460,30 @@ class RemoveItemsCmd(QtGui.QUndoCommand):
                 result.append([x, 1])
 
         return map(tuple, result)
+
+
+class RemoveItemsCmd(RemoveItemsCmdNoQueue):
+    """Command to remove items from the playlist.
+    
+    This class adds to the base class the logic to handle the queue.
+    """
+    def undo(self):
+        RemoveItemsCmdNoQueue.undo(self)
+
+        # TODO Think whether to invalidate these queue positions if the
+        # queue changes between a removal and its undo.
+        for pos, amount in self.contiguous_chunks(self.queuepos.keys()):
+            items = [ self.queuepos[x] for x in range(pos, pos+amount) ]
+            tail = self.model.queue[pos-1:]
+            self.model.toggle_enqueued_many(tail + items)
+            self.model.toggle_enqueued_many(tail)
+
+    def redo(self):
+        RemoveItemsCmdNoQueue.redo(self)
+
+        self.queuepos = {}
+        for itemlist in self.items.itervalues():
+            self.queuepos.update((item.queue_position, item)
+                    for item in itemlist if item.queue_position)
+
+        self.model.toggle_enqueued_many(self.queuepos.values())
