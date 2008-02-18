@@ -342,16 +342,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     """Properties."""
 
     def _set_stop_after(self, value):
-        rows = []
-
-        def dry():
-            """Don't repeat yourself."""
-            if self._stop_after is not None:
-                rows.append(self._itemdict[self._stop_after])
-
-        dry()
         self._stop_after = value
-        dry()
 
         if value is None:
             self.stop_mode = StopMode.NONE
@@ -373,14 +364,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     random_mode = property(lambda self: self._random_mode, _set_random_mode)
 
     def _set_current_item(self, value):
-        rows = []
-
-        def dry():
-            if self._current_item not in (self.FIRST_ITEM, None):
-                rows.append(self._itemdict[self._current_item])
-
-        dry()
-
         if not (value is self.FIRST_ITEM and self._row_count == 0):
             self._current_item = value
             try:
@@ -390,24 +373,14 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         else:
             self._current_item = None
 
-        dry()
-
         self.emit(QtCore.SIGNAL('list_changed'))
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
     def _set_currently_playing(self, item):
-        rows = []
-
-        def dry():
-            if self._currently_playing not in (self.FIRST_ITEM, None):
-                rows.append(self._itemdict[self._currently_playing])
-
-        dry()
         self._currently_playing = item
         self._currently_playing_taken = False # XXX-KDE4 Needed?
-        dry()
 
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
