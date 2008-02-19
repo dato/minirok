@@ -556,10 +556,11 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 if minirok.Globals.engine.status != engine.State.STOPPED:
                     self.slot_play()
 
-    # XXX-KDE4 TODO
     def slot_engine_end_of_stream(self, uri):
         self.currently_playing = None
 
+        # TODO I think this could use a rewrite by just comparing stop_after
+        # and current_item?
         if (self.stop_mode == StopMode.AFTER_ONE or
                 (self.stop_mode == StopMode.AFTER_QUEUE and not self.queue)):
             if self.stop_after is not None:
