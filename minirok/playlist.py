@@ -30,7 +30,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         # Core model stuff
         self._itemlist = []
-        self._itemdict = {} # { item: position, ... }
         self._row_count = 0
         self._empty_model_index = QtCore.QModelIndex()
         self._column_count = len(PlaylistItem.ALLOWED_TAGS)
@@ -218,21 +217,18 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    """Adding and removing *items*.
+    """Adding and removing items to _itemlist.
     
-    This updates both _itemlist and _itemdict. No other functions should modify
-    these two variables.
+    (NB: No other function should modify _itemlist directly.)
     """
 
     def insert_items(self, position, items):
         try:
             nitems = len(items)
-            if position < self._row_count: # not appending
-                for item, row in self._itemdict.iteritems():
-                    if row >= position:
-                        self._itemdict[item] += nitems
-            self._itemdict.update((item, position+i)
-                    for i, item in enumerate(items))
+            for item in self._itemlist[position:]:
+                item.position += nitems
+            for i, item in enumerate(items):
+                item.position = position + i
             self.beginInsertRows(QtCore.QModelIndex(),
                                  position, position + nitems - 1)
             self._itemlist[position:0] = items
@@ -260,12 +256,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             if item is self.current_item:
                 self.current_item = self.FIRST_ITEM
 
-            del self._itemdict[item] # this must come last
+            item.position = None
 
-        if position + amount <= self._row_count: # not tail removal
-            for item, row in self._itemdict.iteritems():
-                if row > position:
-                    self._itemdict[item] -= amount
+        for item in self._itemlist[position+amount:]:
+            item.position -= amount
 
         try:
             self.beginRemoveRows(QtCore.QModelIndex(),
@@ -402,7 +396,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             if self.current_item is self.FIRST_ITEM:
                 current = 0
             else:
-                current = self._itemdict[self.current_item]
+                current = self.current_item.position
             self.action_clear.setEnabled(True)
             self.action_previous.setEnabled(current > 0)
             self.action_next.setEnabled(bool(self.queue
@@ -473,13 +467,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         rows = []
 
         for item, tags in self.tag_reader.pop_done():
-            try:
-                rows.append(self._itemdict[item])
-            except KeyError:
-                pass # race condition
-            else:
-                item.update_tags(tags)
-                item.needs_tag_reader = False
+            item.update_tags(tags)
+            item.needs_tag_reader = False
+            rows.append(item.position)
 
         if rows:
             self.my_emit_dataChanged(min(rows), max(rows))
@@ -503,7 +493,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             if self.current_item.tags()['Length'] is None:
                 tags = tag_reader.TagReader.tags(self.current_item.path)
                 self.current_item.update_tags({'Length': tags.get('Length', 0)})
-                self.my_emit_dataChanged(self._itemdict[self.current_item])
+                self.my_emit_dataChanged(self.current_item.position)
 
             self.emit(QtCore.SIGNAL('new_track'))
 
@@ -538,7 +528,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             elif self.current_item is self.FIRST_ITEM:
                 next = self.my_first_child()
             else:
-                index = self._itemdict[self.current_item] + 1
+                index = self.current_item.position + 1
                 if index < self._row_count:
                     next = self._itemlist[index]
                 else:
@@ -560,7 +550,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def slot_previous(self):
         if self.current_item not in (self.FIRST_ITEM, None):
-            index = self._itemdict[self.current_item] - 1
+            index = self.current_item.position - 1
             if index >= 0:
                 self.current_item = self._itemlist[index]
                 if minirok.Globals.engine.status != engine.State.STOPPED:
@@ -594,7 +584,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         current = self.currently_playing or self.current_item
 
         if current not in (self.FIRST_ITEM, None):
-            self.toggle_stop_after_row(self._itemdict[current])
+            self.toggle_stop_after_row(current.position)
 
     def toggle_stop_after_row(self, row):
         assert 0 <= row < self._row_count
@@ -1109,6 +1099,7 @@ class PlaylistItem(object):
             self.update_tags(tags)
 
         # these are maintained up to date by the model
+        self.position = None
         self.queue_position = None
         self.already_played = False
         self.needs_tag_reader = True
