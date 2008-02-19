@@ -13,6 +13,8 @@ import gobject
 import minirok
 from PyQt4 import QtCore
 
+gobject.threads_init()
+
 ##
 
 class State:
