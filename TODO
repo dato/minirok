@@ -21,7 +21,7 @@ Playlist:
   * Limiting the search, and removing all visible items, removes all
     non-visible items in between.
   * Allow "read tags when item visible", à-la-xmms?
-  * Make Undo preserve stuff like the "stop after" and "current item".
+  * Make Undo preserve stuff like the "stop after".
   * Make Undo/Redo preserve the selection?
 
 UI:

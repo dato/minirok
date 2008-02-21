@@ -1369,6 +1369,7 @@ class AlterItemlistMixin(object):
         self.items = {}
         self.chunks = []
         self.queuepos = {}
+        self.current_item = None
 
         self.model = model
         self.do_queue = do_queue
@@ -1390,6 +1391,11 @@ class AlterItemlistMixin(object):
 
         for position, items in sorted(items.iteritems()):
             self.model.insert_items(position, items)
+
+        # Restore the current item, if we have one *and* the playlist doesn't
+        if (self.current_item is not None
+                and self.model.current_item in (None, Playlist.FIRST_ITEM)):
+            self.model.current_item = self.current_item
 
         if self.do_queue:
             # TODO Think whether to invalidate these queue positions if the
@@ -1423,6 +1429,9 @@ class AlterItemlistMixin(object):
 
         self.items.clear()
         self.queuepos.clear()
+
+        if self.model.current_item is not Playlist.FIRST_ITEM:
+            self.current_item = self.model.current_item
 
         for position, amount in reversed(chunks):
             self.items[position] = self.model.remove_items(position, amount)
