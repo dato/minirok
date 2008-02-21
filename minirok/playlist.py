@@ -1238,8 +1238,11 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
                 self.exec_popup)
 
     def setup_from_config(self):
-        """Read config, sanitize it, and apply."""
-
+        """Read config, sanitize it, and apply.
+        
+        NOTE: this code can't be in __init__, because at that time there is not
+        a model/view associated with the object.
+        """
         self.config = kdecore.KGlobal.config()
         group = self.config.group(self.CONFIG_SECTION)
 
