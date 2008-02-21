@@ -195,8 +195,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
             self.undo_stack.beginMacro('')
             try:
-                InsertItemsCmd(self, row,
-                        RemoveItemsCmdNoQueue(self, rows).get_items())
+                removecmd = RemoveItemsCmd(self, rows, do_queue=False)
+                InsertItemsCmd(self, row, removecmd.get_items(), do_queue=False)
             finally:
                 self.undo_stack.endMacro()
 
@@ -1351,56 +1351,91 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
 Note that they will add themselves to the model's QUndoStack.
 """
 
-class InsertItemsCmd(QtGui.QUndoCommand):
-    """Command to insert a list of items at a certain position."""
-
-    def __init__(self, model, position, items):
-        QtGui.QUndoCommand.__init__(self)
-
-        self.model = model
-        self.position = position
-        self.items = items
-
-        if len(items) > 0:
-            self.model.undo_stack.push(self)
-
-    def undo(self):
-        self.items = self.model.remove_items(self.position, len(self.items))
-
-    def redo(self):
-        self.model.insert_items(self.position, self.items)
-
-
-class RemoveItemsCmdNoQueue(QtGui.QUndoCommand):
-    """Base class to remove items from the playlist.
+class AlterItemlistMixin(object):
+    """Common functionality to make changes to the item list.
     
-    Only use this class directly if you want for the playlist's queue
-    not to be modified at all, useful e.g. for internal drag'n'drop.
-    """
-    def __init__(self, model, rows):
-        """Create the command.
+    This class offers methods to insert and remove items from the list. Each
+    operation saves state, so that calling the reverse operation without any
+    arguments just undoes it.
 
-        :param rows: A possibly unsorted list of row indices to remove.
-        """
-        QtGui.QUndoCommand.__init__(self)
+    In both cases, there is housekeeping of the playlist's queue, removing
+    items from it when removing, and restoring the previous state on insertion.
+    This can be disabled by passing "do_queue=False" to __init__.
+    """
+    def __init__(self, model, do_queue=True):
+        self.items = {}
+        self.chunks = []
+        self.queuepos = {}
 
         self.model = model
-        self.items = {}
-        self.chunks = self.contiguous_chunks(rows)
+        self.do_queue = do_queue
 
-        if len(rows) > 0:
-            self.model.undo_stack.push(self)
+    ##
 
-    def undo(self):
-        for position, items in sorted(self.items.iteritems()):
+    def insert_items(self, items=None):
+        """Insert items into the playlist.
+
+        :param items: should be a dict like:
+        
+            { pos1: itemlist1, pos2: itemlist2, ... }
+
+        The items will be inserted in *ascending* order by position.
+        If items is None, self.items will be used.
+        """
+        if items is None:
+            items = self.items
+
+        for position, items in sorted(items.iteritems()):
             self.model.insert_items(position, items)
 
-    def redo(self):
-        for position, amount in reversed(self.chunks):
+        if self.do_queue:
+            # TODO Think whether to invalidate these queue positions if the
+            # queue changes between a removal and its undo.
+            for pos, amount in self.contiguous_chunks(self.queuepos.keys()):
+                items = [ self.queuepos[x] for x in range(pos, pos+amount) ]
+                tail = self.model.queue[pos-1:]
+                self.model.toggle_enqueued_many(tail + items)
+                self.model.toggle_enqueued_many(tail)
+
+    def remove_items(self, chunks=None):
+        """Remove items from the playlist.
+
+        :param chunks: should be a list like:
+
+            [ (pos1, amount1), (pos2, amount2), ... ]
+
+        The items will be removed in *descending* order by position.
+        If chunks is None, self.chunks will be used, and if empty, it will be
+        calculated first from self.items.
+
+        This method will fills self.items in the format explained in
+        insert_items() above.
+        """
+        if chunks is None:
+            if self.chunks:
+                chunks = self.chunks
+            else:
+                chunks = self.chunks = sorted((row, len(items))
+                            for row, items in self.items.iteritems())
+
+        self.items.clear()
+        self.queuepos.clear()
+
+        for position, amount in reversed(chunks):
             self.items[position] = self.model.remove_items(position, amount)
 
+        if self.do_queue:
+            for itemlist in self.items.itervalues():
+                self.queuepos.update((item.queue_position, item)
+                        for item in itemlist if item.queue_position)
+
+            if self.queuepos:
+                self.model.toggle_enqueued_many(self.queuepos.values())
+
+    ##
+
     def get_items(self):
-        """Return a list of all items removed by this command."""
+        """Return an ordered list of all items belonging to this command."""
         result = []
         for position, items in sorted(self.items.iteritems()):
             result.extend(items)
@@ -1427,28 +1462,35 @@ class RemoveItemsCmdNoQueue(QtGui.QUndoCommand):
         return map(tuple, result)
 
 
-class RemoveItemsCmd(RemoveItemsCmdNoQueue):
-    """Command to remove items from the playlist.
-    
-    This class adds to the base class the logic to handle the queue.
-    """
-    def undo(self):
-        RemoveItemsCmdNoQueue.undo(self)
+class InsertItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
+    """Command to insert a list of items at a certain position."""
 
-        # TODO Think whether to invalidate these queue positions if the
-        # queue changes between a removal and its undo.
-        for pos, amount in self.contiguous_chunks(self.queuepos.keys()):
-            items = [ self.queuepos[x] for x in range(pos, pos+amount) ]
-            tail = self.model.queue[pos-1:]
-            self.model.toggle_enqueued_many(tail + items)
-            self.model.toggle_enqueued_many(tail)
+    def __init__(self, model, position, items, do_queue=True):
+        QtGui.QUndoCommand.__init__(self)
+        AlterItemlistMixin.__init__(self, model, do_queue)
 
-    def redo(self):
-        RemoveItemsCmdNoQueue.redo(self)
+        if items:
+            self.items = { position: items }
+            self.model.undo_stack.push(self)
 
-        self.queuepos = {}
-        for itemlist in self.items.itervalues():
-            self.queuepos.update((item.queue_position, item)
-                    for item in itemlist if item.queue_position)
+    undo = AlterItemlistMixin.remove_items
+    redo = AlterItemlistMixin.insert_items
 
-        self.model.toggle_enqueued_many(self.queuepos.values())
+
+class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
+    """Command to remove a list of rows from the playlist."""
+
+    def __init__(self, model, rows, do_queue=True):
+        """Create the command.
+
+        :param rows: A possibly unsorted/non-contiguous list of rows to remove.
+        """
+        QtGui.QUndoCommand.__init__(self)
+        AlterItemlistMixin.__init__(self, model, do_queue)
+
+        if rows:
+            self.chunks = self.contiguous_chunks(rows)
+            self.model.undo_stack.push(self)
+
+    undo = AlterItemlistMixin.insert_items
+    redo = AlterItemlistMixin.remove_items
