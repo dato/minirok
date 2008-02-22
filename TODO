@@ -6,7 +6,6 @@ IMPORTANT:
     too?)
   * Using util.playable_from_untrusted in load_saved_playlist()
     eliminates duplicates.
-  * ensureItemVisible()
 
 Tree View:
   * Use a regex as well to control the appearance of file names?

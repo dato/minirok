@@ -382,6 +382,10 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.emit(QtCore.SIGNAL('list_changed'))
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
+        if self.current_item not in (self.FIRST_ITEM, None):
+            self.emit(QtCore.SIGNAL('scroll_needed'),
+                    self.index(self.current_item.position, 0))
+
     current_item = property(lambda self: self._current_item, _set_current_item)
 
     def _set_currently_playing(self, item):
@@ -958,6 +962,9 @@ class PlaylistView(QtGui.QTreeView):
 
         self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
                 playlist.slot_activate_index)
+
+        self.connect(playlist, QtCore.SIGNAL('scroll_needed'),
+                                lambda index: self.scrollTo(index))
 
         # ok, this is a bit gross
         playlist.selection_model = self.selectionModel()
