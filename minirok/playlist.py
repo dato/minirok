@@ -271,6 +271,19 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.emit(QtCore.SIGNAL('list_changed'))
         return items
 
+    def clear_itemlist(self):
+        self.current_item = None
+        self.random_queue[:] = []
+        self.tag_reader.clear_queue()
+
+        items = self._itemlist[:]
+        self._row_count = 0
+        self._itemlist[:] = []
+        self.reset()
+
+        self.emit(QtCore.SIGNAL('list_changed'))
+        return items
+
     ##
 
     """Initialization."""
@@ -428,26 +441,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
     def slot_clear(self):
-        self.queue[:] = []
-        self.random_queue[:] = []
-        self.tag_reader.clear_queue()
-
-        if self._currently_playing not in (self.FIRST_ITEM, None):
-            # We don't want the currently playing item to be deleted,
-            # because it breaks actions upon it, eg. stop().
-            self.takeItem(self._currently_playing)
-
-        if self.stop_after is not None:
-            if (self.stop_mode == StopMode.AFTER_ONE
-                    and self.stop_after != self._currently_playing):
-                self.stop_after = None
-            elif self.stop_mode == StopMode.AFTER_QUEUE:
-                self._stop_after = None # don't touch stop_mode
-
-        self.clear()
-        self.emit(QtCore.SIGNAL('list_changed'))
+        ClearItemlistCmd(self)
 
     def slot_activate_index(self, index):
         self.maybe_populate_random_queue()
@@ -818,12 +813,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def setColumnWidth(self, col, width):
         self.header().setResizeEnabled(bool(width), col) # Qt does not do this for us
         return kdeui.KListView.setColumnWidth(self, col, width)
-
-    # XXX-KDE4 TODO
-    def takeItem(self, item):
-        if item == self._currently_playing:
-            self._currently_playing_taken = True
-        return kdeui.KListView.takeItem(self, item)
 
     # XXX-KDE4 TODO
     def contentsDragMoveEvent(self, event):
@@ -1505,3 +1494,37 @@ class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
 
     undo = AlterItemlistMixin.insert_items
     redo = AlterItemlistMixin.remove_items
+
+
+class ClearItemlistCmd(QtGui.QUndoCommand, AlterItemlistMixin):
+    """Command to completely clear the playlist.
+
+    This command offers a more efficient implementation of remove_items than
+    the mixin (uses the model's clear_itemlist), and handles the queue more
+    efficiently.
+    """
+    def __init__(self, model):
+        QtGui.QUndoCommand.__init__(self)
+        AlterItemlistMixin.__init__(self, model)
+        self.model.undo_stack.push(self)
+
+    def remove_items(self):
+        self.items.clear()
+        self.queuepos.clear()
+
+        if self.model.current_item is not Playlist.FIRST_ITEM:
+            self.current_item = self.model.current_item
+
+        self.items[0] = self.model.clear_itemlist()
+
+        if self.do_queue:
+            # iterate over model's queue directly, since we are
+            # dequeueing *everything*
+            self.queuepos.update((item.queue_position, item)
+                    for item in self.model.queue)
+
+            if self.queuepos:
+                self.model.toggle_enqueued_many(self.queuepos.values())
+
+    undo = AlterItemlistMixin.insert_items
+    redo = remove_items
