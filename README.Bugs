@@ -53,9 +53,9 @@ bugs that can/should get fixed someday are documented in the TODO file.
 
   * When configuring the toolbars, the Undo/Redo actions appear twice.
 
-    (This is because there are to pairs of Undo/Redo actions: a QAction
-    pair, created with QUndoStack.createUndoAction(), that are meant to
-    be on the toolbar (they know when to disable themselves, etc.), and
-    a KAction pair, present so that Undo/Redo's shortcuts can be
+    (This is because there are two pairs of Undo/Redo actions: a QAction
+    pair, created with QUndoStack.createUndo/RedoAction(), that is meant
+    to be on the toolbar (they know when to disable themselves, etc.),
+    and a KAction pair, present so that Undo/Redo's shortcuts can be
     configured -- KDE does not support configuring shortcuts for
     QActions at the moment.)
