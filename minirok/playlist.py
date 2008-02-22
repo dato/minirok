@@ -193,7 +193,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             # now, we remove items after the drop, so...
             row -= len(filter(lambda r: r <= row, rows))
 
-            self.undo_stack.beginMacro('')
+            self.undo_stack.beginMacro('move ' + _n_tracks_str(len(rows)))
             try:
                 removecmd = RemoveItemsCmd(self, rows, do_queue=False)
                 InsertItemsCmd(self, row, removecmd.get_items(), do_queue=False)
@@ -1466,7 +1466,7 @@ class InsertItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
     """Command to insert a list of items at a certain position."""
 
     def __init__(self, model, position, items, do_queue=True):
-        QtGui.QUndoCommand.__init__(self)
+        QtGui.QUndoCommand.__init__(self, 'insert ' + _n_tracks_str(len(items)))
         AlterItemlistMixin.__init__(self, model, do_queue)
 
         if items:
@@ -1485,7 +1485,7 @@ class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
 
         :param rows: A possibly unsorted/non-contiguous list of rows to remove.
         """
-        QtGui.QUndoCommand.__init__(self)
+        QtGui.QUndoCommand.__init__(self, 'remove ' + _n_tracks_str(len(rows)))
         AlterItemlistMixin.__init__(self, model, do_queue)
 
         if rows:
@@ -1504,7 +1504,7 @@ class ClearItemlistCmd(QtGui.QUndoCommand, AlterItemlistMixin):
     efficiently.
     """
     def __init__(self, model):
-        QtGui.QUndoCommand.__init__(self)
+        QtGui.QUndoCommand.__init__(self, 'clear playlist')
         AlterItemlistMixin.__init__(self, model)
         self.model.undo_stack.push(self)
 
@@ -1528,3 +1528,12 @@ class ClearItemlistCmd(QtGui.QUndoCommand, AlterItemlistMixin):
 
     undo = AlterItemlistMixin.insert_items
     redo = remove_items
+
+##
+
+def _n_tracks_str(amount):
+    """Return '1 track' if amount is 1 else '$amount tracks'."""
+    if amount == 1:
+        return '1 track'
+    else:
+        return '%d tracks' % (amount,)
