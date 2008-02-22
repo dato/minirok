@@ -243,10 +243,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def remove_items(self, position, amount):
         items = self._itemlist[position:position+amount]
-        tag_reader_empty = self.tag_reader.is_empty() # optimize common case
 
         for item in items:
-            if not tag_reader_empty:
+            if item.needs_tag_reader:
                 self.tag_reader.dequeue(item)
             if not item.already_played:
                 try:
