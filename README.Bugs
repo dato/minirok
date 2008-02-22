@@ -1,16 +1,3 @@
-Minirok is buggy!
-=================
-
-Undoubtedly. It even crashes sometimes; most of those are known, but I
-don't know how to fix them. If you do, please enlighten me! The point is
-that it's stable enough for me to prefer it over Amarok, and I publicly
-released it in hope that'd be the case for other people as well.
-
-Also, since I'm not very knowledgeable in Qt/KDE programming, some parts
-of the code may be programmed in a suboptimal way, or plainly wrong even
-if they seems to work. Feel free to point out these as well.
-
-
 Reporting bugs
 ==============
 
