@@ -554,23 +554,14 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 if minirok.Globals.engine.status != engine.State.STOPPED:
                     self.slot_play()
 
-    def slot_engine_end_of_stream(self, uri):
+    def slot_engine_end_of_stream(self):
+        finished_item = self.currently_playing
         self.currently_playing = None
 
-        # TODO I think this could use a rewrite by just comparing stop_after
-        # and current_item?
-        if (self.stop_mode == StopMode.AFTER_ONE or
-                (self.stop_mode == StopMode.AFTER_QUEUE and not self.queue)):
-            if self.stop_after is not None:
-                if self.stop_after.path == re.sub('^file://', '', uri):
-                    self.stop_after = None
-                    self.slot_next(force_play=False)
-                    return
-            elif self.stop_mode == StopMode.AFTER_ONE: # AFTER_QUEUE is ok
-                minirok.logger.warn(
-                        'BUG: stop_after is None with stop_mode = AFTER_ONE')
-
-        if self.repeat_mode == RepeatMode.TRACK:
+        if finished_item is self.stop_after:
+            self.stop_after = None
+            self.slot_next(force_play=False)
+        elif self.repeat_mode == RepeatMode.TRACK:
             # This can't be in slot_next() because the next button should move
             # to the next track *even* with repeat_mode == TRACK.
             self.slot_play()

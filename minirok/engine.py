@@ -113,7 +113,7 @@ class GStreamerEngine(QtCore.QObject):
     def _message_eos(self, bus, message):
         self.bin.set_state(gst.STATE_NULL)
         self.status = State.STOPPED
-        self.emit(QtCore.SIGNAL('end_of_stream'), self.uri)
+        self.emit(QtCore.SIGNAL('end_of_stream'))
 
     def _message_error(self, bus, message):
         error, debug_info = message.parse_error()
