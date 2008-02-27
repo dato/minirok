@@ -480,7 +480,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         if self.current_item is not None:
             if self.current_item is self.FIRST_ITEM:
                 if self.queue:
-                    self.current_item = self.queue_pop(0)
+                    self.current_item = self.queue_popfront()
                 else:
                     self.current_item = self.my_first_child()
 
@@ -516,7 +516,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def slot_next(self, force_play=False):
         if self.current_item is not None:
             if self.queue:
-                next = self.queue_pop(0)
+                next = self.queue_popfront()
             elif self.random_mode:
                 try:
                     next = self.random_queue.pop(0)
@@ -657,12 +657,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.emit(QtCore.SIGNAL('list_changed'))
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
-    def queue_pop(self, index):
-        """Convenience function to dequeue and return an item from the queue."""
+    def queue_popfront(self):
+        """Convenience function to dequeue and return the first item from the queue."""
         try:
-            popped = self.queue[index]
+            popped = self.queue[0]
         except IndexError:
-            minirok.logger.warn('invalid index %r in queue_pop()', index)
+            minirok.logger.warn('queue_popfront() called on an empty queue')
         else:
             self.toggle_enqueued_many([ popped ])
             return popped
