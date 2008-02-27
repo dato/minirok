@@ -603,8 +603,13 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def toggle_enqueued_many_rows(self, rows):
         self.toggle_enqueued_many([ self._itemlist[row] for row in rows ])
 
-    def toggle_enqueued_many(self, items):
-        """Toggle a list of items from being in the queue."""
+    def toggle_enqueued_many(self, items, preserve_stop_after=False):
+        """Toggle a list of items from being in the queue.
+        
+        If :param preserve_stop_after: is True, stop_after will not be touched.
+            (This is mostly useful when dequeueing for playing what may be the
+            last item in the queue, see queue_popfront() below.)
+        """
         # items to queue, and items to dequeue
         enqueue = [ item for item in items if not item.queue_position ]
         dequeue = sorted((item for item in items if item.queue_position),
@@ -647,7 +652,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             for i, item in enumerate(enqueue):
                 item.queue_position = size+i+1
 
-        if self.stop_mode == StopMode.AFTER_QUEUE:
+        if (not preserve_stop_after
+                and self.stop_mode == StopMode.AFTER_QUEUE):
             if not self.queue:
                 self.stop_after = None
                 self.stop_mode = StopMode.AFTER_QUEUE
@@ -664,7 +670,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         except IndexError:
             minirok.logger.warn('queue_popfront() called on an empty queue')
         else:
-            self.toggle_enqueued_many([ popped ])
+            self.toggle_enqueued_many([ popped ], preserve_stop_after=True)
             return popped
 
     def my_first_child(self):
