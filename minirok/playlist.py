@@ -813,11 +813,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     ##
 
     # XXX-KDE4 TODO
-    def setColumnWidth(self, col, width):
-        self.header().setResizeEnabled(bool(width), col) # Qt does not do this for us
-        return kdeui.KListView.setColumnWidth(self, col, width)
-
-    # XXX-KDE4 TODO
     def contentsDragMoveEvent(self, event):
         if (not (kdecore.KApplication.kApplication().keyboardMouseState()
                     & qt.Qt.ControlButton)
