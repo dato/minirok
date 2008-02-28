@@ -615,39 +615,27 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         """
         # items to queue, and items to dequeue
         enqueue = [ item for item in items if not item.queue_position ]
-        dequeue = sorted((item for item in items if item.queue_position),
-                            key=lambda item: item.queue_position, reverse=True)
+        dequeue = [ item for item in items if item.queue_position ]
 
         if dequeue:
-            # Ok, this is a tad hairy, but should be fairly efficient, I think.
-            # We pop() the items based on their queue_position attribute, which
-            # is faster than removing them based on value. For this to work, we
-            # remove the later items *first*.
-            # To later recalculate the positions of items affected by these
-            # removals, we keep in "pairs" information about the *contiguous*
-            # chunks we removed (in (position, amount) pairs), so that items
-            # starting at each index have to be decremented "amount" positions.
-            pairs = [(len(self.queue), 0)]
+            indexes = sorted(item.queue_position - 1 for item in dequeue)
 
-            for item in dequeue:
-                index = item.queue_position - 1
-                self.queue.pop(index)
+            chunks = AlterItemlistMixin.contiguous_chunks(indexes)
+            chunks.append((len(self.queue), 0)) # fake chunk at the end
+
+            # Now this is simple (at least compared to what was here before):
+            # starting after each removal chunk, and until the beginning of the
+            # next one, we substract the cumulative amount of removed items.
+            accum = 0
+            for i, (index, amount) in enumerate(chunks[:-1]):
+                accum += amount
+                until = sum(chunks[i+1])
+                for item in self.queue[index+amount:until]:
+                    item.queue_position -= accum
+
+            for index in reversed(indexes):
+                item = self.queue.pop(index)
                 item.queue_position = None
-
-                if index == pairs[-1][0] - 1: # contiguous removal
-                    pairs[-1] = (index, pairs[-1][1] + 1)
-                else:
-                    pairs.append((index, 1))
-
-            # NOTE that we have to adjust each index here, because we saved the
-            # position *before* previous items were removed. So we start in the
-            # beginning now, so that we'll know how much adjusting the index
-            # needs.
-            adjval = 0
-            for index, amount in reversed(pairs):
-                for item in self.queue[index-adjval:]:
-                    item.queue_position -= amount
-                adjval += amount
 
         if enqueue:
             size = len(self.queue)
@@ -1442,7 +1430,8 @@ class AlterItemlistMixin(object):
             result.extend(items)
         return result
 
-    def contiguous_chunks(self, intlist):
+    @staticmethod # TODO Move elsewhere
+    def contiguous_chunks(intlist):
         """Calculate a list of contiguous areas in a possibly unsorted list.
 
         >>> removecmd.contiguous_chunks([2, 9, 3, 5, 8, 1])
