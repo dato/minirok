@@ -49,8 +49,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self._current_item = None
         self._currently_playing = None
 
-        self._currently_playing_taken = False
-
         self.connect(self, QtCore.SIGNAL('list_changed'), self.slot_list_changed)
 
         self.connect(self.tag_reader, QtCore.SIGNAL('items_ready'),
@@ -223,12 +221,25 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     """
 
     def insert_items(self, position, items):
+        # if currently_playing is absent, we'll check whether
+        # it's getting re-added in this call
+        current_item = None
+        if (self.current_item in (None, self.FIRST_ITEM)
+                and self.currently_playing is not None):
+            playing_path = self.currently_playing.path
+        else:
+            playing_path = None
+
         try:
             nitems = len(items)
             for item in self._itemlist[position:]:
                 item.position += nitems
             for i, item in enumerate(items):
                 item.position = position + i
+                if (playing_path is not None
+                        and playing_path == item.path):
+                    current_item = item
+                    playing_path = None
             self.beginInsertRows(QtCore.QModelIndex(),
                                  position, position + nitems - 1)
             self._itemlist[position:0] = items
@@ -240,6 +251,9 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.tag_reader.queue_many(x for x in items if x.needs_tag_reader)
 
         self.emit(QtCore.SIGNAL('list_changed'))
+
+        if current_item is not None:
+            self.current_item = self.currently_playing = current_item
 
     def remove_items(self, position, amount):
         items = self._itemlist[position:position+amount]
@@ -390,8 +404,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def _set_currently_playing(self, item):
         self._currently_playing = item
-        self._currently_playing_taken = False # XXX-KDE4 Needed?
-
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
     currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
@@ -769,17 +781,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         else:
             regex_failed = False
 
-        if (self._currently_playing_taken
-                and False # XXX-KDE4
-                and self._currently_playing is not None
-                and self._currently_playing.path == file_):
-            item = self._currently_playing
-            self.insertItem(item)
-            item.moveItem(prev_item)
-            self.current_item = item
-            self.currently_playing = item # unsets _currently_playing_taken
-        else:
-            item = PlaylistItem(path, tags)
+        item = PlaylistItem(path, tags)
 
         assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
 
