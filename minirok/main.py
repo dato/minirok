@@ -76,7 +76,7 @@ def main():
 
     if minirok._has_lastfm:
         from minirok import lastfm_submit
-        # lastfm_submitter = lastfm_submit.LastfmSubmitter() # XXX-KDE4 (preferences)
+        lastfm_submitter = lastfm_submit.LastfmSubmitter()
 
     if files:
         minirok.Globals.playlist.add_files_untrusted(files, clear_playlist=True)
