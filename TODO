@@ -28,6 +28,8 @@ Playlist:
     whereas the "show focus" border from Qt only until the width of the
     rightmost column.
 
+  * Center-align the track column, and right-align the length column.
+
 UI:
   * save size of the sides of QSplitter
   * connect track change / playlist change with statusbar and caption
