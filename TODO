@@ -26,7 +26,7 @@ Playlist:
 
   * The current item border pans over all width of they playlist,
     whereas the "show focus" border from Qt only until the width of the
-    rightmos column.
+    rightmost column.
 
 UI:
   * save size of the sides of QSplitter
