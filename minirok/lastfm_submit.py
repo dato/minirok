@@ -32,6 +32,7 @@ class LastfmSubmitter(QtCore.QObject, util.HasGUIConfig):
 
         self.data = None
         self.timer = util.QTimerWithPause(self)
+        self.timer.setSingleShot(True)
 
         if _has_lastfm_client:
             self.lastfm_client = lastfm.client.Client('minirok')

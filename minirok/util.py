@@ -180,58 +180,64 @@ class HasGUIConfig(object):
 
 ##
 
-class QTimerWithPause(QtCore.QTimer):
+class QTimerWithPause(QtCore.QObject):
     """A QTimer with pause() and resume() methods.
-
-    Idea taken from:
-        http://www.riverbankcomputing.com/pipermail/pyqt/2004-July/008325.html
-
-    Note that, unlike in QTimer, the single_shot argument of start() defaults
-    to True.
+    
+    Note that we don't inherit from QTimer, and we just offer a limited
+    interface: start(msecs), stop(), pause(), resume(), and setSingleShot().
+    The timeout() signal is emitted as normal.
     """
     def __init__(self, *args):
-        QtCore.QTimer.__init__(self, *args)
-        self.duration = 0
-        self.finished = True
-        self.recur_time = None
-        self.start_time = 0
+        QtCore.QObject.__init__(self, *args)
 
-        self.connect(self, QtCore.SIGNAL('timeout()'), self.slot_timer_finished)
+        self._timer = QtCore.QTimer(self)
+        self._timer.setSingleShot(True)
+        self.connect(self._timer, QtCore.SIGNAL('timeout()'), self._slot_timeout)
 
-    def start(self, msecs, single_shot=True):
-        if not single_shot:
-            self.recur_time = msecs
-        else:
-            self.recur_time = None
-        self._start(msecs)
-
-    def pause(self):
-        if self.isActive():
-            self.stop()
-            elapsed = time.time() - self.start_time
-            self.start_time -= elapsed
-            self.duration -= int(elapsed*1000)
-
-    def resume(self):
-        if not self.finished and not self.isActive():
-            self._start(self.duration)
+        self._running = False
+        self._duration = None # duration as given to start()
+        self._remaining = None # what's pending, considering pauses()
+        self._start_time = None # time we last _started()
+        self._single_shot = False
 
     ##
 
-    def _start(self, msecs):
-        self.finished = False
-        self.duration = msecs
-        self.start_time = time.time()
-        # We always start ourselves in single-shot mode, and restart if
-        # necessary in slot_timer_finished()
-        QtCore.QTimer.start(self, msecs, True)
+    def start(self, msecs):
+        self._duration = self._remaining = msecs
+        self._start()
 
-    def slot_timer_finished(self):
-        if self.recur_time is not None:
-            self._start(self.recur_time)
-        else:
-            # This prevents resume() on a finished timer from restarting it
-            self.finished = True
+    def stop(self):
+        self._remaining = self._duration
+        self._timer.stop()
+
+    def pause(self):
+        if self._timer.isActive():
+            self._timer.stop()
+            elapsed = time.time() - self._start_time
+            self._remaining -= int(elapsed*1000)
+
+    def resume(self):
+        if (self._running
+                and not self._timer.isActive()):
+            self._start()
+
+    def setSingleShot(self, value):
+        self._single_shot = bool(value)
+
+    ##
+
+    def _start(self):
+        self._running = True
+        self._start_time = time.time()
+        self._timer.start(self._remaining)
+
+    def _slot_timeout(self):
+        self._running = False
+        self._remaining = self._duration
+        self.emit(QtCore.SIGNAL('timeout()'))
+
+        if not self._single_shot:
+            self._start()
 
 ##
 

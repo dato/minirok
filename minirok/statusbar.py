@@ -74,7 +74,7 @@ class StatusBar(kdeui.KStatusBar):
         tags = minirok.Globals.playlist.get_current_tags()
         self.length = tags.get('Length', 0)
         self.slider.setRange(0, self.length)
-        self.timer.start(1000, False) # False: not single-shot
+        self.timer.start(1000)
         self.slot_update()
 
     def slot_stop(self):
