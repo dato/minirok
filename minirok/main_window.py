@@ -182,7 +182,7 @@ class Systray(kdeui.KSystemTrayIcon):
     def eventFilter(self, object_, event):
         if (object_ == self
                 and event.type() == QtCore.QEvent.ToolTip):
-            tags = minirok.Globals.playlist.currently_playing
+            tags = minirok.Globals.playlist.get_current_tags()
             if tags:
                 title = tags.get('Title', '')
                 artist = tags.get('Artist', '')

@@ -4,6 +4,12 @@ minirok (0.98-1) UNRELEASED; urgency=low
 
  -- Adeodato Simó <dato@net.com.org.es>  Thu, 03 Jan 2008 17:11:18 +0100
 
+minirok (0.9-1) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Sat, 02 Feb 2008 12:24:12 +0100
+
 minirok (0.8.1-1) unstable; urgency=low
 
   * New upstream bugfix release:

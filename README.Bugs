@@ -34,11 +34,15 @@ the bug report elsewhere and I probably won't see it.
 Known bugs
 ==========
 
-XXX-KDE4
-Some features (notably global keybindings and configuring toolbar layout)
-do not work due to shortcomings in the PyKDE bindings. See pykde-bugs/README
-for details. Upstream is not very interested in fixing them for KDE 3,
-hopefully version 4 won't suffer from them.
+Here is a list of known bugs or quirks that I don't plan on addressing,
+most likely because I wouldn't know how -- help or patches welcome. Known
+bugs that can/should get fixed someday are documented in the TODO file.
 
-Known bugs that can/should get fixed some day (earlier if there's enough
-demand for it), are documented in the TODO file.
+  * When configuring the toolbars, the Undo/Redo actions appear twice.
+
+    (This is because there are two pairs of Undo/Redo actions: a QAction
+    pair, created with QUndoStack.createUndo/RedoAction(), that is meant
+    to be on the toolbar (they know when to disable themselves, etc.),
+    and a KAction pair, present so that Undo/Redo's shortcuts can be
+    configured -- KDE does not support configuring shortcuts for
+    QActions at the moment.)

@@ -6,6 +6,7 @@
 
 import os
 import re
+import stat
 import time
 import random
 
@@ -100,6 +101,52 @@ def create_action(name, text, slot, icon=None, shortcut=None,
 
     return action
 
+def playable_from_untrusted(files, warn=False):
+    """Filter a list of untrusted paths to only include playable files.
+
+    This method takes a list of paths, and drops from it files that do not
+    exist or the engine can't play. Directories will be read and all its files
+    included as appropriate.
+
+    :param warn: If True, emit a warning for each skipped file, stating the
+            reason; if False, debug() statements will be emitted instead.
+    """
+    result = []
+
+    if warn:
+        warn = minirok.logger.warn
+    else:
+        warn = minirok.logger.debug
+
+    def append_path(path):
+        try:
+            mode = os.stat(path).st_mode
+        except OSError, e:
+            warn('skipping %r: %s', path, e.strerror)
+            return
+
+        if stat.S_ISDIR(mode):
+            try:
+                contents = sorted(os.listdir(path))
+            except OSError, e:
+                warn('skipping %r: %s', path, e.strerror)
+            else:
+                for entry in contents:
+                    append_path(os.path.join(path, entry))
+        elif stat.S_ISREG(mode):
+            if minirok.Globals.engine.can_play(path):
+                if path not in result:
+                    result.append(path)
+            else:
+                warn('skipping %r: not a playable format', path)
+        else:
+            warn('skipping %r: not a regular file', path)
+
+    for f in files:
+        append_path(f)
+
+    return result
+
 ##
 
 class HasConfig(object):
@@ -193,6 +240,11 @@ class RandomOrderedList(list):
 
     def append(self, item):
         self.insert(random.randrange(len(self)+1), item)
+
+    def extend(self, seq):
+        seq = list(seq)
+        random.shuffle(seq)
+        list.extend(self, seq)
 
 ##
 

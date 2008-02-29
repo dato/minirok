@@ -13,10 +13,19 @@
       - DBUS is used instead of DCOP, bla bla bla.
 	(TODO)
 
+  IMPROVEMENTS
+
+    * Command line arguments that are directories will not be simply
+      discarded, and all playable files underneath them will be added to
+      the playlist.
+
   FOO
 
     * XXX Mention the improvement when loading in the tree view a
       directory which had already been opened.
+
+
+0.9	IN DEVELOPMENT
 
 
 0.8.1	2008-01-29

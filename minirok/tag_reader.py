@@ -9,30 +9,16 @@ import mutagen.id3
 import mutagen.mp3
 import mutagen.easyid3
 
-from PyQt4 import QtCore
-
 import minirok
 from minirok import util
 
 ##
 
-class TagReader(QtCore.QObject):
-    """Reads tags from files in a pending queue."""
+class TagReader(util.ThreadedWorker):
+    """Worker to read tags from files."""
 
     def __init__(self):
-        QtCore.QObject.__init__(self)
-
-        self.worker = util.ThreadedWorker(lambda item: TagReader.tags(item.path))
-        self.connect(self.worker, QtCore.SIGNAL('items_ready'), self.update_done)
-        self.worker.start()
-
-    ##
-
-    def update_done(self):
-        for item, tags in self.worker.pop_done():
-            if tags:
-                item.update_tags(tags)
-                item.update_display()
+        util.ThreadedWorker.__init__(self, lambda item: self.tags(item.path))
 
     ##
 

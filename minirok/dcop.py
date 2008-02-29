@@ -34,18 +34,19 @@ class Player(dcopexport.DCOPExObj):
         self.addMethod('void appendToPlaylist(QStringList)', self.append_to_playlist)
 
     def formatted_now_playing(self, format=None):
-        currently_playing = minirok.Globals.playlist.currently_playing
-        if currently_playing is None:
+        tags = minirok.Globals.playlist.get_current_tags()
+
+        if not tags:
             formatted = ''
         else:
             if format is not None:
                 try:
-                    formatted = str(format) % currently_playing
+                    formatted = str(format) % tags
                 except (KeyError, ValueError, TypeError), e:
                     formatted = '>> Error when formatting string: %s' % e
             else:
-                title = currently_playing['Title']
-                artist = currently_playing['Artist']
+                title = tags['Title']
+                artist = tags['Artist']
                 if artist is not None:
                     formatted = '%s - %s' % (artist, title)
                 else:

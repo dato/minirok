@@ -71,7 +71,8 @@ class StatusBar(kdeui.KStatusBar):
         self.label2.set_time(self.remaining) # XXX what if length was unset
 
     def slot_start(self):
-        self.length = minirok.Globals.playlist.currently_playing['Length'] or 0
+        tags = minirok.Globals.playlist.get_current_tags()
+        self.length = tags.get('Length', 0)
         self.slider.setRange(0, self.length)
         self.timer.start(1000, False) # False: not single-shot
         self.slot_update()
