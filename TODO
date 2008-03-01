@@ -24,10 +24,6 @@ Playlist:
   * Make Undo preserve stuff like the "stop after".
   * Make Undo/Redo preserve the selection?
 
-  * The current item border pans over all width of they playlist,
-    whereas the "show focus" border from Qt only until the width of the
-    rightmost column.
-
   * Center-align the track column, and right-align the length column.
 
 UI:

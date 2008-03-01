@@ -977,8 +977,9 @@ class PlaylistView(QtGui.QTreeView):
         if model.row_is_current(row):
             painter.save()
             r = styleopt.rect
+            w = sum(self.columnWidth(x) for x in range(self.header().count()))
             painter.setPen(styleopt.palette.highlight().color())
-            painter.drawRect(r.x(), r.y(), r.width(), r.height()-1)
+            painter.drawRect(r.x(), r.y(), w-1, r.height()-1)
             painter.restore()
 
     def startDrag(self, actions):
