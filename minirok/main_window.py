@@ -4,6 +4,8 @@
 # Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import os
+
 from PyQt4 import QtGui, QtCore
 from PyKDE4 import kio, kdeui, kdecore
 
@@ -30,14 +32,26 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         self.init_actions()
         # XXX-KDE4 self.apply_preferences()
 
+        self.setHelpMenuEnabled(False)
         self.setCentralWidget(self.main_view)
         # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check
 
-        import os # XXX-KDE4
-        self.setHelpMenuEnabled(False)
-        self.setupGUI(self.StandardWindowOption(
-            self.ToolBar | self.Keys | self.Save | self.Create), # StatusBar out
-            os.path.join(os.path.dirname(minirok.__path__[0]), 'config/minirokui.rc')) # XXX-KDE4
+        # If a minirokui.rc file exists in the standard location, do
+        # not specify one for setupGUI(), else specify one if available.
+        has_std_rc = bool(unicode(kdecore.KStandardDirs.locate(
+                                            'appdata', 'minirokui.rc')))
+
+        args = [ self.StandardWindowOption(
+            self.ToolBar | self.Keys | self.Save | self.Create) # StatusBar out
+        ]
+
+        if not has_std_rc:
+            local_rc = os.path.join(
+                    os.path.dirname(minirok.__path__[0]), 'config/minirokui.rc')
+            if os.path.isfile(local_rc):
+                args.append(local_rc)
+
+        self.setupGUI(*args)
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
