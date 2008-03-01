@@ -402,16 +402,24 @@ def _my_listdir(path):
     except OSError, e:
         minirok.logger.warn('cout not stat %r: %s', path, e.strerror)
         _my_listdir_cache.setdefault(path, (None, {}))
-    else:
-        if mtime == _my_listdir_cache.get(path, (None, None))[0]:
-            return
-        else:
-            try:
-                _my_listdir_cache[path] = (mtime,
-                        dict((x, os.stat(os.path.join(path, x)))
-                            for x in os.listdir(path)))
-            except OSError, e:
-                # XXX can the error come from the stat() as well?
-                minirok.logger.warn('could not listdir %r: %s',
-                        path, e.strerror)
-                _my_listdir_cache.setdefault(path, (None, {}))
+        return
+
+    if mtime == _my_listdir_cache.get(path, (None, None))[0]:
+        return
+
+    try:
+        contents = os.listdir(path)
+    except OSError, e:
+        minirok.logger.warn('could not listdir %r: %s', path, e.strerror)
+        _my_listdir_cache.setdefault(path, (None, {}))
+        return
+
+    d = {}
+    for entry in contents:
+        try:
+            entryp = os.path.join(path, entry)
+            d[entry] = os.stat(entryp)
+        except OSError, e:
+            minirok.logger.warn('could not access %r: %s', entryp, e.strerror)
+
+    _my_listdir_cache[path] = (mtime, d)
