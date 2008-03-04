@@ -147,7 +147,7 @@ del _not_found
 
 class Globals(object):
     """Singleton object to hold pointers to various pieces of the program.
-    
+
     See the __slots__ variable for a list of available attributes.
     """
 

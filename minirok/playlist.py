@@ -131,7 +131,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         assert 0 <= row < self._row_count
         return self._itemlist[row].queue_position or 0
 
-    ## 
+    ##
 
     """Drag and drop functions."""
 
@@ -216,7 +216,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     ##
 
     """Adding and removing items to _itemlist.
-    
+
     (NB: No other function should modify _itemlist directly.)
     """
 
@@ -608,7 +608,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     def toggle_enqueued_many(self, items, preserve_stop_after=False):
         """Toggle a list of items from being in the queue.
-        
+
         If :param preserve_stop_after: is True, stop_after will not be touched.
             (This is mostly useful when dequeueing for playing what may be the
             last item in the queue, see queue_popfront() below.)
@@ -1133,7 +1133,7 @@ class PlaylistItem(object):
 
 class PlaylistTrackDelegate(QtGui.QItemDelegate):
     """Paints the track number and the "stop after/queue pos" ellipse.
-    
+
     Code originally comes from PlaylistItem::paintCell() in Amarok 1.4.
     """
 
@@ -1217,7 +1217,7 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
 
     def setup_from_config(self):
         """Read config, sanitize it, and apply.
-        
+
         NOTE: this code can't be in __init__, because at that time there is not
         a model/view associated with the object.
         """
@@ -1253,7 +1253,7 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
             except ValueError:
                 warn('invalid visibility value for %s: %r', name, visible)
                 continue
-                    
+
             try:
                 known_columns.remove(name)
             except KeyError:
@@ -1334,7 +1334,7 @@ Note that they will add themselves to the model's QUndoStack.
 
 class AlterItemlistMixin(object):
     """Common functionality to make changes to the item list.
-    
+
     This class offers methods to insert and remove items from the list. Each
     operation saves state, so that calling the reverse operation without any
     arguments just undoes it.
@@ -1358,7 +1358,7 @@ class AlterItemlistMixin(object):
         """Insert items into the playlist.
 
         :param items: should be a dict like:
-        
+
             { pos1: itemlist1, pos2: itemlist2, ... }
 
         The items will be inserted in *ascending* order by position.

@@ -182,7 +182,7 @@ class HasGUIConfig(object):
 
 class QTimerWithPause(QtCore.QObject):
     """A QTimer with pause() and resume() methods.
-    
+
     Note that we don't inherit from QTimer, and we just offer a limited
     interface: start(msecs), stop(), pause(), resume(), and setSingleShot().
     The timeout() signal is emitted as normal.
@@ -271,7 +271,7 @@ def needs_lock(mutex_name):
 
 class ThreadedWorker(QtCore.QThread):
     """A thread that performs a given action on items in a queue.
-    
+
     The thread consumes items from a queue, and stores pairs (item, result)
     in a "done" queue. Whenever there are done items, the thread emits a
     "items_ready" signal.
@@ -315,7 +315,7 @@ class ThreadedWorker(QtCore.QThread):
         try:
             self._queue.remove(item)
         except ValueError:
-            pass                                                                                                                                                            
+            pass
 
     @needs_lock('_mutex')
     @needs_lock('_mutex2')

@@ -94,7 +94,7 @@ class TreeView(QtGui.QTreeWidget):
 
     def slot_show_directory(self, directory):
         """Changes the TreeView root to the specified directory.
-        
+
         If directory is the current root and there is no ongoing scan, a simple
         refresh will be performed instead.
         """
@@ -326,7 +326,7 @@ class TreeViewSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
 
 def _get_children(toplevel, filter_func=None):
     """Returns a filtered list of all direct children of toplevel.
-    
+
     :param filter_func: Only include children for which this function returns
         true. If None, all children will be returned.
     """
@@ -335,7 +335,7 @@ def _get_children(toplevel, filter_func=None):
 
 def _populate_tree(parent, directory, force_refresh=False):
     """A helper function to populate either a TreeView or a DirectoryItem.
-    
+
     When populating, this function sets parent.mtime, and when invoked later on
     the same parent, it will return immediately if the mtime of directory is
     not different. If it is different, a refresh will be performed, keeping as

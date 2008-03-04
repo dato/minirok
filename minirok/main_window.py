@@ -175,7 +175,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
 class Systray(kdeui.KSystemTrayIcon):
     """A KSystemTrayIcon class that calls Play/Pause on middle button clicks.
-    
+
     It will also show the currently played track in its tooltip.
     """
     def __init__(self, *args):
