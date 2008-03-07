@@ -16,8 +16,14 @@ from minirok.playlist import RepeatMode
 
 class StatusBar(kdeui.KStatusBar):
 
+    SLIDER_PRESSED = object()
+    SLIDER_MOVED = object()
+    SLIDER_RELEASED = object()
+
     def __init__(self, *args):
         kdeui.KStatusBar.__init__(self, *args)
+
+        self.seek_to = None
 
         self.timer = util.QTimerWithPause(self, 'statusbar timer')
         self.blink_timer = qt.QTimer(self, 'statusbar blink timer')
@@ -29,7 +35,7 @@ class StatusBar(kdeui.KStatusBar):
         self.label1 = TimeLabel(self, 'left statusbar label')
         self.label2 = NegativeTimeLabel(self, 'right statusbar label')
 
-        self.slider.setEnabled(False) # FIXME
+        self.slider.setTracking(False)
         self.slider.setMaximumWidth(150)
         self.slider.setFocusPolicy(qt.QWidget.NoFocus)
 
@@ -42,15 +48,27 @@ class StatusBar(kdeui.KStatusBar):
 
         self.slot_stop()
 
-        self.connect(self.timer, qt.SIGNAL('timeout()'), self.slot_update)
+        self._connect_timer() # this has a method 'cause we do it several times
 
         self.connect(self.blink_timer, qt.SIGNAL('timeout()'), self.slot_blink)
+
+        self.connect(self.slider, qt.SIGNAL('sliderPressed()'),
+                lambda: self.handle_slider_event(self.SLIDER_PRESSED))
+
+        self.connect(self.slider, qt.SIGNAL('sliderMoved(int)'),
+                lambda x: self.handle_slider_event(self.SLIDER_MOVED, x))
+
+        self.connect(self.slider, qt.SIGNAL('sliderReleased()'),
+                lambda: self.handle_slider_event(self.SLIDER_RELEASED))
 
         self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
                 self.slot_start)
 
         self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
                 self.slot_engine_status_changed)
+
+        self.connect(minirok.Globals.engine, qt.PYSIGNAL('seek_finished'),
+                self.slot_engine_seek_finished)
 
         # Actions
         self.action_next_repeat_mode = kdeui.KAction('Change repeat mode',
@@ -73,12 +91,14 @@ class StatusBar(kdeui.KStatusBar):
     def slot_start(self):
         self.length = minirok.Globals.playlist.currently_playing['Length'] or 0
         self.slider.setRange(0, self.length)
+        self.slider.setEnabled(True)
         self.timer.start(1000, False) # False: not single-shot
         self.slot_update()
 
     def slot_stop(self):
         self.timer.stop()
         self.blink_timer.stop()
+        self.slider.setEnabled(False)
         self.length = self.elapsed = self.remaining = 0
         self.slot_update()
 
@@ -101,6 +121,30 @@ class StatusBar(kdeui.KStatusBar):
         else:
             self.label1.erase()
             self.label2.erase()
+
+    def slot_engine_seek_finished(self):
+        self._connect_timer()
+
+    def handle_slider_event(self, what, value=None):
+        if what is self.SLIDER_PRESSED:
+            # I'm using a disconnect/connect pair here because using
+            # pause/resume resulted in slot_update() getting called many
+            # seconds after resume(). Weird.
+            self._connect_timer(disconnect=True)
+        elif what is self.SLIDER_MOVED:
+            self.seek_to = value
+            self.label1.set_time(value)
+            self.label2.set_time(self.length - value)
+        elif what is self.SLIDER_RELEASED:
+            if self.seek_to is not None:
+                minirok.Globals.engine.set_position(self.seek_to)
+                self.seek_to = None
+        else:
+            minirok.logger.warn('unknown slider event %r', what)
+
+    def _connect_timer(self, disconnect=False):
+        f = disconnect and self.disconnect or self.connect
+        f(self.timer, qt.SIGNAL('timeout()'), self.slot_update)
 
 ##
 

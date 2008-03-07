@@ -62,8 +62,10 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         bus.add_signal_watch()
         bus.connect('message::eos', self._message_eos)
         bus.connect('message::error', self._message_error)
+        bus.connect('message::async-done', self._message_async_done)
 
         self.time_fmt = gst.Format(gst.FORMAT_TIME)
+        self.seek_pending = False
 
     def run(self):
         loop = gobject.MainLoop()
@@ -123,6 +125,17 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         except gst.QueryError:
             return 0
 
+    def set_position(self, seconds):
+        """Seek to the given position in the current track.
+
+        This method does not block; "seek_finished" will be emitted
+        after the seek has been performed.
+        """
+        self.seek_pending = True
+        self.bin.seek_simple(self.time_fmt, gst.SEEK_FLAG_FLUSH |
+                gst.SEEK_FLAG_KEY_UNIT, seconds * gst.SECOND)
+        # self.bin.get_state(gst.CLOCK_TIME_NONE) # block until done
+
     ##
 
     def _message_eos(self, bus, message):
@@ -134,6 +147,11 @@ class GStreamerEngine(qt.QObject, threading.Thread):
         error, debug_info = message.parse_error()
         minirok.logger.warning('engine error: %s (%s)', error, self.uri)
         self._message_eos(bus, message)
+
+    def _message_async_done(self, bus, message):
+        if self.seek_pending:
+            self.seek_pending = False
+            self.emit(qt.PYSIGNAL('seek_finished'), ())
 
 ##
 
