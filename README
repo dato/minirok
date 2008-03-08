@@ -38,7 +38,7 @@ Audio formats
 Minirok supports playing and reading tags from MP3, Ogg Vorbis, FLAC and
 Musepack, which are the formats I use. If you need some other format,
 please send me a polite e-mail and I will add them if GStreamer and
-Mutagen support them (which they'll probably will).
+Mutagen support them (which they probably will).
 
 
 Motivation

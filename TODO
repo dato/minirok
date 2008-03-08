@@ -31,7 +31,6 @@ UI:
   * connect track change / playlist change with statusbar and caption
 
 Statusbar:
-  * Make the slider able to seek
   * <Ganneff> is it possible to get a "you have XXX songs in this
     playlist" info somewhere in the display? maybe with an added "this is
     5 hours of noise"
