@@ -7,6 +7,7 @@
 import sys
 import minirok
 
+from PyQt4 import QtGui
 from PyKDE4 import kdeui, kdecore
 
 ##
@@ -69,6 +70,10 @@ def main():
     minirok.Globals.engine = engine.Engine()
     application = kdeui.KApplication()
     main_window = mw.MainWindow()
+
+    # See the "Known bugs" section in README.Bugs
+    if QtGui.QApplication.style().objectName() == 'oxygen':
+        QtGui.QApplication.setStyle('Plastique')
 
     # XXX-KDE4
     # application.dcopClient().registerAs('minirok', False) # False: do not add PID

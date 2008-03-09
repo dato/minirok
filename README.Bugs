@@ -46,3 +46,9 @@ bugs that can/should get fixed someday are documented in the TODO file.
     and a KAction pair, present so that Undo/Redo's shortcuts can be
     configured -- KDE does not support configuring shortcuts for
     QActions at the moment.)
+
+  * Minirok sets the style to Plastique instead of Oxygen.
+
+    There is a bug in the PyKDE bindings whereas the text of the menus
+    is not displayed with Oxygen. Since that decreases the usability of
+    Minirok, I'm setting the style to Plastique while this gets fixed.
