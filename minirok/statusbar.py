@@ -1,12 +1,11 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-from PyQt4 import QtCore
-import kdeui
-import kdecore
+from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui, kdecore
 
 import minirok
 from minirok import engine, util
@@ -25,32 +24,33 @@ class StatusBar(kdeui.KStatusBar):
 
         self.seek_to = None
 
-        self.timer = util.QTimerWithPause(self, 'statusbar timer')
-        self.blink_timer = qt.QTimer(self, 'statusbar blink timer')
+        self.timer = util.QTimerWithPause(self)
+        self.blink_timer = QtCore.QTimer(self)
         self.blink_timer_flag = True # used in slot_blink()
 
-        self.repeat = RepeatLabel(self)
-        self.random = RandomLabel(self)
-        self.slider = qt.QSlider(qt.Qt.Horizontal, self, 'track position')
-        self.label1 = TimeLabel(self, 'left statusbar label')
-        self.label2 = NegativeTimeLabel(self, 'right statusbar label')
+        # XXX-KDE4
+        # self.repeat = RepeatLabel(self)
+        # self.random = RandomLabel(self)
+        self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.label1 = TimeLabel(self)
+        self.label2 = NegativeTimeLabel(self)
 
         self.slider.setTracking(False)
         self.slider.setMaximumWidth(150)
-        self.slider.setFocusPolicy(qt.QWidget.NoFocus)
+        self.slider.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        # True: permanent (right-aligned); 0: stretch (minimum space on resize)
-        self.addWidget(self.repeat, 0, True)
-        self.addWidget(self.random, 0, True)
-        self.addWidget(self.label1, 0, True)
-        self.addWidget(self.slider, 0, True)
-        self.addWidget(self.label2, 0, True)
+        # XXX-KDE4
+        # self.addPermanentWidget(self.repeat, 0)
+        # self.addPermanentWidget(self.random, 0)
+        self.addPermanentWidget(self.label1, 0)
+        self.addPermanentWidget(self.slider, 0)
+        self.addPermanentWidget(self.label2, 0)
 
         self.slot_stop()
 
         self._connect_timer() # this has a method 'cause we do it several times
 
-        self.connect(self.blink_timer, qt.SIGNAL('timeout()'), self.slot_blink)
+        self.connect(self.blink_timer, QtCore.SIGNAL('timeout()'), self.slot_blink)
 
         self.connect(self.slider, QtCore.SIGNAL('sliderPressed()'),
                 lambda: self.handle_slider_event(self.SLIDER_PRESSED))
@@ -69,6 +69,8 @@ class StatusBar(kdeui.KStatusBar):
 
         self.connect(minirok.Globals.engine, QtCore.SIGNAL('seek_finished'),
                 self.slot_engine_seek_finished)
+
+        return # XXX-KDE4
 
         # Actions
         self.action_next_repeat_mode = kdeui.KAction('Change repeat mode',
@@ -117,11 +119,11 @@ class StatusBar(kdeui.KStatusBar):
         self.blink_timer_flag = not self.blink_timer_flag
 
         if self.blink_timer_flag:
-            self.label1.update()
-            self.label2.update()
+            self.label1.set_time(self.elapsed)
+            self.label2.set_time(self.remaining)
         else:
-            self.label1.erase()
-            self.label2.erase()
+            self.label1.clear()
+            self.label2.clear()
 
     def slot_engine_seek_finished(self):
         self._connect_timer()
@@ -149,17 +151,18 @@ class StatusBar(kdeui.KStatusBar):
 
 ##
 
-class TimeLabel(qt.QLabel):
+class TimeLabel(QtGui.QLabel):
 
     PREFIX = ' '
 
     def __init__(self, *args):
-        qt.QLabel.__init__(self, *args)
-        self.setFont(kdecore.KGlobalSettings.fixedFont())
-        self.setSizePolicy(qt.QSizePolicy.Maximum, qt.QSizePolicy.Fixed)
+        QtGui.QLabel.__init__(self, *args)
+        self.setFont(kdeui.KGlobalSettings.fixedFont())
+        self.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
 
     def set_time(self, seconds):
         self.setText('%s%s' % (self.PREFIX, util.fmt_seconds(seconds)))
+        self.setFixedSize(self.sizeHint()) # make the label.clear() above DTRT
 
 class NegativeTimeLabel(TimeLabel):
 
@@ -167,7 +170,7 @@ class NegativeTimeLabel(TimeLabel):
 
 ##
 
-class MultiIconLabel(qt.QLabel, util.HasConfig):
+class MultiIconLabel(QtGui.QLabel, util.HasConfig):
     """A clickable label that shows a series of icons.
 
     The label automatically changes the icon on click, and then emits a
@@ -182,7 +185,7 @@ class MultiIconLabel(qt.QLabel, util.HasConfig):
         :param icons: a list of QPixmaps over which to iterate.
         :param tooltips: tooltips associated with each icon/state.
         """
-        qt.QLabel.__init__(self, parent)
+        QtGui.QLabel.__init__(self, parent)
         util.HasConfig.__init__(self)
         self.connect(self, QtCore.SIGNAL('clicked(int)'), self.slot_clicked)
 

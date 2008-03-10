@@ -10,7 +10,7 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
-from minirok import left_side, right_side, util # XXX-KDE4 preferences, statusbar
+from minirok import left_side, right_side, statusbar, util # XXX-KDE4 preferences
 
 ##
 
@@ -26,7 +26,9 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
         self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view)
         self.right_side = right_side.RightSide(self.main_view, main_window=self)
-        # XXX-KDE4 self.statusbar = statusbar.StatusBar(self, 'statusbar')
+
+        self.statusbar = statusbar.StatusBar(self)
+        self.setStatusBar(self.statusbar)
 
         self.init_systray()
         self.init_actions()
