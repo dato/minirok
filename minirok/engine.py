@@ -136,7 +136,7 @@ class GStreamerEngine(QtCore.QObject):
     def _message_async_done(self, bus, message):
         if self.seek_pending:
             self.seek_pending = False
-            self.emit(qt.PYSIGNAL('seek_finished'), ())
+            self.emit(QtCore.SIGNAL('seek_finished'))
 
 ##
 
