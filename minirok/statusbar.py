@@ -28,9 +28,8 @@ class StatusBar(kdeui.KStatusBar):
         self.blink_timer = QtCore.QTimer(self)
         self.blink_timer_flag = True # used in slot_blink()
 
-        # XXX-KDE4
-        # self.repeat = RepeatLabel(self)
-        # self.random = RandomLabel(self)
+        self.repeat = RepeatLabel(self)
+        self.random = RandomLabel(self)
         self.slider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.label1 = TimeLabel(self)
         self.label2 = NegativeTimeLabel(self)
@@ -39,9 +38,8 @@ class StatusBar(kdeui.KStatusBar):
         self.slider.setMaximumWidth(150)
         self.slider.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        # XXX-KDE4
-        # self.addPermanentWidget(self.repeat, 0)
-        # self.addPermanentWidget(self.random, 0)
+        self.addPermanentWidget(self.repeat, 0)
+        self.addPermanentWidget(self.random, 0)
         self.addPermanentWidget(self.label1, 0)
         self.addPermanentWidget(self.slider, 0)
         self.addPermanentWidget(self.label2, 0)
@@ -70,18 +68,14 @@ class StatusBar(kdeui.KStatusBar):
         self.connect(minirok.Globals.engine, QtCore.SIGNAL('seek_finished'),
                 self.slot_engine_seek_finished)
 
-        return # XXX-KDE4
-
         # Actions
-        self.action_next_repeat_mode = kdeui.KAction('Change repeat mode',
-                qt.QIconSet(util.get_png('repeat_track_small')),
-                kdecore.KShortcut('Ctrl+T'), self.repeat.mousePressEvent,
-                minirok.Globals.action_collection, 'action_next_repeat_mode')
+        self.action_next_repeat_mode = util.create_action('action_next_repeat_mode',
+                'Change repeat mode', self.repeat.mousePressEvent,
+                QtGui.QIcon(util.get_png('repeat_track_small')), 'Ctrl+T')
 
-        self.action_toggle_random_mode = kdeui.KAction('Toggle random mode',
-                qt.QIconSet(util.get_png('random_small')),
-                kdecore.KShortcut('Ctrl+R'), self.random.mousePressEvent,
-                minirok.Globals.action_collection, 'action_toggle_random_mode')
+        self.action_toggle_random_mode = util.create_action('action_toggle_random_mode',
+                'Toggle random mode', self.random.mousePressEvent,
+                QtGui.QIcon(util.get_png('random_small')), 'Ctrl+R')
 
     def slot_update(self):
         self.elapsed = minirok.Globals.engine.get_position()
@@ -192,13 +186,13 @@ class MultiIconLabel(QtGui.QLabel, util.HasConfig):
         if icons is not None:
             self.icons = list(icons)
         else:
-            self.icons = [ qt.QPixmap() ]
+            self.icons = [ QtGui.QPixmap() ]
 
         self.tooltips = list(tooltips)
         self.tooltips += [ None ] * (len(self.icons) - len(self.tooltips))
 
         if self.CONFIG_OPTION is not None:
-            config = minirok.Globals.config(self.CONFIG_SECTION)
+            config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
             value = util.kurl_to_path(config.readEntry(self.CONFIG_OPTION, '0'))
             try:
                 self.state = int(value) - 1
@@ -222,9 +216,9 @@ class MultiIconLabel(QtGui.QLabel, util.HasConfig):
         tooltip = self.tooltips[self.state]
 
         if tooltip is not None:
-            qt.QToolTip.add(self, tooltip)
+            self.setToolTip(tooltip)
         else:
-            qt.QToolTip.remove(self)
+            self.setToolTip('')
 
         self.emit(QtCore.SIGNAL('clicked(int)'), self.state)
 
@@ -234,8 +228,8 @@ class MultiIconLabel(QtGui.QLabel, util.HasConfig):
 
     def slot_save_config(self):
         if self.CONFIG_OPTION is not None:
-            config = minirok.Globals.config(self.CONFIG_SECTION)
-            config.writeEntry(self.CONFIG_OPTION, self.state)
+            config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+            config.writeEntry(self.CONFIG_OPTION, QtCore.QVariant(self.state))
 
 class RepeatLabel(MultiIconLabel):
     CONFIG_OPTION = 'RepeatMode'
@@ -248,7 +242,7 @@ class RepeatLabel(MultiIconLabel):
 
     def __init__(self, parent):
         icons = [
-                kdecore.SmallIcon('bottom'),
+                kdeui.KIcon('go-bottom').pixmap(16),
                 util.get_png('repeat_track_small'),
                 util.get_png('repeat_playlist_small'),
         ]
@@ -267,7 +261,7 @@ class RandomLabel(MultiIconLabel):
 
     def __init__(self, parent):
         icons = [
-                kdecore.SmallIcon('forward'),
+                kdeui.KIcon('go-next').pixmap(16),
                 util.get_png('random_small'),
         ]
         tooltips = [
