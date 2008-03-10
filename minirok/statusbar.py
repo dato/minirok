@@ -242,7 +242,8 @@ class RepeatLabel(MultiIconLabel):
 
     def __init__(self, parent):
         icons = [
-                kdeui.KIcon('go-bottom').pixmap(16),
+                kdeui.KIcon('go-bottom').pixmap(16,
+                    QtGui.QIcon.Active, QtGui.QIcon.Off),
                 util.get_png('repeat_track_small'),
                 util.get_png('repeat_playlist_small'),
         ]
@@ -261,7 +262,8 @@ class RandomLabel(MultiIconLabel):
 
     def __init__(self, parent):
         icons = [
-                kdeui.KIcon('go-next').pixmap(16),
+                kdeui.KIcon('go-next').pixmap(16,
+                    QtGui.QIcon.Active, QtGui.QIcon.Off),
                 util.get_png('random_small'),
         ]
         tooltips = [
