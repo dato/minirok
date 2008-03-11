@@ -81,7 +81,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
         # Other
         self.action_toggle_window = util.create_action('action_toggle_window',
-                'Show/Hide window', self.systray.toggleActive, global_shortcut='Ctrl+Alt+U') # XXX-KDE4 Ctrl+Alt+M
+                'Show/Hide window', self.systray.toggleActive, global_shortcut='Ctrl+Alt+M')
 
         return # XXX-KDE4
 

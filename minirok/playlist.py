@@ -310,7 +310,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 self.slot_pause, 'media-playback-pause', factory=kdeui.KToggleAction)
 
         self.action_play_pause = util.create_action('action_play_pause', 'Play/Pause',
-                self.slot_play_pause, 'media-playback-start', 'Ctrl+P',# 'Ctrl+Alt+P',
+                self.slot_play_pause, 'media-playback-start', 'Ctrl+P', 'Ctrl+Alt+P',
                 factory=kdeui.KToggleAction)
 
         self.action_stop = util.create_action('action_stop', 'Stop',
