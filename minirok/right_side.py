@@ -27,6 +27,7 @@ class RightSide(QtGui.QWidget):
 
         vlayout = QtGui.QVBoxLayout()
         vlayout.setSpacing(0)
+        vlayout.setContentsMargins(4, 4, 4, 4)
         # vlayout.addWidget(self.playlist_search)
         vlayout.addWidget(self.playlistview)
         vlayout.addWidget(self.stretchtoolbar)
