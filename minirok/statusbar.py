@@ -38,6 +38,7 @@ class StatusBar(kdeui.KStatusBar):
         self.slider.setMaximumWidth(150)
         self.slider.setFocusPolicy(QtCore.Qt.NoFocus)
 
+        self.setContentsMargins(0, 0, 4, 0)
         self.addPermanentWidget(self.repeat, 0)
         self.addPermanentWidget(self.random, 0)
         self.addPermanentWidget(self.label1, 0)
