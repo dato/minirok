@@ -58,7 +58,7 @@ class PlaylistSearchLine(util.SearchLineWithReturnKey):
         self.timer = QtCore.QTimer(self)
         self.timer.setSingleShot(True)
         self.connect(self.timer, QtCore.SIGNAL('timeout()'),
-                lambda: playlist.slot_list_changed) # XXX-KDE4 lambda
+                playlist.slot_list_changed)
 
     def updateSearch(self, *args):
         util.SearchLineWithReturnKey.updateSearch(self, *args)
