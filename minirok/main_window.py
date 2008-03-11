@@ -14,10 +14,14 @@ from minirok import left_side, right_side, statusbar, util # XXX-KDE4 preference
 
 ##
 
-class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
+class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
+
+    CONFIG_SECTION = 'MainWindow'
+    CONFIG_OPTION_SPLITTER_STATE = 'splitterState'
 
     def __init__ (self, *args):
         kdeui.KXmlGuiWindow.__init__(self, *args)
+        util.HasConfig.__init__(self)
         util.HasGUIConfig.__init__(self)
 
         minirok.Globals.action_collection = self.actionCollection()
@@ -29,6 +33,11 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
 
         self.statusbar = statusbar.StatusBar(self)
         self.setStatusBar(self.statusbar)
+
+        config = kdecore.KGlobal.config().group('MainWindow')
+        value = config.readEntry(self.CONFIG_OPTION_SPLITTER_STATE,
+                                    QtCore.QVariant(QtCore.QByteArray()))
+        self.main_view.restoreState(value.toByteArray())
 
         self.init_systray()
         self.init_actions()
@@ -157,6 +166,10 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasGUIConfig):
             self.connect(dialog, qt.SIGNAL('settingsChanged()'),
                     util.HasGUIConfig.settings_changed)
             dialog.show()
+
+    def slot_save_config(self):
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writeEntry(self.CONFIG_OPTION_SPLITTER_STATE, self.main_view.saveState())
 
     ##
 
