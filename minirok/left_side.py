@@ -25,7 +25,7 @@ class LeftSide(QtGui.QWidget):
 
         layout = QtGui.QVBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(4, 4, 4, 0)
         layout.addWidget(self.tree_search)
         layout.addWidget(self.combo_toolbar)
         layout.addWidget(self.tree_view)
