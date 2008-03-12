@@ -34,7 +34,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         self.statusbar = statusbar.StatusBar(self)
         self.setStatusBar(self.statusbar)
 
-        config = kdecore.KGlobal.config().group('MainWindow')
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
         value = config.readEntry(self.CONFIG_OPTION_SPLITTER_STATE,
                                     QtCore.QVariant(QtCore.QByteArray()))
         self.main_view.restoreState(value.toByteArray())
