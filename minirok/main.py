@@ -73,7 +73,7 @@ def main():
 
     # See the "Known bugs" section in README.Bugs
     if QtGui.QApplication.style().objectName() == 'oxygen':
-        QtGui.QApplication.setStyle('Plastique')
+        QtGui.QApplication.setStyle('Cleanlooks')
 
     # XXX-KDE4
     # application.dcopClient().registerAs('minirok', False) # False: do not add PID
