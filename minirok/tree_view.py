@@ -400,7 +400,7 @@ def _my_listdir(path):
     try:
         mtime = os.stat(path).st_mtime
     except OSError, e:
-        minirok.logger.warn('cout not stat %r: %s', path, e.strerror)
+        minirok.logger.warn('could not stat %r: %s', path, e.strerror)
         _my_listdir_cache.setdefault(path, (None, {}))
         return
 
