@@ -20,8 +20,6 @@ APPS=`kde4-config --expandvars --install data`
 ICONS=`kde4-config --expandvars --install icon`
 DESKTOP=`kde4-config --expandvars --install xdgdata-apps`
 MINIROK="$APPS/minirok"
-KHOTKEYS="$APPS/khotkeys" # XXX-KDE4
-KCONF_UPDATE="$APPS/kconf_update" # XXX-KDE4
 KONQUEROR_SERVICE_MENU="$APPS/konqueror/servicemenus"
 
 ##
@@ -89,8 +87,6 @@ case "$1" in
 	install_icons images/icons/private "$MINIROK/icons"
 	install_file config/minirokui.rc "$MINIROK"
 	install_file config/minirok.desktop "$DESKTOP"
-	install_file config/minirok.khotkeys "$KHOTKEYS"
-	install_file config/khotkeys_minirok.upd "$KCONF_UPDATE"
 	install_file config/minirok_append.desktop "$KONQUEROR_SERVICE_MENU"
 	install_symlink "$PREFIX/share/minirok/minirok.py" "$BIN/minirok"
 	;;

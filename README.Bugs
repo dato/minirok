@@ -52,3 +52,9 @@ bugs that can/should get fixed someday are documented in the TODO file.
     There is a bug in the PyKDE bindings whereas the text of the menus
     is not displayed with Oxygen. Since that decreases the usability of
     Minirok, I'm setting the style to Plastique while this gets fixed.
+
+  * One can't configure multi-key global shortcuts.
+
+    This is because KDE 4 no longer supports multi-key shortcuts AFAIK.
+    Upstream says there is a bit of hope, but not much, since they don't
+    think the usefulness/cost ratio is worth it.

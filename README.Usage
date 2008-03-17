@@ -42,30 +42,6 @@ Finally, there is a toggleWindow function, which hides/shows the main
 window.
 
 
-Global shortcuts XXX-KDE4
-================
-
-One of the top items in the list of features I wanted was global shortcuts,
-since I can't live without them. However, having them directly supported
-in the application turned out impossible, because there's a bug in PyKDE
-that makes the program crash when they're used. (See gaccel.py in the
-pykde-bugs/ directory for an example and a link to a mailing list thread.
-With a bit of luck, the Python bindings for KDE 4 won't suffer from this
-bug.)
-
-So the next option is using KHotKeys and DCOP. A default set of bindings
-is provided, but it is disabled by default. To activate it, go to
-Control Centre -> Regional & Accessibility -> Input Actions; there
-should be a "Minirok" group there. Uncheck the "Disable" box, and voilà.
-You can of course change the default keys.
-
-If a Minirok group is not available, this probably means you're running
-Minirok directly from the source tree, or that something went wrong with
-kconf_update. You can go to the General Settings tab, and import directly
-minirok.khotkeys by specifying the full path to its location (in the
-source tree is in the config/ subdirectory).
-
-
 Regular expressions
 ===================
 
