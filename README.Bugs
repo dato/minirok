@@ -47,7 +47,7 @@ bugs that can/should get fixed someday are documented in the TODO file.
     configured -- KDE does not support configuring shortcuts for
     QActions at the moment.)
 
-  * Minirok sets the style to Plastique instead of Oxygen.
+  * Minirok sets the style to Cleanlooks instead of Oxygen.
 
     There is a bug in the PyKDE bindings whereas the text of the menus
     is not displayed with Oxygen. Since that decreases the usability of
