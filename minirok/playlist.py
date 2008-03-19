@@ -92,14 +92,23 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         row = index.row()
         column = index.column()
 
-        if (role != Qt.DisplayRole
-                or not index.isValid()
+        if (not index.isValid()
                 or row > self._row_count
                 or column > self._column_count):
             return QtCore.QVariant()
-        else:
+
+        elif role == Qt.DisplayRole:
             return QtCore.QVariant(QtCore.QString(
                         self._itemlist[row].tag_by_index(column) or ''))
+
+        elif role == Qt.TextAlignmentRole:
+            c = PlaylistItem.ALLOWED_TAGS[column]
+            if c == 'Track':
+                return QtCore.QVariant(Qt.AlignHCenter)
+            elif c == 'Length':
+                return QtCore.QVariant(Qt.AlignRight)
+
+        return QtCore.QVariant()
 
     def headerData(self, section, orientation, role):
         if (role == Qt.DisplayRole and orientation == Qt.Horizontal):
