@@ -963,8 +963,7 @@ class PlaylistView(QtGui.QTreeView):
     ##
 
     def selected_rows(self):
-        # The set is needed here because there is an index per row/column
-        return set(x.row() for x in self.selectedIndexes())
+        return set(x.row() for x in self.selectionModel().selectedRows())
 
     def unselected_rows(self):
         selected = self.selected_rows()
