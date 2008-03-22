@@ -3,7 +3,7 @@ Section: kde
 Priority: optional
 Maintainer: Adeodato Simó <dato@net.com.org.es>
 Build-Depends: debhelper, python, kdelibs4c2a
-Standards-Version: 3.7.2
+Standards-Version: 3.7.3
 Homepage: http://chistera.yi.org/~adeodato/code/minirok
 XS-Vcs-Bzr: http://chistera.yi.org/~adeodato/code/minirok/minirok.stable
 
