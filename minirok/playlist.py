@@ -883,37 +883,23 @@ class Proxy(proxy.Model):
 
     ##
 
-    def map(method):
-        def wrapper(self, index):
-            index = self.mapToSource(index)
-            return getattr(self.sourceModel(), method.func_name)(index)
-        return wrapper
-
-    def map_many(method):
-        def wrapper(self, indexes):
-            indexes = map(self.mapToSource, indexes)
-            return getattr(self.sourceModel(), method.func_name)(indexes)
-        return wrapper
-
-    ##
-
-    @map
+    @proxy._map
     def toggle_enqueued(self, index):
         pass
 
-    @map
+    @proxy._map
     def toggle_stop_after(self, index):
         pass
 
-    @map
+    @proxy._map
     def slot_activate_index(self, index):
         pass
 
-    @map_many
+    @proxy._map_many
     def removeItemsCmd(self, indexes):
         pass
 
-    @map_many
+    @proxy._map_many
     def toggle_enqueued_many(self, indexes):
         pass
 

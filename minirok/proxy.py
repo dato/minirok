@@ -69,6 +69,22 @@ class Model(QtGui.QSortFilterProxyModel):
 
 ##
 
+def _map(method):
+    """Decorator to invoke a method in sourceModel(), mapping one index."""
+    def wrapper(self, index):
+        index = self.mapToSource(index)
+        return getattr(self.sourceModel(), method.func_name)(index)
+    return wrapper
+
+def _map_many(method):
+    """Decorator to invoke a method in sourceModel(), mapping a list of indexes."""
+    def wrapper(self, indexes):
+        indexes = map(self.mapToSource, indexes)
+        return getattr(self.sourceModel(), method.func_name)(indexes)
+    return wrapper
+
+##
+
 class LineWidget(QtGui.QWidget):
 
     def __init__(self, parent=None):
