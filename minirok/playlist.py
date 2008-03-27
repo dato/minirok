@@ -871,6 +871,10 @@ class Proxy(proxy.Model):
     def setSourceModel(self, model):
         proxy.Model.setSourceModel(self, model)
 
+        self.connect(model, QtCore.SIGNAL('scroll_needed'),
+                lambda index: self.emit(QtCore.SIGNAL('scroll_needed'),
+                                self.mapFromSource(index)))
+
         # XXX dataChanged() abuse here too...
         self.connect(model, QtCore.SIGNAL('repaint_needed'),
             lambda: self.emit(QtCore.SIGNAL(
