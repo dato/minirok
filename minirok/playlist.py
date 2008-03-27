@@ -28,8 +28,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     RoleQueryIsPlaying   = Qt.UserRole + 3
     RoleQueryIsStopAfter = Qt.UserRole + 4
 
-    def __init__(self, *args):
-        QtCore.QAbstractTableModel.__init__(self, *args)
+    def __init__(self, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
         util.HasConfig.__init__(self)
         # util.HasGUIConfig.__init__(self)
 
@@ -978,10 +978,10 @@ class StopAction(kdeui.KToolBarPopupAction):
 
 class PlaylistView(QtGui.QTreeView):
 
-    def __init__(self, playlist):
-        QtGui.QTreeView.__init__(self)
+    def __init__(self, parent=None):
+        QtGui.QTreeView.__init__(self, parent)
 
-        self.setModel(playlist)
+        self.setHeader(Columns(self))
         self.setRootIsDecorated(False)
         self.setDropIndicatorShown(True)
         self.setAllColumnsShowFocus(True)
@@ -989,12 +989,12 @@ class PlaylistView(QtGui.QTreeView):
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.ExtendedSelection)
 
-        columns = Columns(self)
-        self.setHeader(columns)
-        columns.setup_from_config()
+    def setModel(self, playlist):
+        QtGui.QTreeView.setModel(self, playlist)
+        self.header().setup_from_config()
 
-        for c in range(self.model().columnCount()):
-            if self.model().headerData(c, Qt.Horizontal,
+        for c in range(playlist.columnCount()):
+            if playlist.headerData(c, Qt.Horizontal,
                     Qt.DisplayRole).toString() == 'Track':
                 self.track_delegate = PlaylistTrackDelegate()
                 self.setItemDelegateForColumn(c, self.track_delegate)

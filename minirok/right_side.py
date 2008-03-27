@@ -17,23 +17,28 @@ class RightSide(QtGui.QWidget):
     def __init__(self, parent, main_window):
         QtGui.QWidget.__init__(self, parent)
 
-        self.playlist = playlist.Playlist()
         self.proxy = playlist.Proxy()
-        self.proxy.setFilterKeyColumn(-1) # all
-        self.proxy.setSourceModel(self.playlist)
-        self.playlistview = playlist.PlaylistView(self.proxy)
-        self.playlist.selection_model = self.playlistview.selectionModel() # ...
+        self.playlist = playlist.Playlist()
+        self.playlist_view = playlist.PlaylistView(self)
 
         self.stretchtoolbar = QtGui.QWidget()
         self.playlist_search = proxy.LineWidget()
         self.toolbar = kdeui.KToolBar('playlistToolBar', main_window,
                                                 QtCore.Qt.BottomToolBarArea)
 
+        self.proxy.setFilterKeyColumn(-1) # all
+        self.proxy.setSourceModel(self.playlist)
+        self.playlist_view.setModel(self.proxy)
+        self.playlist_search.searchLine().setProxyModel(self.proxy)
+
+        self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
+        self.playlist.selection_model = self.playlist_view.selectionModel() # ...
+
         vlayout = QtGui.QVBoxLayout()
         vlayout.setSpacing(0)
         vlayout.setContentsMargins(4, 4, 4, 0)
         vlayout.addWidget(self.playlist_search)
-        vlayout.addWidget(self.playlistview)
+        vlayout.addWidget(self.playlist_view)
         vlayout.addWidget(self.stretchtoolbar)
         self.setLayout(vlayout)
 
@@ -42,9 +47,6 @@ class RightSide(QtGui.QWidget):
         hlayout.addWidget(self.toolbar)
         hlayout.setContentsMargins(0, 0, 0, 0)
         self.stretchtoolbar.setLayout(hlayout)
-
-        self.playlist_search.searchLine().setProxyModel(self.proxy)
-        self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
 
         self.connect(self.playlist_search.searchLine(),
                 QtCore.SIGNAL('returnPressed(const QString &)'),
