@@ -13,7 +13,7 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kdeui, kdecore
 
 import minirok
-from minirok import drag, engine, tag_reader, util
+from minirok import drag, engine, proxy, tag_reader, util
 
 ##
 
@@ -468,7 +468,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def slot_clear(self):
         ClearItemlistCmd(self)
 
-    def slot_activate_index(self, index):
+    def slot_activate_index(self, index): # proxy reimplements this too
         self.maybe_populate_random_queue()
         self.current_item = self._itemlist[index.row()]
         self.slot_play()
@@ -478,14 +478,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
         if current not in (self.FIRST_ITEM, None):
             self.toggle_stop_after_item(current)
-
-    # XXX-KDE4 TODO
-    def slot_play_first_visible(self, search_string):
-        if not unicode(search_string).strip():
-            return
-        self.current_item = qt.QListViewItemIterator(self,
-                qt.QListViewItemIterator.Visible).current()
-        self.slot_play()
 
     def slot_update_tags(self):
         rows = []
@@ -874,6 +866,55 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
 ##
 
+class Proxy(proxy.Model):
+
+    def setSourceModel(self, model):
+        proxy.Model.setSourceModel(self, model)
+
+        # XXX dataChanged() abuse here too...
+        self.connect(model, QtCore.SIGNAL('repaint_needed'),
+            lambda: self.emit(QtCore.SIGNAL(
+                'dataChanged(const QModelIndex &, const QModelIndex &)'),
+                    self.index(0, 0), self.index(1, self.columnCount())))
+
+    ##
+
+    def map(method):
+        def wrapper(self, index):
+            index = self.mapToSource(index)
+            return getattr(self.sourceModel(), method.func_name)(index)
+        return wrapper
+
+    def map_many(method):
+        def wrapper(self, indexes):
+            indexes = map(self.mapToSource, indexes)
+            return getattr(self.sourceModel(), method.func_name)(indexes)
+        return wrapper
+
+    ##
+
+    @map
+    def toggle_enqueued(self, index):
+        pass
+
+    @map
+    def toggle_stop_after(self, index):
+        pass
+
+    @map
+    def slot_activate_index(self, index):
+        pass
+
+    @map_many
+    def removeItemsCmd(self, indexes):
+        pass
+
+    @map_many
+    def toggle_enqueued_many(self, indexes):
+        pass
+
+##
+
 class RepeatMode:
     NONE = object()
     TRACK = object()
@@ -966,9 +1007,6 @@ class PlaylistView(QtGui.QTreeView):
 
         self.connect(playlist, QtCore.SIGNAL('scroll_needed'),
                                 lambda index: self.scrollTo(index))
-
-        # ok, this is a bit gross
-        playlist.selection_model = self.selectionModel()
 
     ##
 

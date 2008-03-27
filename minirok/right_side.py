@@ -8,7 +8,7 @@ from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
 
 import minirok
-from minirok import playlist, util
+from minirok import playlist, proxy, util
 
 ##
 
@@ -18,17 +18,21 @@ class RightSide(QtGui.QWidget):
         QtGui.QWidget.__init__(self, parent)
 
         self.playlist = playlist.Playlist()
+        self.proxy = playlist.Proxy()
+        self.proxy.setFilterKeyColumn(-1) # all
+        self.proxy.setSourceModel(self.playlist)
+        self.playlistview = playlist.PlaylistView(self.proxy)
+        self.playlist.selection_model = self.playlistview.selectionModel() # ...
+
         self.stretchtoolbar = QtGui.QWidget()
-        self.playlistview = playlist.PlaylistView(self.playlist)
+        self.playlist_search = proxy.LineWidget()
         self.toolbar = kdeui.KToolBar('playlistToolBar', main_window,
                                                 QtCore.Qt.BottomToolBarArea)
-        # XXX-KDE4
-        # self.playlist_search = PlaylistSearchLineWidget(None, self.playlist)
 
         vlayout = QtGui.QVBoxLayout()
         vlayout.setSpacing(0)
         vlayout.setContentsMargins(4, 4, 4, 0)
-        # vlayout.addWidget(self.playlist_search)
+        vlayout.addWidget(self.playlist_search)
         vlayout.addWidget(self.playlistview)
         vlayout.addWidget(self.stretchtoolbar)
         self.setLayout(vlayout)
@@ -39,34 +43,16 @@ class RightSide(QtGui.QWidget):
         hlayout.setContentsMargins(0, 0, 0, 0)
         self.stretchtoolbar.setLayout(hlayout)
 
+        self.playlist_search.searchLine().setProxyModel(self.proxy)
         self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
 
-        # XXX-KDE4
-        # self.connect(self.playlist_search.searchLine(),
-                # QtCore.SIGNAL('returnPressed(const QString &)'),
-                # self.playlist.slot_play_first_visible)
+        self.connect(self.playlist_search.searchLine(),
+                QtCore.SIGNAL('returnPressed(const QString &)'),
+                self.slot_play_first_visible)
 
         minirok.Globals.playlist = self.playlist
 
-##
-
-class PlaylistSearchLine(util.SearchLineWithReturnKey):
-    """A search line that calls Playlist.slot_list_changed when a search finishes."""
-
-    def __init__(self, parent, playlist):
-        util.SearchLineWithReturnKey.__init__(self, parent, playlist)
-        self.timer = QtCore.QTimer(self)
-        self.timer.setSingleShot(True)
-        self.connect(self.timer, QtCore.SIGNAL('timeout()'),
-                playlist.slot_list_changed)
-
-    def updateSearch(self, *args):
-        util.SearchLineWithReturnKey.updateSearch(self, *args)
-        self.timer.start(400)
-
-
-class PlaylistSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
-    """Same as super class, but with a PlaylistSearchLine widget."""
-
-    def createSearchLine(self, qtreewidget):
-        return PlaylistSearchLine(self, qtreewidget)
+    def slot_play_first_visible(self, string):
+        if len(unicode(string).strip()) > 0:
+            index = self.proxy.index(0, 0)
+            self.proxy.slot_activate_index(index)

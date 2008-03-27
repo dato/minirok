@@ -381,3 +381,34 @@ class SearchLineWithReturnKey(kdeui.KTreeWidgetSearchLine):
             return kdeui.KLineEdit.event(self, event)
         else:
             return kdeui.KTreeWidgetSearchLine.event(self, event)
+
+##
+
+class DelayedLineEdit(kdeui.KLineEdit):
+    """Emits a text changed signal once the user is done writing.
+
+    This class emits a "delayed_text_changed" signal once some time
+    has passed since the last key press from the user.
+    """
+
+    DELAY = 300 # ms
+    SIGNAL = QtCore.SIGNAL('delayed_text_changed')
+
+    def __init__(self, parent=None):
+        kdeui.KLineEdit.__init__(self, parent)
+        self._queued_signals = 0
+        self.setClearButtonShown(True)
+
+        self.connect(self, QtCore.SIGNAL('textChanged(const QString &)'),
+                self._queue_signal)
+
+    def _queue_signal(self, text):
+        self._queued_signals += 1
+        QtCore.QTimer.singleShot(self.DELAY, self._emit_signal)
+
+    def _emit_signal(self):
+        if self._queued_signals > 1:
+            self._queued_signals -= 1
+        else:
+            self._queued_signals = 0
+            self.emit(self.SIGNAL, QtCore.QString(self.text()))
