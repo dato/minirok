@@ -473,6 +473,12 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
         self.current_item = self._itemlist[index.row()]
         self.slot_play()
 
+    def slot_toggle_stop_after_current(self):
+        current = self.currently_playing or self.current_item
+
+        if current not in (self.FIRST_ITEM, None):
+            self.toggle_stop_after_item(current)
+
     # XXX-KDE4 TODO
     def slot_play_first_visible(self, search_string):
         if not unicode(search_string).strip():
@@ -595,12 +601,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def toggle_stop_after(self, index):
         assert index.isValid()
         self.toggle_stop_after_item(self._itemlist[index.row()])
-
-    def slot_toggle_stop_after_current(self):
-        current = self.currently_playing or self.current_item
-
-        if current not in (self.FIRST_ITEM, None):
-            self.toggle_stop_after_item(current)
 
     def toggle_enqueued(self, index):
         assert index.isValid()
