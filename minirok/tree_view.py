@@ -377,7 +377,7 @@ def _populate_tree(parent, directory, force_refresh=False):
         if stat.S_ISDIR(contents[filename].st_mode):
             item = DirectoryItem(parent, path)
             treewidget.empty_directories.add(item)
-        elif minirok.Globals.engine.can_play(path):
+        elif minirok.Globals.engine.can_play_path(path):
             FileItem(parent, path)
             prune_this_parent = False
 

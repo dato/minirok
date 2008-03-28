@@ -74,7 +74,7 @@ class GStreamerEngine(QtCore.QObject):
 
     ##
 
-    def can_play(self, path):
+    def can_play_path(self, path):
         """Return True if the engine can play the given file.
 
         This is done by looking at the extension of the file.

@@ -134,7 +134,7 @@ def playable_from_untrusted(files, warn=False):
                 for entry in contents:
                     append_path(os.path.join(path, entry))
         elif stat.S_ISREG(mode):
-            if minirok.Globals.engine.can_play(path):
+            if minirok.Globals.engine.can_play_path(path):
                 if path not in result:
                     result.append(path)
             else:
