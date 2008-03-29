@@ -8,7 +8,7 @@ from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
 
 import minirok
-from minirok import playlist, proxy, util
+from minirok import playlist, proxy
 
 ##
 
