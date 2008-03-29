@@ -1,0 +1,32 @@
+#! /bin/sh
+
+set -e
+
+rm_conffile () {
+    PKGNAME="$1"
+    CONFFILE="$2"
+
+    if [ -e "$CONFFILE" ]; then
+	md5sum=`md5sum "$CONFFILE" | awk '{print $1}'`
+	pristine_md5sum=`dpkg-query -W -f='${Conffiles}' $PKGNAME | sed -rne "s#^ $CONFFILE ([^ ]+).*#\\1#p"`
+	if [ "$md5sum" = "$pristine_md5sum" ]; then
+	    echo "Removing obsolete conffile $CONFFILE."
+	    rm -f "$CONFFILE"
+	else
+	     echo "Obsolete conffile $CONFFILE has local modifications."
+	     echo "Saving as $CONFFILE.dpkg-bak."
+	     mv -f "$CONFFILE" "$CONFFILE.dpkg-bak"
+	 fi
+    fi
+}
+
+
+case "$1" in
+    install|upgrade)
+	if dpkg --compare-versions "$2" lt 1; then
+	    rm_conffile minirok /etc/kde3/minirokrc
+	fi
+	;;
+esac
+
+#DEBHELPER#
