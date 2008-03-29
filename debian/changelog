@@ -1,6 +1,6 @@
-minirok (0.98-1) UNRELEASED; urgency=low
+minirok (2.0-1) UNRELEASED; urgency=low
 
-  * New upstream release, ported to KDE 4 now.
+  * New upstream release, ported to KDE 4 now (see the NEWS file for details).
 
  -- Adeodato Simó <dato@net.com.org.es>  Thu, 03 Jan 2008 17:11:18 +0100
 
