@@ -13,7 +13,8 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kdeui, kdecore
 
 import minirok
-from minirok import drag, engine, proxy, tag_reader, util
+from minirok.tree_view import DRAG_MIME_TYPE
+from minirok import engine, proxy, tag_reader, util
 
 ##
 
@@ -175,7 +176,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             files = map(util.kurl_to_path,
                             kdecore.KUrl.List.fromMimeData(mimedata))
 
-            if not mimedata.hasFormat(drag.FileListDrag.MIME_TYPE):
+            if not mimedata.hasFormat(DRAG_MIME_TYPE):
                 # Drop does not come from ourselves, so:
                 files = util.playable_from_untrusted(files, warn=False)
 

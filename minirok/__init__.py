@@ -28,6 +28,8 @@ __thanksto__    = [
         # ('Name', 'Task', 'Email', 'Webpage'),
         ('The Amarok developers', 'For their design and ideas, which I copied.\n'
          'And their code, which I frequently also copied.', '', 'http://amarok.kde.org'),
+        ('David Faure', 'Invaluable help on #kde-devel when dealing with KDirLister.',
+         'faure@kde.org', 'http://www.kdab.net/~dfaure'),
 ]
 
 __license__ = '''\

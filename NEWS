@@ -13,7 +13,26 @@
       - DBUS is used instead of DCOP, bla bla bla.
 	(TODO)
 
-  IMPROVEMENTS
+  TREE VIEW
+
+    * The tree view now uses KIO classes to read directory contents.
+      This means that any folder accessible by KDE can be listed
+      (however, they may not be playable because GStreamer is still
+      used: no Python bindings for Phonon exist yet).
+
+      Thanks to KIO, reading networked directories should not freeze the
+      interface any more.
+
+      Additionally, the KDirLister class used notifies the application
+      when files are added or removed from a directory, so there is no
+      need for the "Refresh" action anymore.
+
+      Finally, a button to disable crawling all the directory hierarchy
+      has been added. Such crawling is only needed for the search box to
+      work, which is now disabled by default. This should make Minirok
+      consume less memory for large music collections.
+
+  OTHER IMPROVEMENTS
 
     * Command line arguments that are directories will not be simply
       discarded, and all playable files underneath them will be added to

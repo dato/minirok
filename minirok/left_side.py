@@ -4,13 +4,11 @@
 # Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import os
-
 from PyQt4 import QtGui, QtCore
-from PyKDE4 import kio, kdeui, kdecore
+from PyKDE4 import kio, kdecore
 
 import minirok
-from minirok import tree_view, util
+from minirok import engine, proxy, tree_view, util
 
 ##
 
@@ -19,48 +17,60 @@ class LeftSide(QtGui.QWidget):
     def __init__(self, *args):
         QtGui.QWidget.__init__(self, *args)
 
-        self.tree_view = tree_view.TreeView()
-        self.combo_toolbar = kdeui.KToolBar(None)
-        self.tree_search = tree_view.TreeViewSearchLineWidget()
+        self.path_combo = MyComboBox(self)
+        self.search_foo = QtGui.QWidget(self)
+        self.tree_view = tree_view.TreeView(self)
 
         layout = QtGui.QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(4, 4, 4, 0)
-        layout.addWidget(self.tree_search)
-        layout.addWidget(self.combo_toolbar)
+        layout.addWidget(self.search_foo)
+        layout.addWidget(self.path_combo)
         layout.addWidget(self.tree_view)
         self.setLayout(layout)
 
-        self.path_combo = MyComboBox(self.combo_toolbar)
-        self.combo_toolbar.addWidget(self.path_combo)
-        self.combo_toolbar.setIconDimensions(16)
-        self.combo_toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
-        # self.combo_toolbar.setItemAutoSized(0) # XXX-KDE4 should be stretchabe or however it's called
+        self.search_widget = proxy.LineWidget()
+        self.button_action = 'Enable'
+        self.search_button = QtGui.QPushButton(self.button_action)
 
-        self.action_refresh = util.create_action('action_refresh_tree_view',
-                'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
-        self.combo_toolbar.addAction(self.action_refresh)
+        self.search_widget.setEnabled(False)
+        self.search_button.setEnabled(False)
+
+        layout2 = QtGui.QHBoxLayout()
+        layout2.setSpacing(0)
+        layout2.setContentsMargins(0, 0, 0, 0)
+        layout2.addWidget(self.search_widget)
+        layout2.addWidget(self.search_button)
+        self.search_foo.setLayout(layout2)
+
+        self.tree = tree_view.Model()
+        self.proxy = tree_view.Proxy()
+        self.proxy.setSourceModel(self.tree)
+        self.tree_view.setModel(self.proxy)
+        self.search_widget.searchLine().setProxyModel(self.proxy)
 
         self.action_focus_path_combo = util.create_action('action_path_combo_focus',
                 'Focus path combobox', self.path_combo.slot_focus, shortcut='Alt+O')
 
         ##
 
-        self.tree_search.searchLine().setTreeWidget(self.tree_view)
+        self.connect(self.tree, QtCore.SIGNAL('scan_in_progress'),
+                self.slot_model_does_scan)
 
-        self.connect(self.tree_search.searchLine(),
-                QtCore.SIGNAL('search_finished'),
-                self.tree_view.slot_search_finished)
+        self.connect(self.search_button, QtCore.SIGNAL('clicked(bool)'),
+                self.slot_do_button)
 
-        self.connect(self.tree_search.searchLine(),
+        self.connect(self.path_combo, QtCore.SIGNAL('change_url'),
+                self.tree.slot_change_url)
+
+        self.connect(self.search_widget.searchLine(),
                 QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.tree_view.slot_append_visible)
+                self.slot_append_visible)
 
-        self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
-                self.tree_search.slot_scan_in_progress)
-
-        self.connect(self.path_combo, QtCore.SIGNAL('new_directory_selected'),
-                self.tree_view.slot_show_directory)
+        # XXX-KDE4
+        # self.connect(self.search_widget.searchLine(),
+        #         QtCore.SIGNAL('search_finished'),
+        #         self.tree.slot_search_finished)
 
         ##
 
@@ -73,6 +83,38 @@ class LeftSide(QtGui.QWidget):
             width = self.path_combo.fontMetrics().width(text)
             self.path_combo.setEditText(text)
             self.path_combo.setMinimumWidth(width + 30) # add pixels for arrow
+
+    def slot_model_does_scan(self, scanning):
+        negated = not scanning
+        self.search_button.setHidden(negated)
+        self.search_widget.setEnabled(negated)
+        self.search_button.setEnabled(scanning)
+        self.button_action = self.tree.recurse and 'Stop scan' or 'Enable'
+        self.search_button.setText(self.button_action)
+
+    def slot_do_button(self):
+        enable = (self.button_action == 'Enable')
+        self.tree.recurse = enable
+        self.button_action = enable and 'Stop scan' or 'Enable'
+        self.search_button.setText(self.button_action)
+
+    def slot_append_visible(self, string):
+        if not unicode(string).strip():
+            # no-op if no filter active
+            return
+
+        playlist_was_empty = (minirok.Globals.playlist.rowCount() == 0)
+
+        parent = QtCore.QModelIndex()
+        indexes = [ self.proxy.index(row, 0, parent)
+                        for row in range(self.proxy.rowCount()) ]
+
+        files = map(util.kurl_to_path, self.proxy.urls_from_indexes(indexes))
+        minirok.Globals.playlist.add_files(files)
+
+        if (playlist_was_empty
+                and minirok.Globals.engine.status == engine.State.STOPPED):
+            minirok.Globals.action_collection.action('action_play').trigger()
 
 ##
 
@@ -106,18 +148,16 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
 
     def slot_set_url(self, url):
         if isinstance(url, kdecore.KUrl):
-            # We can only store QStrings
-            url = url.pathOrUrl()
+            # We can't store KUrls directly
+            url = url.url()
 
-        directory = util.kurl_to_path(url)
+        urls = self.urls()
+        urls.removeAll(url)
+        urls.prepend(url)
+        self.setUrls(urls, kio.KUrlComboBox.RemoveBottom)
 
-        if os.path.isdir(directory):
-            urls = self.urls()
-            urls.removeAll(url)
-            urls.prepend(url)
-            self.setUrls(urls, kio.KUrlComboBox.RemoveBottom)
-
-        self.emit(QtCore.SIGNAL('new_directory_selected'), directory)
+        # XXX emitting a kurl crashes here
+        self.emit(QtCore.SIGNAL('change_url'), url)
 
     def slot_save_config(self):
         self.config = kdecore.KGlobal.config()

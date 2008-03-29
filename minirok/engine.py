@@ -28,18 +28,21 @@ class GStreamerEngine(QtCore.QObject):
     SINK = 'alsasink'
 
     PLUGINS = {
-            'flac': [ '.flac' ],
-            'mad': [ '.mp3', ],
-            'musepack': [ '.mpc', '.mp+', ],
-            'vorbis': [ '.ogg' ],
+            'mad': ('audio/x-mp3', [ '.mp3' ]),
+            'flac': ('audio/x-flac', [ '.flac' ]),
+            'vorbis': ('audio/x-vorbis+ogg', [ '.ogg' ]),
+            'musepack': ('audio/x-musepack', [ '.mpc', '.mp+' ]),
     }
 
     def __init__(self):
         QtCore.QObject.__init__(self)
 
+        self._mime_types = []
         self._supported_extensions = []
-        for plugin, extensions in self.PLUGINS.items():
+
+        for plugin, (mime_type, extensions) in self.PLUGINS.items():
             if gst.registry_get_default().find_plugin(plugin) is not None:
+                self._mime_types.append(mime_type)
                 self._supported_extensions.extend(extensions)
 
         self.uri = None
@@ -72,6 +75,10 @@ class GStreamerEngine(QtCore.QObject):
     status = property(lambda self: self._status, _set_status)
 
     ##
+
+    def mime_types(self):
+        """Return a list of mime types supported by this engine."""
+        return self._mime_types[:]
 
     def can_play_path(self, path):
         """Return True if the engine can play the given file.

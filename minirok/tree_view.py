@@ -4,422 +4,549 @@
 # Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import os
-import re
-import stat
+import bisect
 
-from PyKDE4 import kdeui
+from PyQt4.QtCore import Qt
 from PyQt4 import QtGui, QtCore
+from PyKDE4 import kio, kdecore
 
 import minirok
-from minirok import drag, engine, util
+from minirok import proxy, util
+
+DRAG_MIME_TYPE = 'text/x-minirok-track-list'
+
+# TODO handle rename/refresh
+# TODO drop empty dirs
+# TODO auto open (see AUTOMATICALLY_EXPAND.diff)
+# TODO fetchMore(children) when expanding parent?
 
 ##
 
-class TreeView(QtGui.QTreeWidget):
+class TreeView(QtGui.QTreeView):
 
-    def __init__(self, *args):
-        QtGui.QTreeWidget.__init__(self, *args)
-        self.root = None
-        self.populating = False
-        self.populate_pending = None
-        self.empty_directories = set()
-        self.automatically_opened = set()
-
-        self.timer = QtCore.QTimer(self)
-        self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.slot_populate_done)
+    def __init__(self, parent=None):
+        QtGui.QTreeView.__init__(self, parent)
 
         self.header().hide()
+        self.setRootIsDecorated(True)
+        self.setAllColumnsShowFocus(True)
         self.setDragDropMode(self.DragOnly)
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionBehavior(self.SelectRows)
+        self.setSelectionMode(self.ExtendedSelection)
 
-        self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
+        self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
                 self.slot_append_selected)
 
-        self.connect(self, QtCore.SIGNAL('itemExpanded(QTreeWidgetItem *)'),
-                lambda item: item.repopulate())
-
-    ##
-
-    def selected_files(self):
-        """Returns a list of the selected files (reading directory contents)."""
-        def _add_item(item):
-            if item.IS_DIR:
-                item.repopulate() # meh, I don't like stat()'ing from here
-                for child in _get_children(item):
-                    _add_item(child)
-            else:
-                if item.path not in files:
-                    files.append(item.path)
-
-        files = []
-
-        for item in self.selectedItems():
-            _add_item(item)
-
-        return files
-
-    def visible_files(self):
-        files = []
-        iterator = QtGui.QTreeWidgetItemIterator(self,
-                            QtGui.QTreeWidgetItemIterator.NotHidden)
-
-        item = iterator.value()
-        while item:
-            if not item.IS_DIR:
-                files.append(item.path)
-            iterator += 1
-            item = iterator.value()
-
-        return files
-
-    ##
-
-    def slot_append_selected(self, item):
-        if item is not None: # maybe overzealous here
-            minirok.Globals.playlist.add_files(self.selected_files())
-
-    def slot_append_visible(self, search_string):
-        if not unicode(search_string).strip():
-            return
-
-        playlist_was_empty = bool(minirok.Globals.playlist.rowCount() == 0)
-        minirok.Globals.playlist.add_files(self.visible_files())
-
-        if (playlist_was_empty
-                and minirok.Globals.engine.status == engine.State.STOPPED):
-            minirok.Globals.action_collection.action('action_play').trigger()
-
-    ##
-
-    def slot_show_directory(self, directory):
-        """Changes the TreeView root to the specified directory.
-
-        If directory is the current root and there is no ongoing scan, a simple
-        refresh will be performed instead.
-        """
-        if directory != self.root or self.populating:
-            # Not refreshing
-            self.clear()
-            self.populate_pending = None
-            self.setSortingEnabled(False) # dog slow otherwise
-            self.empty_directories.clear()
-            self.automatically_opened.clear()
-            self.root = directory
-
-        def _directory_children(parent):
-            return _get_children(parent, lambda x: x.IS_DIR)
-
-        self.populating = True
-        _populate_tree(self.invisibleRootItem(), self.root)
-        self.sortItems(0, QtCore.Qt.AscendingOrder) # (¹)
-        self.emit(QtCore.SIGNAL('scan_in_progress'), True)
-
-        self.populate_pending = _directory_children(self.invisibleRootItem())
-        self.timer.start(0)
-
-        # (¹) There seems to be a bug somewhere, that if setSortingEnabled(True)
-        # is called, without calling some function like sortItems() where the
-        # SortOrder is specified, you get Descending by default. Beware.
-
-    def slot_refresh(self):
-        self.slot_show_directory(self.root)
-
-    def slot_populate_done(self):
-        def _directory_children(parent):
-            return _get_children(parent, lambda x: x.IS_DIR)
-
-        try:
-            item = self.populate_pending.pop(0)
-        except IndexError:
-            self.timer.stop()
-            self.populating = False
-            self.setSortingEnabled(True)
-            for item in self.empty_directories:
-                (item.parent() or self.invisibleRootItem()).removeChild(item)
-                del item # necessary?
-            self.empty_directories.clear()
-            self.emit(QtCore.SIGNAL('scan_in_progress'), False)
-        else:
-            _populate_tree(item, item.path)
-            self.populate_pending.extend(_directory_children(item))
-
-    def slot_search_finished(self, null_search):
-        """Open the visible items, closing items opened in the previous search.
-
-        Non-toplevel items with more than 5 children will not be opened.
-        If null_search is True, no items will be opened at all.
-        """
-        # make a list of selected and its parents, in order not to close them
-        selected = set()
-        iterator = QtGui.QTreeWidgetItemIterator(self,
-                            QtGui.QTreeWidgetItemIterator.Selected)
-        item = first_selected = iterator.value()
-        while item:
-            selected.add(item)
-            parent = item.parent()
-            while parent:
-                selected.add(parent)
-                parent = parent.parent()
-            iterator += 1
-            item = iterator.value()
-
-        for item in self.automatically_opened - selected:
-            item.setExpanded(False)
-
-        self.automatically_opened &= selected # keep them to close later
-
-        if null_search:
-            self.scrollToItem(first_selected)
-            return
-
-        ##
-
-        is_visible = lambda x: not x.isHidden()
-        pending = _get_children(self.invisibleRootItem(), is_visible)
-        toplevel_count = len(pending)
-        i = 0
-        while pending:
-            i += 1
-            item = pending.pop(0)
-            visible_children = _get_children(item, is_visible)
-            if ((i <= toplevel_count or len(visible_children) <= 5)
-                    and not item.isExpanded()):
-                item.setExpanded(True)
-                self.automatically_opened.add(item)
-            pending.extend(x for x in visible_children if x.IS_DIR)
-
-    ##
+    def slot_append_selected(self, index):
+        # self.setExpanded(index, not self.isExpanded(index))
+        minirok.Globals.playlist.add_files(
+                map(util.kurl_to_path,
+                    self.model().urls_from_indexes(self.selectedIndexes())))
 
     def startDrag(self, action):
-        dragobj = drag.FileListDrag(self.selected_files(), self)
+        mimedata = self.model().mimeData(self.selectedIndexes())
+        ntracks = len(mimedata.urls())
+
+        # display a "tooltip" with the number of tracks
+        text = '%d track%s' % (ntracks, ntracks > 1 and 's' or '')
+        metrics = self.fontMetrics()
+        width = metrics.width(text)
+        height = metrics.height()
+        ascent = metrics.ascent()
+
+        self.pixmap = QtGui.QPixmap(width+4, height) # "self" needed
+        self.pixmap.fill(self, 0, 0)
+        painter = QtGui.QPainter(self.pixmap)
+        painter.drawText(2, ascent+1, text)
+
+        dragobj = QtGui.QDrag(self)
+        dragobj.setMimeData(mimedata)
+        dragobj.setPixmap(self.pixmap)
+
         dragobj.exec_(action)
 
 ##
 
-class TreeViewItem(QtGui.QTreeWidgetItem):
+class Model(QtCore.QAbstractItemModel, util.HasConfig):
 
-    IS_DIR = 0 # TODO Use QTreeWidgetItem::type() instead?
+    CONFIG_SECTION = 'Tree View'
+    CONFIG_RECURSE_OPTION = 'RecurseScan'
 
-    def __init__(self, parent, path):
-        self.path = path
+    def __init__(self, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+        util.HasConfig.__init__(self)
 
-        dirname, self.filename = os.path.split(path)
-        QtGui.QTreeWidgetItem.__init__(self, parent,
-                [ util.unicode_from_path(self.filename) ])
+        # always points to the current root; not None initially so that
+        # rowCount() works from the beginning without special casing
+        self.root = DirectoryItem(kdecore.KUrl(), parent=None)
 
-        # optimization for TreeViewSearchLine.itemMatches() below
-        root = self.treeWidget().root
-        rel_path = re.sub('^%s/*' % re.escape(root), '', path)
-        self.unicode_rel_path = util.unicode_from_path(rel_path)
+        # a mapping kurl.addTrailingslash().url() to DirectoryItems; used from
+        # the dirLister slots to access the corresponding item; also, when
+        # changing roots, an existing root is searched here first
+        self.items = {}
 
-    def __lt__(self, other):
-        """Sorts directories before files, and by filename after that."""
-        return (other.IS_DIR, self.filename) < (self.IS_DIR, other.filename)
+        # a mapping root -> set() of DirectoryItems which have not been feed to
+        # the dirLister() yet; populate_next() pop()s from here and feeds to
+        # the dirLister; the sets gain items in _dirLister_new_items
+        self.pending = {}
 
+        # my precious
+        self.dirLister = kio.KDirLister(self)
 
-class FileItem(TreeViewItem):
-    pass
+        # sometimes we need to block until a certain directory has been
+        # completed by the dirLister; for that, caller sets block_kurl to the
+        # desired directory, and calls exec(); _dirLister_completed calls
+        # exit() as appropriate
+        self.block_kurl = None
+        self.event_loop = QtCore.QEventLoop(self)
 
+        # this will change to a random object() each time the limit pattern
+        # changes; if there is no active pattern, it will be None; items store
+        # it together with the "visible" flag to know if the flag value is
+        # still valid
+        self.patternId = None
 
-class DirectoryItem(TreeViewItem):
+        # whether we'll recurse into the directory hierarchy by ourselves, or
+        # only on demand; has a property below, which LeftSide uses
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        self._recurse = config.readEntry(
+                self.CONFIG_RECURSE_OPTION, QtCore.QVariant(False)).toBool()
 
-    IS_DIR = 1
+        ##
 
-    def __init__(self, parent, path):
-        TreeViewItem.__init__(self, parent, path)
-        self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+        self.dirLister.setMimeFilter(['inode/directory'] +
+                            minirok.Globals.engine.mime_types())
 
-    def repopulate(self):
-        """Force a repopulation of this item."""
-        _populate_tree(self, self.path, force_refresh=True)
+        self.connect(self.dirLister, QtCore.SIGNAL('newItems(const KFileItemList &)'),
+                self._dirLister_new_items)
 
-        if not self.childCount():
-            self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.DontShowIndicator)
-        else:
-            self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
+        self.connect(self.dirLister, QtCore.SIGNAL('completed(const KUrl &)'),
+                self._dirLister_completed)
 
-        if not self.treeWidget().isSortingEnabled():
-            self.sortChildren(0, QtCore.Qt.AscendingOrder)
+        self.connect(self.dirLister, QtCore.SIGNAL('deleteItem(const KFileItem &)'),
+                self._dirLister_delete_item)
 
-##
+    def _set_recurse(self, value):
+        if self._recurse ^ value:
+            self._recurse = bool(value)
+            if self._recurse:
+                self.populate_next()
 
-class TreeViewSearchLine(util.SearchLineWithReturnKey):
-    """Class to perform matches against a TreeViewItem.
-
-    The itemMatches() method is overriden to make a match against the full
-    relative path (with respect to the TreeView root directory) of the items,
-    plus the pattern is split in words and all have to match (instead of having
-    to match *in the same order*, as happens in the standard KListViewSearchLine.
-
-    When the user stops typing, a search_finished(bool empty_search) signal is
-    emitted.
-    """
-    def __init__(self, *args):
-        util.SearchLineWithReturnKey.__init__(self, *args)
-        self.string = None
-        self.regexes = []
-        self.timer = QtCore.QTimer(self)
-        self.timer.setSingleShot(True)
-
-        self.connect(self.timer, QtCore.SIGNAL('timeout()'),
-                self.slot_emit_search_finished)
-
-    def slot_emit_search_finished(self):
-        self.emit(QtCore.SIGNAL('search_finished'), self.string is None)
+    recurse = property(lambda self: self._recurse, _set_recurse)
 
     ##
 
-    def updateSearch(self, string):
-        # http://www.riverbankcomputing.com/pipermail/pyqt/2008-January/018314.html
-        if not isinstance(string, QtCore.QString):
-            return kdeui.KTreeWidgetSearchLine.updateSearch(self, string)
+    """Model functions."""
 
-        pystring = unicode(string).strip()
-        if pystring:
-            if pystring != self.string:
-                self.string = pystring
-                self.regexes = [ re.compile(re.escape(pat), re.I | re.U)
-                                               for pat in pystring.split() ]
+    def columnCount(self, parent):
+        return 1
+
+    def rowCount(self, parent):
+        if parent.column() > 0:
+            return 0
+        elif not parent.isValid():
+            item = self.root
         else:
-            self.string = None
+            item = parent.internalPointer()
 
-        kdeui.KTreeWidgetSearchLine.updateSearch(self, string)
-        self.timer.start(400)
+        return len(item.children)
 
-    def itemMatches(self, item, string):
-        # We don't need to do anything with the string parameter here because
-        # self.string and self.regexes are always set in updateSearch() above.
-        if self.string is None:
-            return True
+    def index(self, row, column, parent):
+        if not self.hasIndex(row, column, parent):
+            return QtCore.QModelIndex()
+
+        if not parent.isValid():
+            item = self.root
+        else:
+            item = parent.internalPointer()
 
         try:
-            item_text = item.unicode_rel_path
-        except AttributeError:
-            item_text = unicode(item.text(0))
+            return self.createIndex(row, column, item.children[row])
+        except IndexError:
+            return QtCore.QModelIndex()
 
-        for regex in self.regexes:
-            if not regex.search(item_text):
+    def parent(self, index):
+        if not index.isValid():
+            return QtCore.QModelIndex()
+
+        item = index.internalPointer()
+        parent = item.parent
+
+        if parent is self.root:
+            return QtCore.QModelIndex()
+        else:
+            return self.createIndex(parent.row(), 0, parent)
+
+    def data(self, index, role):
+        if not index.isValid():
+            return QtCore.QVariant()
+        else:
+            item = index.internalPointer()
+
+        if role == Qt.DisplayRole:
+            return QtCore.QVariant(item.name)
+        else:
+            return QtCore.QVariant()
+
+    def flags(self, index):
+        if index.isValid():
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled
+        else:
+            return Qt.ItemFlag()
+
+    def hasChildren(self, parent):
+        if not parent.isValid():
+            item = self.root
+        else:
+            item = parent.internalPointer()
+
+        if not item.IS_DIR:
+            return False
+        elif not item.populated:
+            return True
+        else:
+            return bool(item.children)
+
+    def canFetchMore(self, parent):
+        if not parent.isValid():
+            return False # self.root is always fetched
+        else:
+            item = parent.internalPointer()
+            if not item.IS_DIR:
                 return False
-        else:
-            return True
+            else:
+                return not item.populated
 
+    def fetchMore(self, parent):
+        if parent.isValid():
+            item = parent.internalPointer()
+            self.ensure_populated(item)
 
-class TreeViewSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
-    """Same as super class, but with a TreeViewSearchLine widget."""
+    def mimeData(self, indexes):
+        urls = self.urls_from_indexes(indexes)
+        self.mimedata = mimedata = QtCore.QMimeData() # "self" needed
+        kurllist = kdecore.KUrl.List(urls)
+        kurllist.populateMimeData(mimedata)
+        mimedata.setData(DRAG_MIME_TYPE, 'True')
+        return self.mimedata
 
-    def createSearchLine(self, qtreewidget):
-        return TreeViewSearchLine(self, qtreewidget)
+    def supportedDropActions(self):
+        return Qt.CopyAction | Qt.MoveAction
 
     ##
 
-    def slot_scan_in_progress(self, scanning):
-        """Disables itself with an informative tooltip while scanning."""
-        if scanning:
-            self.setToolTip('Search disabled while reading directory contents')
-        else:
-            self.setToolTip('')
+    """Generic slots."""
 
-        self.setEnabled(not scanning)
+    def slot_change_url(self, url):
+        """Changes the root of the model to the specified URL."""
+        kurl = kdecore.KUrl(url)
+        key = _urlkey(kurl)
+
+        try:
+            item = self.items[key]
+        except KeyError:
+            item = self.items[key] = DirectoryItem(kurl, parent=None)
+            self.pending[item] = set([ item ])
+        else:
+            if item is self.root:
+                return
+
+        self.root = item
+        self.reset()
+        self.emit(QtCore.SIGNAL('scan_in_progress'), True)
+        self.populate_next()
+
+    def populate_next(self):
+        try:
+            item = self.pending[self.root].pop()
+        except KeyError:
+            self.emit(QtCore.SIGNAL('scan_in_progress'), False)
+        else:
+            self.dirLister.openUrl(item.kurl, self.dirLister.Keep)
+
+    def slot_save_config(self):
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writeEntry(self.CONFIG_RECURSE_OPTION,
+                            QtCore.QVariant(self._recurse))
+
+    ##
+
+    """Slots for KDirLister."""
+
+    def _dirLister_new_items(self, entries):
+        key = _urlkey(entries[0].url(), up=True)
+        try:
+            item = self.items[key]
+        except KeyError:
+            minirok.logger.error('key not found in newItems: %r', unicode(key))
+            return
+
+        cls = [ FileItem, DirectoryItem ]
+        newitems = [ cls[e.isDir()](e.url(), item) for e in entries ]
+        newitems.sort()
+
+        if item.root is not self.root:
+            index = None
+            beginInsertRows = endInsertRows = lambda *x: None
+        else:
+            endInsertRows = self.endInsertRows
+            beginInsertRows = self.beginInsertRows
+
+            if item is self.root:
+                index = QtCore.QModelIndex()
+            else:
+                index = self.createIndex(item.row(), 0, item)
+
+        def myinsert(mylist, items):
+            """Insert items into mylist so that it remains sorted.
+
+            Both mylist and items must be sorted already. The function will
+            call begin/endInsertRows (defined above) as appropriate.
+            """
+            pos = bisect.bisect_right(mylist, items[0])
+            if mylist[pos:]:
+                upto = 1
+                for item in items[1:]:
+                    if item < mylist[pos+1]:
+                        upto += 1
+                    else:
+                        break
+            else:
+                upto = len(items)
+
+            beginInsertRows(index, pos, pos + upto - 1)
+            mylist[pos:0] = items[0:upto]
+            endInsertRows()
+
+            if items[upto:]:
+                myinsert(mylist, items[upto:])
+
+        myinsert(item.children, newitems)
+
+        ##
+
+        diritems = set(x for x in newitems if x.IS_DIR)
+        for diritem in diritems:
+            self.items[_urlkey(diritem.kurl)] = diritem
+
+        self.pending[item.root].update(diritems)
+
+    def _dirLister_completed(self, kurl):
+        key = _urlkey(kurl)
+
+        if (self.block_kurl is not None
+                and key == self.block_kurl.url()):
+            assert self.event_loop.isRunning()
+            self.block_kurl = None
+            self.event_loop.exit()
+
+        try:
+            item = self.items[key]
+        except KeyError:
+            minirok.logger.warn('key not found in completed: %r', unicode(key))
+        else:
+            item.populated = True
+            self.pending[item.root].discard(item) # err, don't we pop() above?
+
+        if self._recurse:
+            self.populate_next()
+
+    def _dirLister_delete_item(self, entry):
+        kurl = entry.url()
+        name = kurl.fileName()
+
+        key = _urlkey(kurl, up=True)
+        try:
+            item = self.items[key]
+        except KeyError:
+            minirok.logger.error('key not found in deleteItem: %r', unicode(key))
+            return
+
+        for i, child in enumerate(item.children):
+            if name == child.kurl.fileName():
+                if item.root is not self.root:
+                    index = None
+                    beginRemoveRows = endRemoveRows = lambda *x: None
+                else:
+                    endRemoveRows = self.endRemoveRows
+                    beginRemoveRows = self.beginRemoveRows
+
+                    if item is self.root:
+                        index = QtCore.QModelIndex()
+                    else:
+                        index = self.createIndex(item.row(), 0, item)
+
+                beginRemoveRows(index, i, i)
+                item.children.pop(i)
+                endRemoveRows()
+                break
+        else:
+            minirok.logger.warn('unknown item to delete: %s', kurl.prettyUrl())
+
+    ##
+
+    """Other."""
+
+    def ensure_populated(self, item):
+        if item.populated:
+            return
+
+        self.block_kurl = item.kurl
+        self.dirLister.openUrl(item.kurl, self.dirLister.Keep) # XXX racy?
+        self.event_loop.exec_(QtCore.QEventLoop.ExcludeUserInputEvents)
+
+    def urls_from_indexes(self, indexes):
+        kurls = []
+        items = [ x.internalPointer() for x in indexes ]
+
+        def _add_item(item):
+            if item.IS_DIR:
+                self.ensure_populated(item)
+                for child in item.children:
+                    _add_item(child)
+            elif self.patternId is None or item.visible[0]:
+                kurl = item.kurl
+                if kurl not in kurls:
+                    kurls.append(kurl)
+
+        for item in items:
+            _add_item(item)
+
+        return kurls
+
+    ##
+
+    """Filtering, outsourced from the Proxy below."""
+
+    def invalidateFilter(self, clear_filter):
+        self.patternId = not clear_filter and object() or None
+
+    def filterAcceptsIndex(self, index, regexes):
+        def update_item(item):
+            if item.IS_DIR:
+                visible = False
+                for i in item.children:
+                    visible |= update_item(i)
+            else:
+                for regex in regexes:
+                    if not regex.search(item.relpath):
+                        visible = False
+                        break
+                else:
+                    visible = True
+
+            item.visible = (visible, self.patternId)
+            return visible
+
+        ##
+
+        # item = index.internalPointer()
+
+        if self.patternId is None:
+            return True
+        else:
+            item = index.internalPointer()
+            visible, patternId = item.visible
+
+            if patternId is not self.patternId:
+                visible = update_item(item)
+
+            return visible
 
 ##
 
-def _get_children(toplevel, filter_func=None):
-    """Returns a filtered list of all direct children of toplevel.
+class Proxy(proxy.Model):
 
-    :param filter_func: Only include children for which this function returns
-        true. If None, all children will be returned.
-    """
-    return [ item for item in map(toplevel.child, range(toplevel.childCount()))
-                if filter_func is None or filter_func(item) ]
+    # OK, this is a bit dumb. We don't let this proxy do sorting, and cook it
+    # up ourselves in _dirLister_new_items(), so that urls_from_indexes() has
+    # access to sorted data. And we can't use the stock filterAcceptsRow()
+    # because that hides parents that have visible children (grrr), so we
+    # provide an implementation that outsources the matching to the source
+    # model...
 
-def _populate_tree(parent, directory, force_refresh=False):
-    """A helper function to populate either a TreeView or a DirectoryItem.
+    @proxy._map
+    def hasChildren(self, parent):
+        pass
 
-    When populating, this function sets parent.mtime, and when invoked later on
-    the same parent, it will return immediately if the mtime of directory is
-    not different. If it is different, a refresh will be performed, keeping as
-    many existing children as possible.
+    @proxy._map_many
+    def urls_from_indexes(self, indexes):
+        pass
 
-    It updates TreeView's empty_directories set as appropriate.
-    """
-    _my_listdir(directory)
-    mtime, contents = _my_listdir_cache[directory]
+    ##
 
-    if mtime == getattr(parent, 'mtime', None):
-        return
-    else:
-        parent.mtime = mtime
-        prune_this_parent = True
-        files = set(contents.keys())
+    def setPattern(self, pattern):
+        self.sourceModel().invalidateFilter(
+                clear_filter=not unicode(pattern).strip())
+        proxy.Model.setPattern(self, pattern)
 
-    # Check filesystem contents against existing children
-    # TODO What's up with prune_this_parent when refreshing.
-    children = _get_children(parent)
-    if children:
-        # map { basename: item }, to compare with files
-        mapping = dict((i.filename, i) for i in children)
-        keys = set(mapping.keys())
-        common = files & keys
+    def filterAcceptsRow(self, row, parent):
+        source = self.sourceModel()
+        return source.filterAcceptsIndex(
+                source.index(row, 0, parent), self.regexes)
 
-        # Remove items no longer found in the filesystem
-        for k in keys - common:
-            parent.removeChild(mapping[k])
+##
 
-        # Do not re-add items already in the tree view
-        files -= common
+class TreeItem(object):
 
-    # Pointer to the parent QTreeWidget, for empty_directories
-    treewidget = parent.treeWidget()
+    __slots__ = [ 'kurl', 'parent', 'name', 'relpath', 'visible' ]
 
-    for filename in files:
-        path = os.path.join(directory, filename)
-        if stat.S_ISDIR(contents[filename].st_mode):
-            item = DirectoryItem(parent, path)
-            treewidget.empty_directories.add(item)
-        elif minirok.Globals.engine.can_play_path(path):
-            FileItem(parent, path)
-            prune_this_parent = False
+    def __init__(self, kurl, parent):
+        self.kurl = kurl
+        self.parent = parent
+        self.name = kurl.fileName()
+        self.visible = (True, None) # bool, patternId
 
-    if not prune_this_parent:
-        while parent:
-            treewidget.empty_directories.discard(parent)
-            parent = parent.parent()
+        if parent is None:
+            self.relpath = ''
+        else:
+            self.relpath = unicode(kurl.relativeUrl(parent.root.kurl, kurl))
 
-# This is a dict like:
-# { path: (mtime, { entry1: stat_struct, entry2: stat_struct, ... }), ... }
-_my_listdir_cache = {}
+    def row(self):
+        if self.parent:
+            # do not use children.index() here, since that calls __cmp__ below,
+            # and it really hurts performance
+            for i, item in enumerate(self.parent.children):
+                if item is self:
+                    return i
+            else:
+                raise ValueError, 'self not found in parent.children'
+        else:
+            return 0
 
-def _my_listdir(path):
-    """Read directory contents, storing results in a dictionary cache.
+    def __cmp__(self, other):
+        return (other.IS_DIR - self.IS_DIR
+                    or self.name.localeAwareCompare(other.name))
 
-    When invoked over a previously read directory, its contents will only be
-    re-read from the filesystem if the mtime is different to the mtime the last
-    time the contents were read.
-    """
-    try:
-        mtime = os.stat(path).st_mtime
-    except OSError, e:
-        minirok.logger.warn('could not stat %r: %s', path, e.strerror)
-        _my_listdir_cache.setdefault(path, (None, {}))
-        return
 
-    if mtime == _my_listdir_cache.get(path, (None, None))[0]:
-        return
+class FileItem(TreeItem):
 
-    try:
-        contents = os.listdir(path)
-    except OSError, e:
-        minirok.logger.warn('could not listdir %r: %s', path, e.strerror)
-        _my_listdir_cache.setdefault(path, (None, {}))
-        return
+    IS_DIR = False
+    children = ()
 
-    d = {}
-    for entry in contents:
-        try:
-            entryp = os.path.join(path, entry)
-            d[entry] = os.stat(entryp)
-        except OSError, e:
-            minirok.logger.warn('could not access %r: %s', entryp, e.strerror)
 
-    _my_listdir_cache[path] = (mtime, d)
+class DirectoryItem(TreeItem):
+
+    IS_DIR = True
+
+    __slots__ = [ 'children', 'populated', 'root' ]
+
+    def __init__(self, kurl, parent):
+        TreeItem.__init__(self, kurl, parent)
+        self.children = []
+        self.populated = False
+
+        p = self
+        while p.parent is not None:
+            p = p.parent
+
+        self.root = p
+        self.kurl.adjustPath(self.kurl.AddTrailingSlash) # for relativeUrl()
+
+##
+
+def _urlkey(kurl, up=False):
+    """Consistent creating of keys for Model.items from KUrls."""
+    if up:
+        kurl = kurl.upUrl()
+    kurl.adjustPath(kurl.AddTrailingSlash)
+    return kurl.url()
