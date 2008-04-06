@@ -42,7 +42,7 @@ class LastfmSubmitter(QtCore.QObject, util.HasGUIConfig):
         self.apply_preferences()
 
     def apply_preferences(self):
-        if True or minirok.Globals.preferences.enable_lastfm: # XXX-KDE4
+        if minirok.Globals.preferences.enable_lastfm:
             func = self.connect
         else:
             func = self.disconnect

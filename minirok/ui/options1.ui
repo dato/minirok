@@ -1,253 +1,130 @@
-<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
-<class>Page</class>
-<widget class="QWidget">
-    <property name="name">
-        <cstring>General page</cstring>
-    </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>431</width>
-            <height>560</height>
-        </rect>
-    </property>
-    <property name="sizePolicy">
-        <sizepolicy>
-            <hsizetype>3</hsizetype>
-            <vsizetype>3</vsizetype>
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-    </property>
-    <property name="caption">
-        <string>Configuring Minirok</string>
-    </property>
-    <vbox>
-        <property name="name">
-            <cstring>unnamed</cstring>
+<ui version="4.0" >
+ <class>Page</class>
+ <widget class="QWidget" name="Page" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>517</width>
+    <height>552</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Configuring Minirok</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <widget class="QGroupBox" name="appearanceGroup" >
+     <property name="title" >
+      <string>Appearance</string>
+     </property>
+     <layout class="QVBoxLayout" >
+      <item>
+       <widget class="QCheckBox" name="kcfg_UseAmarokClassicTheme" >
+        <property name="text" >
+         <string>Use Amarok's classic "&amp;funky-monkey" theme</string>
         </property>
-        <property name="margin">
-            <number>0</number>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="playlistGroup" >
+     <property name="title" >
+      <string>Playlist</string>
+     </property>
+     <layout class="QVBoxLayout" >
+      <item>
+       <widget class="QCheckBox" name="kcfg_TagsFromRegex" >
+        <property name="text" >
+         <string>Use a &amp;regular expression to guess tags from the filename</string>
         </property>
-        <widget class="QGroupBox">
-            <property name="name">
-                <cstring>appearanceGroup</cstring>
-            </property>
-            <property name="margin">
-                <number>0</number>
-            </property>
-            <property name="title">
-                <string>Appearance</string>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QCheckBox">
-                    <property name="name">
-                        <cstring>kcfg_UseAmarokClassicTheme</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Use Amarok's classic "&amp;funky-monkey" theme</string>
-                    </property>
-                    <property name="accel">
-                        <string>Alt+F</string>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string></string>
-                    </property>
-                    <property name="whatsThis" stdset="0">
-                        <string></string>
-                    </property>
-                </widget>
-            </vbox>
-        </widget>
-        <widget class="QGroupBox">
-            <property name="name">
-                <cstring>playlistGroup</cstring>
-            </property>
-            <property name="margin">
-                <number>0</number>
-            </property>
-            <property name="title">
-                <string>Playlist</string>
-            </property>
-            <vbox>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QCheckBox">
-                    <property name="name">
-                        <cstring>kcfg_TagsFromRegex</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Use a &amp;regular expression to guess tags from the filename</string>
-                    </property>
-                    <property name="accel">
-                        <string>Alt+R</string>
-                    </property>
-                    <property name="checked">
-                        <bool>false</bool>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string></string>
-                    </property>
-                </widget>
-                <widget class="QGroupBox">
-                    <property name="name">
-                        <cstring>regexInfoGroup</cstring>
-                    </property>
-                    <property name="frameShape">
-                        <enum>NoFrame</enum>
-                    </property>
-                    <property name="frameShadow">
-                        <enum>Plain</enum>
-                    </property>
-                    <property name="title">
-                        <string></string>
-                    </property>
-                    <widget class="QLineEdit">
-                        <property name="name">
-                            <cstring>kcfg_TagRegex</cstring>
-                        </property>
-                        <property name="geometry">
-                            <rect>
-                                <x>12</x>
-                                <y>4</y>
-                                <width>390</width>
-                                <height>23</height>
-                            </rect>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>4</hsizetype>
-                                <vsizetype>0</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="acceptDrops">
-                            <bool>true</bool>
-                        </property>
-                        <property name="toolTip" stdset="0">
-                            <string></string>
-                        </property>
-                        <property name="whatsThis" stdset="0">
-                            <string>The regex will be matched against the full path of the file.
-The supported groups are: "artist", "title", "album", and "track".
-See README.Usage for details and an example.</string>
-                        </property>
-                    </widget>
-                    <widget class="QButtonGroup">
-                        <property name="name">
-                            <cstring>kcfg_TagRegexMode</cstring>
-                        </property>
-                        <property name="geometry">
-                            <rect>
-                                <x>0</x>
-                                <y>30</y>
-                                <width>322</width>
-                                <height>114</height>
-                            </rect>
-                        </property>
-                        <property name="acceptDrops">
-                            <bool>false</bool>
-                        </property>
-                        <property name="frameShape">
-                            <enum>NoFrame</enum>
-                        </property>
-                        <property name="title">
-                            <string></string>
-                        </property>
-                        <vbox>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <widget class="QRadioButton">
-                                <property name="name">
-                                    <cstring>radio1</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Use this regex to populate the playlist initially,
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="regexInfoGroup" >
+        <property name="title" >
+         <string/>
+        </property>
+        <property name="flat" >
+         <bool>true</bool>
+        </property>
+        <layout class="QVBoxLayout" >
+         <item>
+          <widget class="QLineEdit" name="kcfg_TagRegex" />
+         </item>
+         <item>
+          <widget class="QGroupBox" name="kcfg_TagRegexMode" >
+           <property name="title" >
+            <string/>
+           </property>
+           <property name="flat" >
+            <bool>true</bool>
+           </property>
+           <layout class="QVBoxLayout" >
+            <item>
+             <widget class="QRadioButton" name="radio1" >
+              <property name="text" >
+               <string>Use this regex to populate the playlist initially,
 but still read the tags in the background</string>
-                                </property>
-                            </widget>
-                            <widget class="QRadioButton">
-                                <property name="name">
-                                    <cstring>radio2</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Do not read tags if the regex matches</string>
-                                </property>
-                            </widget>
-                            <widget class="QRadioButton">
-                                <property name="name">
-                                    <cstring>radio3</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Never read tags from files</string>
-                                </property>
-                            </widget>
-                        </vbox>
-                    </widget>
-                </widget>
-            </vbox>
-        </widget>
-        <widget class="QGroupBox">
-            <property name="name">
-                <cstring>lastfmGroup</cstring>
-            </property>
-            <property name="margin">
-                <number>0</number>
-            </property>
-            <property name="title">
-                <string>Last.fm</string>
-            </property>
-            <widget class="QCheckBox">
-                <property name="name">
-                    <cstring>kcfg_EnableLastfm</cstring>
-                </property>
-                <property name="geometry">
-                    <rect>
-                        <x>11</x>
-                        <y>22</y>
-                        <width>407</width>
-                        <height>21</height>
-                    </rect>
-                </property>
-                <property name="text">
-                    <string>Submit played tracks to &amp;Last.fm</string>
-                </property>
-                <property name="accel">
-                    <string>Alt+L</string>
-                </property>
-                <property name="toolTip" stdset="0">
-                    <string></string>
-                </property>
-                <property name="whatsThis" stdset="0">
-                    <string></string>
-                </property>
-            </widget>
-        </widget>
-        <spacer>
-            <property name="name">
-                <cstring>spacer5</cstring>
-            </property>
-            <property name="orientation">
-                <enum>Vertical</enum>
-            </property>
-            <property name="sizeType">
-                <enum>Expanding</enum>
-            </property>
-            <property name="sizeHint">
-                <size>
-                    <width>20</width>
-                    <height>120</height>
-                </size>
-            </property>
-        </spacer>
-    </vbox>
-</widget>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radio2" >
+              <property name="text" >
+               <string>Do not read tags if the regex matches</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radio3" >
+              <property name="text" >
+               <string>Never read tags from files</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="lastfmGroup" >
+     <property name="title" >
+      <string>Last.fm</string>
+     </property>
+     <layout class="QVBoxLayout" >
+      <item>
+       <widget class="QCheckBox" name="kcfg_EnableLastfm" >
+        <property name="text" >
+         <string>Submit played tracks to &amp;Last.fm</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

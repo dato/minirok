@@ -10,7 +10,7 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
-from minirok import left_side, right_side, statusbar, util # XXX-KDE4 preferences
+from minirok import left_side, preferences, right_side, statusbar, util
 
 ##
 
@@ -25,7 +25,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         util.HasGUIConfig.__init__(self)
 
         minirok.Globals.action_collection = self.actionCollection()
-        # XXX-KDE4 minirok.Globals.preferences = preferences.Preferences()
+        minirok.Globals.preferences = preferences.Preferences()
 
         self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view)
@@ -41,7 +41,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
 
         self.init_systray()
         self.init_actions()
-        # XXX-KDE4 self.apply_preferences()
+        self.apply_preferences()
 
         self.setHelpMenuEnabled(False)
         self.setCentralWidget(self.main_view)
@@ -92,10 +92,8 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         self.action_toggle_window = util.create_action('action_toggle_window',
                 'Show/Hide window', self.systray.toggleActive, global_shortcut='Ctrl+Alt+M')
 
-        return # XXX-KDE4
-
-        self.action_preferences = kdeui.KStdAction.preferences(
-                self.slot_preferences, ac)
+        self.action_preferences = kdeui.KStandardAction.preferences(
+                self.slot_preferences, actionCollection)
         self.action_preferences.setShortcutConfigurable(False)
 
     def init_systray(self):
@@ -107,6 +105,7 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
     ##
 
     def apply_preferences(self):
+        return # XXX-KDE4
         if not minirok.Globals.preferences.use_amarok_classic_theme:
             alternate_bg_color = \
                     kdecore.KGlobalSettings.alternateBackgroundColor()
@@ -163,7 +162,8 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         else:
             dialog = preferences.Dialog(self, 'preferences dialog',
                 minirok.Globals.preferences)
-            self.connect(dialog, qt.SIGNAL('settingsChanged()'),
+            self.connect(dialog,
+                    QtCore.SIGNAL('settingsChanged(const QString &)'),
                     util.HasGUIConfig.settings_changed)
             dialog.show()
 

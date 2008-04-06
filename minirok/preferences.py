@@ -1,35 +1,29 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import re
 
-import qt
-import kdeui
-import kdecore
+from PyKDE4 import kdeui
+from PyQt4 import QtGui, QtCore
 
 import minirok
 from minirok import util
 try:
     from minirok.ui import options1
 except ImportError:
-    import sys
-    class options1:
-        class Page:
-            pass
-    print >>sys.stderr, '''\
-You are running Minirok from the source branch without having compiled the UI
-files: the preferences dialog will not work. You can compile them by running
-`make -C minirok/ui` (you will need kdepyuic, from the python-kde3-dev package).'''
+    from minirok.ui.error import options1
+    minirok.logger.warn('compiled files under ui/ missing')
 
 ##
 
-class Preferences(kdecore.KConfigSkeleton):
+class Preferences(kdeui.KConfigSkeleton):
     def __init__(self, *args):
-        kdecore.KConfigSkeleton.__init__(self, *args)
+        kdeui.KConfigSkeleton.__init__(self, *args)
 
+        # XXX-KDE4 addItemBool/Int need a third "default" argument?
         self.setCurrentGroup('Appearance')
         self._use_amarok_classic_theme = self.addItemBool('UseAmarokClassicTheme', False)
 
@@ -37,7 +31,7 @@ class Preferences(kdecore.KConfigSkeleton):
         self._enable_lastfm = self.addItemBool('EnableLastfm', minirok._has_lastfm)
 
         self.setCurrentGroup('Playlist')
-        self._tag_regex_value = qt.QString()
+        self._tag_regex_value = QtCore.QString()
         self._tags_from_regex = self.addItemBool('TagsFromRegex', False)
         self._tag_regex = self.addItemString('TagRegex', self._tag_regex_value, '')
         self._tag_regex_mode = self.addItemInt('TagRegexMode', 0)
@@ -46,15 +40,15 @@ class Preferences(kdecore.KConfigSkeleton):
 
     @property
     def use_amarok_classic_theme(self):
-        return self._use_amarok_classic_theme[0].value()
+        return self._use_amarok_classic_theme.property().toBool()
 
     @property
     def enable_lastfm(self):
-        return self._enable_lastfm[0].value()
+        return self._enable_lastfm.property().toBool()
 
     @property
     def tags_from_regex(self):
-        return self._tags_from_regex[0].value()
+        return self._tags_from_regex.property().toBool()
 
     @property
     def tag_regex(self):
@@ -67,7 +61,7 @@ class Preferences(kdecore.KConfigSkeleton):
                 1: 'OnRegexFail',
                 2: 'Never',
         }
-        key = self._tag_regex_mode[0].value()
+        key = self._tag_regex_mode.property().toInt()[0]
         try:
             return _dict[key]
         except KeyError:
@@ -78,11 +72,13 @@ class Preferences(kdecore.KConfigSkeleton):
 
 class Dialog(kdeui.KConfigDialog):
     def __init__(self, parent, name, preferences):
-        kdeui.KConfigDialog.__init__(self, parent, name, preferences,
-                kdeui.KDialogBase.IconList, kdeui.KDialogBase.Ok |
-                kdeui.KDialogBase.Apply | kdeui.KDialogBase.Cancel)
+        kdeui.KConfigDialog.__init__(self, parent, name, preferences)
+        self.setButtons(kdeui.KDialog.ButtonCode(kdeui.KDialog.Ok |
+                        kdeui.KDialog.Apply | kdeui.KDialog.Cancel))
+
         self.general_page = GeneralPage(self, preferences)
-        self.addPage(self.general_page, 'General', 'minirok')
+        self.general_page_item = self.addPage(self.general_page, 'General')
+        self.general_page_item.setIcon(kdeui.KIcon('minirok'))
 
     def check_valid_regex(self):
         regex = util.kurl_to_path(self.general_page.kcfg_TagRegex.text())
@@ -96,23 +92,25 @@ class Dialog(kdeui.KConfigDialog):
 
     ##
 
-    def slotOk(self):
-        if self.check_valid_regex():
-            return kdeui.KConfigDialog.slotOk(self)
-
-    def slotApply(self):
-        if self.check_valid_regex():
-            return kdeui.KConfigDialog.slotApply(self)
+    def slotButtonClicked(self, button):
+        if (button not in (kdeui.KDialog.Ok, kdeui.KDialog.Apply)
+                or self.check_valid_regex()):
+            kdeui.KConfigDialog.slotButtonClicked(self, button)
 
 ##
 
-class GeneralPage(options1.Page):
+class GeneralPage(QtGui.QWidget, options1.Ui_Page):
     def __init__(self, parent, preferences):
-        options1.Page.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
+        self.setupUi(self)
+
+        if getattr(self, 'NO_UI', False):
+            # Ui_Page comes from ui/error.py
+            return
 
         ##
 
-        self.connect(self.kcfg_TagsFromRegex, qt.SIGNAL('toggled(bool)'),
+        self.connect(self.kcfg_TagsFromRegex, QtCore.SIGNAL('toggled(bool)'),
                 self.slot_tags_from_regex_toggled)
 
         self.slot_tags_from_regex_toggled(preferences.tags_from_regex)
@@ -120,7 +118,7 @@ class GeneralPage(options1.Page):
         ##
 
         if not minirok._has_lastfm:
-            qt.QToolTip.add(self.kcfg_EnableLastfm,
+            self.kcfg_EnableLastfm.setToolTip(
                     'Feature disabled because lastfmsubmitd is not available')
 
         self.kcfg_EnableLastfm.setEnabled(minirok._has_lastfm)
