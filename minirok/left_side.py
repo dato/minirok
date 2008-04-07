@@ -49,6 +49,9 @@ class LeftSide(QtGui.QWidget):
         self.tree_view.setModel(self.proxy)
         self.search_widget.searchLine().setProxyModel(self.proxy)
 
+        self.action_reload = util.create_action('action_reload_tree_view',
+                'Reload tree view', self.tree.slot_reload, 'view-refresh', 'F5')
+
         self.action_focus_path_combo = util.create_action('action_path_combo_focus',
                 'Focus path combobox', self.path_combo.slot_focus, shortcut='Alt+O')
 

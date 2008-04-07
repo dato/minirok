@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 
 <!DOCTYPE kpartgui SYSTEM 'kpartgui.dtd'>
-<gui name="minirok" version="1">
+<gui name="minirok" version="2">
   <MenuBar>
     <Menu name="file">
       <Action name="action_open_directory" />
+      <Action name="action_reload_tree_view" />
     </Menu>
   </MenuBar>
   <ToolBar name="playlistToolBar">

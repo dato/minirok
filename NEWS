@@ -25,7 +25,9 @@
 
       Additionally, the KDirLister class used notifies the application
       when files are added or removed from a directory, so there is no
-      need for the "Refresh" action anymore.
+      need for the "Refresh" action, other than to force a reload (in
+      case e.g. a networked mount was temporarily disconnected and
+      KDirLister got confused).
 
       Finally, a button to disable crawling all the directory hierarchy
       has been added. Such crawling is only needed for the search box to

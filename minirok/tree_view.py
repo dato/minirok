@@ -256,6 +256,19 @@ class Model(QtCore.QAbstractItemModel, util.HasConfig):
         self.emit(QtCore.SIGNAL('scan_in_progress'), True)
         self.populate_next()
 
+    def slot_reload(self):
+        """Forces a reload of the current root.
+
+        This is done by dropping the root DirectoryItem from self.items.
+        """
+        key = _urlkey(self.root.kurl)
+        try:
+            self.items.pop(key)
+        except KeyError:
+            pass # :-?
+
+        self.slot_change_url(self.root.kurl)
+
     def populate_next(self):
         try:
             item = self.pending[self.root].pop()
