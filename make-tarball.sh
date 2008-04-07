@@ -40,7 +40,7 @@ TMP_DIR=$(env TMPDIR= mktemp -d -p ../tarballs)
 EXPORT_VERSION="minirok-$VERSION$APPEND_TO_VER"
 EXPORT_DIR="$TMP_DIR/$EXPORT_VERSION"
 
-bzr export "$EXPORT_DIR"
+git archive --prefix=$EXPORT_VERSION/ HEAD | tar xC "$TMP_DIR"
 
 ( # subshell to preserve old $CWD
 set -e
