@@ -68,10 +68,12 @@ def get_png(name):
     except KeyError:
         pass
 
-    for path in [ # XXX-KDE4 str(kdecore.locate('appdata', os.path.join('images', name))),
+    for path in [ str(kdecore.KStandardDirs.locate('appdata', os.path.join('images', name))),
             os.path.join(os.path.dirname(__file__), '..', 'images', name) ]:
         if os.path.exists(path):
             break
+    else:
+        minirok.logger.warn('could not find %s', name)
 
     return _png_cache.setdefault(name, QtGui.QPixmap(path, 'PNG'))
 
