@@ -13,6 +13,10 @@
       - DBUS is used instead of DCOP, bla bla bla.
 	(TODO)
 
+  PLAYLIST
+
+    * The playlist now supports Undo/Redo functionality.
+
   IMPROVEMENTS
 
     * Command line arguments that are directories will not be simply
