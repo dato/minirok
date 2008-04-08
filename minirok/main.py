@@ -65,7 +65,7 @@ def main():
     # These imports happen here rather than at the top level because if gst
     # gets imported before the above KCmdLineArgs.init() call, it steals our
     # --help option
-    from minirok import engine, main_window as mw # XXX-KDE4 dcop dropped
+    from minirok import engine, main_window as mw
 
     minirok.Globals.engine = engine.Engine()
     application = kdeui.KApplication()
@@ -75,9 +75,15 @@ def main():
     if QtGui.QApplication.style().objectName() == 'oxygen':
         QtGui.QApplication.setStyle('Cleanlooks')
 
-    # XXX-KDE4
-    # application.dcopClient().registerAs('minirok', False) # False: do not add PID
-    # player = dcop.Player()
+    if minirok._has_dbus:
+        import dbus
+        import dbus.service
+        import dbus.mainloop.qt
+        from minirok import dbusface
+
+        dbus.mainloop.qt.DBusQtMainLoop(set_as_default=True)
+        name = dbus.service.BusName('org.kde.minirok', dbus.SessionBus())
+        player = dbusface.Player()
 
     if minirok._has_lastfm:
         from minirok import lastfm_submit
