@@ -5,6 +5,7 @@
 # Licensed under the terms of the MIT license.
 
 import sys
+import errno
 import minirok
 
 from PyQt4 import QtGui
@@ -104,18 +105,26 @@ def main():
 ##
 
 def append_to_remote_minirok_successful(files):
+    # TODO Rewrite this function using the dbus module?
+
     from subprocess import Popen, PIPE
-    cmdline = [ 'dcop', 'minirok' ]
+    cmdline = [ 'qdbus', 'org.kde.minirok' ]
 
     try:
         p = Popen(cmdline, stdout=PIPE, stderr=PIPE)
-    except OSError:
-        return False
+    except OSError, e:
+        if e.errno == errno.ENOENT:
+            minirok.logger.warn('could not exec %s', cmdline[0])
+            return False
+        else:
+            raise
     else:
         status = p.wait()
         if status != 0:
-            minirok.logger.warn('could not contact an existing Minirok instance')
+            minirok.logger.warn(
+                    'could not contact with an existing Minirok instance')
             return False
-
-    cmdline.extend(['player', 'appendToPlaylist', '['] + files + [']'])
-    return not Popen(cmdline).wait()
+        else:
+            cmdline.extend(['/Player',
+                'org.kde.minirok.AppendToPlaylist', '('] + files + [')'])
+            return not Popen(cmdline, stdout=PIPE).wait()

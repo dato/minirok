@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Manual page for Minirok.
-     Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+     Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
      Licensed under the terms of the MIT license.
   -->
 
@@ -125,7 +125,8 @@
           <para>
             Try to append the files given as arguments to an existing
             Minirok instance first. If that fails, start a new Minirok
-            instance as usual.
+            instance as usual. (This is done via DBus, see the
+            <filename>README</filename> file for required dependencies.)
           </para>
         </listitem>
       </varlistentry>
