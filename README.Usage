@@ -12,13 +12,13 @@ UI hints
     line to start playing the first track in the search result.
 
 
-DCOP interface XXX-KDE4
+DBus interface
 ==============
 
-Minirok exports a DCOP interface containing functions to perform
-Playlist actions (play, pause, playPause, stop, next, previous,
-stopAfterCurrent), and a function to retrieve the currently playing
-track, "nowPlaying".
+Minirok exports a DBus interface; the object path is /Player, and the
+service org.kde.minirok. There are functions to perform playlist actions
+(Play, Pause, PlayPause, Stop, Next, Previous, StopAfterCurrent), and a
+function to retrieve the currently playing track, "NowPlaying".
 
 This last functions comes in two flavours: without an argument, it will
 return a string like "Artist - Title", or just "Title" if there's no
@@ -26,20 +26,19 @@ known artist. However, you can pass a string argument that will be
 formatted against a dict of the tags with the Python % operator. For
 example:
 
-  % dcop minirok player nowPlaying "%(Artist)s - %(Title)s (%(Album)s)"
+  % qdbus org.kde.minirok \
+      /Player NowPlaying "%(Artist)s - %(Title)s [%(Album)s]"
 
 Do not forget the "s" after the brackets, it's needed by Python.
 
-There is also a appendToPlaylist function, which does the same as
-`minirok --append`. The function takes a QStringList as argument, so to
-invoke it you must place the arguments between square brackets, like this:
+There is also an AppendToPlaylist function, which does the same as
+`minirok --append`. The function takes a list of paths as argument, so
+to invoke it you must place the arguments between brackets, like this:
 
-  % dcop minirok player appendToPlaylist [ /path/to/file.mp3 ... ]
+  % qdbus org.kde.minirok \
+      /Player AppendToPlaylist '(' /path/to/file.mp3 ... ')'
 
 Note that you have to specify the full paths of files, or it won't work.
-
-Finally, there is a toggleWindow function, which hides/shows the main
-window.
 
 
 Regular expressions

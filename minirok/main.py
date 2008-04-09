@@ -5,6 +5,7 @@
 # Licensed under the terms of the MIT license.
 
 import sys
+import errno
 import minirok
 
 from PyQt4 import QtGui
@@ -65,7 +66,7 @@ def main():
     # These imports happen here rather than at the top level because if gst
     # gets imported before the above KCmdLineArgs.init() call, it steals our
     # --help option
-    from minirok import engine, main_window as mw # XXX-KDE4 dcop dropped
+    from minirok import engine, main_window as mw
 
     minirok.Globals.engine = engine.Engine()
     application = kdeui.KApplication()
@@ -75,9 +76,15 @@ def main():
     if QtGui.QApplication.style().objectName() == 'oxygen':
         QtGui.QApplication.setStyle('Cleanlooks')
 
-    # XXX-KDE4
-    # application.dcopClient().registerAs('minirok', False) # False: do not add PID
-    # player = dcop.Player()
+    if minirok._has_dbus:
+        import dbus
+        import dbus.service
+        import dbus.mainloop.qt
+        from minirok import dbusface
+
+        dbus.mainloop.qt.DBusQtMainLoop(set_as_default=True)
+        name = dbus.service.BusName('org.kde.minirok', dbus.SessionBus())
+        player = dbusface.Player()
 
     if minirok._has_lastfm:
         from minirok import lastfm_submit
@@ -98,18 +105,26 @@ def main():
 ##
 
 def append_to_remote_minirok_successful(files):
+    # TODO Rewrite this function using the dbus module?
+
     from subprocess import Popen, PIPE
-    cmdline = [ 'dcop', 'minirok' ]
+    cmdline = [ 'qdbus', 'org.kde.minirok' ]
 
     try:
         p = Popen(cmdline, stdout=PIPE, stderr=PIPE)
-    except OSError:
-        return False
+    except OSError, e:
+        if e.errno == errno.ENOENT:
+            minirok.logger.warn('could not exec %s', cmdline[0])
+            return False
+        else:
+            raise
     else:
         status = p.wait()
         if status != 0:
-            minirok.logger.warn('could not contact an existing Minirok instance')
+            minirok.logger.warn(
+                    'could not contact with an existing Minirok instance')
             return False
-
-    cmdline.extend(['player', 'appendToPlaylist', '['] + files + [']'])
-    return not Popen(cmdline).wait()
+        else:
+            cmdline.extend(['/Player',
+                'org.kde.minirok.AppendToPlaylist', '('] + files + [')'])
+            return not Popen(cmdline, stdout=PIPE).wait()
