@@ -14,22 +14,6 @@
   </property>
   <layout class="QVBoxLayout" >
    <item>
-    <widget class="QGroupBox" name="appearanceGroup" >
-     <property name="title" >
-      <string>Appearance</string>
-     </property>
-     <layout class="QVBoxLayout" >
-      <item>
-       <widget class="QCheckBox" name="kcfg_UseAmarokClassicTheme" >
-        <property name="text" >
-         <string>Use Amarok's classic "&amp;funky-monkey" theme</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="playlistGroup" >
      <property name="title" >
       <string>Playlist</string>

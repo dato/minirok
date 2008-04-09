@@ -23,11 +23,8 @@ class Preferences(kdeui.KConfigSkeleton):
     def __init__(self, *args):
         kdeui.KConfigSkeleton.__init__(self, *args)
 
-        # XXX-KDE4 addItemBool/Int need a third "default" argument?
-        self.setCurrentGroup('Appearance')
-        self._use_amarok_classic_theme = self.addItemBool('UseAmarokClassicTheme', False)
-
         self.setCurrentGroup('General')
+        # XXX-KDE4 addItemBool/Int need a third "default" argument?
         self._enable_lastfm = self.addItemBool('EnableLastfm', minirok._has_lastfm)
 
         self.setCurrentGroup('Playlist')
@@ -37,10 +34,6 @@ class Preferences(kdeui.KConfigSkeleton):
         self._tag_regex_mode = self.addItemInt('TagRegexMode', 0)
 
         self.readConfig()
-
-    @property
-    def use_amarok_classic_theme(self):
-        return self._use_amarok_classic_theme.property().toBool()
 
     @property
     def enable_lastfm(self):
