@@ -29,6 +29,15 @@
       directory which had already been opened.
 
 
+0.9.1	2008-05-21
+
+  BUGFIXES
+
+    * Don't die when setting the tooltip for tracks with no artist tag.
+      This manifested in the slider not moving for those tracks, and the
+      player not jumping to the next track when reaching the end.
+
+
 0.9	2008-03-22
 
   NEW FEATURES
