@@ -222,8 +222,8 @@ class Systray(kdeui.KSystemTray):
     def slot_set_tooltip(self):
         tags = minirok.Globals.playlist.currently_playing
         if tags:
-            title = tags.get('Title', '')
-            artist = tags.get('Artist', '')
+            title = tags.get('Title') or ''
+            artist = tags.get('Artist') or ''
             if artist and title:
                 artist += ' - '
             if artist or title:
