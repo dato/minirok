@@ -1083,7 +1083,7 @@ class PlaylistView(QtGui.QTreeView):
 
         elif button & Qt.MidButton:
             if index.data(Playlist.RoleQueryIsPlaying).toBool():
-                self.model().slot_pause()
+                minirok.Globals.action_collection.action('action_pause').trigger()
 
         elif button & Qt.RightButton:
             QtGui.QTreeView.mousePressEvent(self, event)
