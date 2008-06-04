@@ -1029,8 +1029,6 @@ class PlaylistView(QtGui.QTreeView):
     ##
 
     def drawRow(self, painter, styleopt, index):
-        model = self.model()
-
         if index.data(Playlist.RoleQueryIsPlaying).toBool():
             styleopt = QtGui.QStyleOptionViewItem(styleopt) # make a copy
             styleopt.font.setItalic(True)
