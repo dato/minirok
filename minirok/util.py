@@ -250,11 +250,8 @@ class RandomOrderedList(list):
         self.insert(random.randrange(len(self)+1), item)
 
     def extend(self, seq):
-        # FIXME Uuuh, yeah, this implementation is buggy (because items coming
-        # via extend() are not mixed with the already existing items...)
-        seq = list(seq)
-        random.shuffle(seq)
         list.extend(self, seq)
+        random.shuffle(self)
 
 ##
 
