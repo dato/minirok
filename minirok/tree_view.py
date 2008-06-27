@@ -275,7 +275,9 @@ class Model(QtCore.QAbstractItemModel, util.HasConfig):
         except KeyError:
             self.emit(QtCore.SIGNAL('scan_in_progress'), False)
         else:
-            self.dirLister.openUrl(item.kurl, self.dirLister.Keep)
+            self.dirLister.openUrl(item.kurl,
+                    kio.KDirLister.OpenUrlFlag(
+                        kio.KDirLister.Keep | kio.KDirLister.Reload))
 
     def slot_save_config(self):
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
@@ -405,7 +407,7 @@ class Model(QtCore.QAbstractItemModel, util.HasConfig):
             return
 
         self.block_kurl = item.kurl
-        self.dirLister.openUrl(item.kurl, self.dirLister.Keep) # XXX racy?
+        self.dirLister.openUrl(item.kurl, self.dirLister.Keep) # XXX racy?; and Reload here too?
         self.event_loop.exec_(QtCore.QEventLoop.ExcludeUserInputEvents)
 
     def urls_from_indexes(self, indexes):
