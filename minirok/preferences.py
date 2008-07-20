@@ -24,8 +24,8 @@ class Preferences(kdeui.KConfigSkeleton):
         kdeui.KConfigSkeleton.__init__(self, *args)
 
         self.setCurrentGroup('General')
-        # XXX-KDE4 addItemBool/Int need a third "default" argument?
-        self._enable_lastfm = self.addItemBool('EnableLastfm', minirok._has_lastfm)
+        self._enable_lastfm = self.addItemBool('EnableLastfm',
+                                minirok._has_lastfm, minirok._has_lastfm)
 
         self.setCurrentGroup('Playlist')
         self._tag_regex_value = QtCore.QString()
