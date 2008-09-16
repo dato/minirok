@@ -24,14 +24,14 @@ class Preferences(kdeui.KConfigSkeleton):
         kdeui.KConfigSkeleton.__init__(self, *args)
 
         self.setCurrentGroup('General')
-        self._enable_lastfm = self.addItemBool('EnableLastfm',
-                                minirok._has_lastfm, minirok._has_lastfm)
+        self._enable_lastfm = self.addItemBool(
+                'EnableLastfm', False, minirok._has_lastfm)
 
         self.setCurrentGroup('Playlist')
         self._tag_regex_value = QtCore.QString()
-        self._tags_from_regex = self.addItemBool('TagsFromRegex', False)
+        self._tags_from_regex = self.addItemBool('TagsFromRegex', False, False)
         self._tag_regex = self.addItemString('TagRegex', self._tag_regex_value, '')
-        self._tag_regex_mode = self.addItemInt('TagRegexMode', 0)
+        self._tag_regex_mode = self.addItemInt('TagRegexMode', 0, 0)
 
         self.readConfig()
 
