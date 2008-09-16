@@ -54,11 +54,16 @@ class Preferences(kdeui.KConfigSkeleton):
                 1: 'OnRegexFail',
                 2: 'Never',
         }
-        key = self._tag_regex_mode.property().toInt()[0]
+        key, okp = self._tag_regex_mode.property().toInt()
+
+        if not okp:
+            key = -1 # ensure KeyError is raised below
+
         try:
             return _dict[key]
         except KeyError:
-            minirok.logger.error('invalid value for TagRegexMode: %d', key)
+            minirok.logger.error('invalid value for TagRegexMode: %s',
+                    self._tag_regex_mode.property().toString())
             return _dict[0]
 
 ##
