@@ -177,8 +177,8 @@ class Systray(kdeui.KSystemTrayIcon):
                 and event.type() == QtCore.QEvent.ToolTip):
             tags = minirok.Globals.playlist.get_current_tags()
             if tags:
-                title = tags.get('Title', '')
-                artist = tags.get('Artist', '')
+                title = tags.get('Title') or ''
+                artist = tags.get('Artist') or ''
                 if artist and title:
                     artist += ' - '
                 if artist or title:

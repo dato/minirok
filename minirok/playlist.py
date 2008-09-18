@@ -862,18 +862,35 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig, util.HasGUIConfig):
 
 class Proxy(proxy.Model):
 
+    def __init__(self, parent=None):
+        proxy.Model.__init__(self, parent)
+        self.scroll_index = None
+
     def setSourceModel(self, model):
         proxy.Model.setSourceModel(self, model)
 
         self.connect(model, QtCore.SIGNAL('scroll_needed'),
-                lambda index: self.emit(QtCore.SIGNAL('scroll_needed'),
-                                self.mapFromSource(index)))
+                self.slot_scroll_needed)
 
         # XXX dataChanged() abuse here too...
         self.connect(model, QtCore.SIGNAL('repaint_needed'),
             lambda: self.emit(QtCore.SIGNAL(
                 'dataChanged(const QModelIndex &, const QModelIndex &)'),
                     self.index(0, 0), self.index(1, self.columnCount())))
+
+    def setPattern(self, pattern):
+        proxy.Model.setPattern(self, pattern)
+        self.emit_scroll_needed()
+
+    def slot_scroll_needed(self, index):
+        self.scroll_index = index
+        self.emit_scroll_needed()
+
+    def emit_scroll_needed(self):
+        if self.scroll_index is not None:
+            mapped = self.mapFromSource(self.scroll_index)
+            if mapped.isValid():
+                self.emit(QtCore.SIGNAL('scroll_needed'), mapped)
 
     ##
 
@@ -1006,8 +1023,6 @@ class PlaylistView(QtGui.QTreeView):
     ##
 
     def drawRow(self, painter, styleopt, index):
-        model = self.model()
-
         if index.data(Playlist.RoleQueryIsPlaying).toBool():
             styleopt = QtGui.QStyleOptionViewItem(styleopt) # make a copy
             styleopt.font.setItalic(True)
@@ -1060,7 +1075,7 @@ class PlaylistView(QtGui.QTreeView):
 
         elif button & Qt.MidButton:
             if index.data(Playlist.RoleQueryIsPlaying).toBool():
-                self.model().slot_pause()
+                minirok.Globals.action_collection.action('action_pause').trigger()
 
         elif button & Qt.RightButton:
             QtGui.QTreeView.mousePressEvent(self, event)

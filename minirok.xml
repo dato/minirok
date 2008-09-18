@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Manual page for Minirok.
-     Copyright (c) 2007 Adeodato Simó (dato@net.com.org.es)
+     Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
      Licensed under the terms of the MIT license.
   -->
 
@@ -83,25 +83,33 @@
   </refsect1>
   
   <refsect1>
-    <title>DCOP INTERFACE</title>
+    <title>DBUS INTERFACE</title>
     <para>
-      Minirok offers a DCOP interface to control the player and various
-      other bits. To invoke a DCOP function, run from a terminal
-      <command>dcop minirok player <replaceable>functionName</replaceable></command>.
-      Here's a list of available functions:
+      Minirok offers a DBus interface to control the player and various
+      other bits. At the moment a single object /Player is provided,
+      under the org.kde.minirok service. To invoke a DBus method, run
+      from a terminal <command>qdbus org.kde.minirok /Player
+        <replaceable>methodName</replaceable></command>.
+      <command>dbus-send</command>(1) should also work, but
+      then you'll need to fully qualify the method name.
     </para>
-    <programlisting>    play
-    pause
-    playPause
-    stop
-    next
-    previous
-    nowPlaying
-    toggleWindow
-    appendToPlaylist
-    stopAfterCurrent</programlisting>
     <para>
-      See the <filename>README.Usage</filename> file for details.
+      Here's a list of available methods:
+    </para>
+    <programlisting>    Play
+    Pause
+    PlayPause
+    Stop
+    Next
+    Previous
+    NowPlaying
+    AppendToPlaylist
+    StopAfterCurrent</programlisting>
+    <para>
+      See the <filename>README.Usage</filename> file for details. Note
+      that this interface will only be available if the required
+      dependencies are installed. See the <filename>README</filename>
+      file a list of these.
     </para>
   </refsect1>
 
@@ -125,7 +133,8 @@
           <para>
             Try to append the files given as arguments to an existing
             Minirok instance first. If that fails, start a new Minirok
-            instance as usual.
+            instance as usual. (This is done via DBus, see the
+            <filename>README</filename> file for required dependencies.)
           </para>
         </listitem>
       </varlistentry>

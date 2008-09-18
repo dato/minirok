@@ -4,6 +4,14 @@ minirok (2.0-1) UNRELEASED; urgency=low
 
  -- Adeodato Simó <dato@net.com.org.es>  Thu, 03 Jan 2008 17:11:18 +0100
 
+minirok (0.9.1-1) unstable; urgency=low
+
+  * New upstream bugfix release:
+    + fix traceback when setting the tooltip for tracks with no artist
+      information.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Wed, 21 May 2008 19:13:57 +0200
+
 minirok (0.9-1) unstable; urgency=low
 
   * New upstream release.

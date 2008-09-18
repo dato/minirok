@@ -1,5 +1,5 @@
 minirok: script-not-executable ./usr/share/minirok/minirok/__init__.py
-minirok: script-not-executable ./usr/share/minirok/minirok/dcop.py
+minirok: script-not-executable ./usr/share/minirok/minirok/dbusface.py
 minirok: script-not-executable ./usr/share/minirok/minirok/drag.py
 minirok: script-not-executable ./usr/share/minirok/minirok/engine.py
 minirok: script-not-executable ./usr/share/minirok/minirok/lastfm_submit.py
