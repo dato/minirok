@@ -1285,11 +1285,10 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
         NOTE: this code can't be in __init__, because at that time there is not
         a model/view associated with the object.
         """
-        self.config = kdecore.KGlobal.config()
-        group = self.config.group(self.CONFIG_SECTION)
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
 
-        if group.hasKey(self.CONFIG_OPTION):
-            entries = map(str, group.readEntry(
+        if config.hasKey(self.CONFIG_OPTION):
+            entries = map(str, config.readEntry(
                                 self.CONFIG_OPTION, QtCore.QStringList()))
         else:
             entries = self.CONFIG_OPTION_DEFAULT.split(',')
@@ -1384,9 +1383,8 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
             entry = '%s:%d:%d' % (name, width, visible)
             entries[self.visualIndex(logical)] = entry
 
-        self.config = kdecore.KGlobal.config()
-        self.config.group(self.CONFIG_SECTION).writeEntry(
-                                self.CONFIG_OPTION, entries)
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writeEntry(self.CONFIG_OPTION, entries)
 
 ##
 
