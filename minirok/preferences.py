@@ -104,7 +104,7 @@ class GeneralPage(QtGui.QWidget, options1.Ui_Page):
         self.setupUi(self)
 
         if getattr(self, 'NO_UI', False):
-            # Ui_Page comes from ui/error.py
+            # This Ui_Page comes from ui/error.py.
             return
 
         ##
