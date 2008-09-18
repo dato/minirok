@@ -4,7 +4,6 @@ IMPORTANT:
   * As we ship icons, we have to "touch `kde4-config --expandvars
     --install icon`/hicolor", both in setup.sh and postinst! (postrm
     too?)
-  * Have to remove /etc/kde3/minirokrc by hand from maint scripts.
   * Using util.playable_from_untrusted in load_saved_playlist()
     eliminates duplicates.
 
@@ -33,10 +32,6 @@ Statusbar:
 
 Options:
   * First radio button properly vertically aligned
-
-Appearance:
-  * Draw column separators in the playlist? (HOWTO: playlistitem.cpp:595)
-    And, only in the Amarok classic theme, or always?
 
 Other:
   * Save window position?, maybe use a meaningful size the first time

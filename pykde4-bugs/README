@@ -1,7 +1,0 @@
-Files in these directory contain example code that expose bugs in the
-PyKDE4 bindings. For each example, a working C++ example is provided,
-plus a direct translation to Python which does not work.
-
-I send these examples to the PyQt mailing lists, CCing Simond Edwards.
-
-All files in this directory are placed in the public domain.

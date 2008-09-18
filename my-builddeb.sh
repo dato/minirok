@@ -12,7 +12,7 @@ UPSTREAM_VERSION=$(dpkg-parsechangelog |
 
 if [ "$DIST" = "UNRELEASED" ]; then
     echo >&2 "Building a tmp package, as per changelog"
-    TMP_UPSTREAM_VERSION="$UPSTREAM_VERSION~r`bzr revno`"
+    TMP_UPSTREAM_VERSION="$UPSTREAM_VERSION~r`git rev-list HEAD | wc -l`"
     sed -i -e "1s/ ($UPSTREAM_VERSION-/ ($TMP_UPSTREAM_VERSION-/" debian/changelog
     fakeroot debian/rules clean binary
     sed -i -e "1s/ ($TMP_UPSTREAM_VERSION-/ ($UPSTREAM_VERSION-/" debian/changelog
@@ -25,6 +25,7 @@ fi
 ##
 
 BUILDDIR="../build-area"
+UNPACK_DIR="minirok-$UPSTREAM_VERSION"
 UPSTREAM_TARBALL="../tarballs/minirok-$UPSTREAM_VERSION.tar.gz"
 DEBIAN_TARBALL="$BUILDDIR/minirok_$UPSTREAM_VERSION.orig.tar.gz"
 
@@ -41,16 +42,12 @@ fi
 
 ##
 
-EXPORT_DIR="export"
-UNPACK_DIR="minirok-$UPSTREAM_VERSION"
-
-rm -rf "$BUILDDIR/$EXPORT_DIR"
-bzr export "$BUILDDIR/$EXPORT_DIR"
+rm -rf "$BUILDDIR/debian"
+git archive HEAD debian | tar xC "$BUILDDIR"
 
 cd "$BUILDDIR"
 rm -rf "$UNPACK_DIR"
 tar xf "`basename $DEBIAN_TARBALL`"
-mv "$EXPORT_DIR/debian" "$UNPACK_DIR"
-rm -rf "$EXPORT_DIR"
+mv debian "$UNPACK_DIR"
 cd "$UNPACK_DIR"
 debuild && cd .. && rm -rf "$UNPACK_DIR"

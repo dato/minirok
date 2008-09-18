@@ -68,10 +68,12 @@ def get_png(name):
     except KeyError:
         pass
 
-    for path in [ # XXX-KDE4 str(kdecore.locate('appdata', os.path.join('images', name))),
+    for path in [ str(kdecore.KStandardDirs.locate('appdata', os.path.join('images', name))),
             os.path.join(os.path.dirname(__file__), '..', 'images', name) ]:
         if os.path.exists(path):
             break
+    else:
+        minirok.logger.warn('could not find %s', name)
 
     return _png_cache.setdefault(name, QtGui.QPixmap(path, 'PNG'))
 
@@ -90,14 +92,10 @@ def create_action(name, text, slot, icon=None, shortcut=None,
         action.setIcon(kdeui.KIcon(icon))
 
     if shortcut is not None:
-        action.setShortcut(kdeui.KShortcut(shortcut),
-                # XXX-KDE4 ../pykde4-bugs/01_kaction_setShortcut_requires_two_arguments.py
-                kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
+        action.setShortcut(kdeui.KShortcut(shortcut))
 
     if global_shortcut is not None:
-        action.setGlobalShortcut(kdeui.KShortcut(global_shortcut),
-                # XXX-KDE4 here too
-                kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
+        action.setGlobalShortcut(kdeui.KShortcut(global_shortcut))
 
     return action
 
@@ -248,9 +246,8 @@ class RandomOrderedList(list):
         self.insert(random.randrange(len(self)+1), item)
 
     def extend(self, seq):
-        seq = list(seq)
-        random.shuffle(seq)
         list.extend(self, seq)
+        random.shuffle(self)
 
 ##
 

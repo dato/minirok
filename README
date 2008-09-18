@@ -15,7 +15,7 @@ performed both in the tree view and the playlist.
 
 Other features include:
 
-  * DCOP interface for controlling the player and retrieving the
+  * DBus interface for controlling the player and retrieving the
     currently played track, among other things
 
   * alter the playing order in the playlist by queueing tracks;
@@ -26,8 +26,6 @@ Other features include:
     specifying a regular expression to extract them from the filename
 
   * submission of played songs to Last.fm (with lastfmsubmitd)
-
-  * support for the classic Amarok "funky-monkey" theme
 
   * global shortcuts
 
@@ -114,6 +112,15 @@ for the program to run:
     Source: http://gstreamer.freedesktop.org
 
 The following dependencies are optional and enhance Minirok in some way:
+
+  * dbus-python - enables controlling the player from scripts, à-la-DCOP
+    Debian and Ubuntu: python-dbus
+    Source: http://www.freedesktop.org/wiki/Software/DBusBindings#python
+
+    (You'll also need DBus support compiled-in in the PyQt bindings
+    above; in Debian and Ubuntu, just install python-qt4-dbus.
+    Additionally, you must be running Qt 4.4.0 or later for the DBus
+    interface to work.)
 
   * lastfmsubmitd - enables submission of played tracks to Last.fm
     Debian and Ubuntu: lastfmsubmitd

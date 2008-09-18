@@ -18,7 +18,7 @@ from minirok import engine, proxy, tag_reader, util
 
 ##
 
-class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig):
+class Playlist(QtCore.QAbstractTableModel, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
@@ -32,7 +32,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def __init__(self, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         util.HasConfig.__init__(self)
-        # util.HasGUIConfig.__init__(self)
+        util.HasGUIConfig.__init__(self)
 
         # Core model stuff
         self._itemlist = []
@@ -688,12 +688,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
     def apply_preferences(self):
-        self._regex = None
-        self._regex_mode = 'Always'
-        return # XXX-KDE4
-
         prefs = minirok.Globals.preferences
 
         if prefs.tags_from_regex:
@@ -706,6 +701,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 self._regex_mode = 'Always'
             else:
                 self._regex_mode = prefs.tag_regex_mode
+                assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
         else:
             self._regex = None
             self._regex_mode = 'Always'
@@ -778,8 +774,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             regex_failed = False
 
         item = PlaylistItem(path, tags)
-
-        assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
 
         if self._regex_mode == 'Always' or (regex_failed
                 and self._regex_mode == 'OnRegexFail'):
@@ -869,18 +863,35 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
 class Proxy(proxy.Model):
 
+    def __init__(self, parent=None):
+        proxy.Model.__init__(self, parent)
+        self.scroll_index = None
+
     def setSourceModel(self, model):
         proxy.Model.setSourceModel(self, model)
 
         self.connect(model, QtCore.SIGNAL('scroll_needed'),
-                lambda index: self.emit(QtCore.SIGNAL('scroll_needed'),
-                                self.mapFromSource(index)))
+                self.slot_scroll_needed)
 
         # XXX dataChanged() abuse here too...
         self.connect(model, QtCore.SIGNAL('repaint_needed'),
             lambda: self.emit(QtCore.SIGNAL(
                 'dataChanged(const QModelIndex &, const QModelIndex &)'),
                     self.index(0, 0), self.index(1, self.columnCount())))
+
+    def setPattern(self, pattern):
+        proxy.Model.setPattern(self, pattern)
+        self.emit_scroll_needed()
+
+    def slot_scroll_needed(self, index):
+        self.scroll_index = index
+        self.emit_scroll_needed()
+
+    def emit_scroll_needed(self):
+        if self.scroll_index is not None:
+            mapped = self.mapFromSource(self.scroll_index)
+            if mapped.isValid():
+                self.emit(QtCore.SIGNAL('scroll_needed'), mapped)
 
     ##
 
@@ -1013,8 +1024,6 @@ class PlaylistView(QtGui.QTreeView):
     ##
 
     def drawRow(self, painter, styleopt, index):
-        model = self.model()
-
         if index.data(Playlist.RoleQueryIsPlaying).toBool():
             styleopt = QtGui.QStyleOptionViewItem(styleopt) # make a copy
             styleopt.font.setItalic(True)
@@ -1067,7 +1076,7 @@ class PlaylistView(QtGui.QTreeView):
 
         elif button & Qt.MidButton:
             if index.data(Playlist.RoleQueryIsPlaying).toBool():
-                self.model().slot_pause()
+                minirok.Globals.action_collection.action('action_pause').trigger()
 
         elif button & Qt.RightButton:
             QtGui.QTreeView.mousePressEvent(self, event)
@@ -1277,11 +1286,10 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
         NOTE: this code can't be in __init__, because at that time there is not
         a model/view associated with the object.
         """
-        self.config = kdecore.KGlobal.config()
-        group = self.config.group(self.CONFIG_SECTION)
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
 
-        if group.hasKey(self.CONFIG_OPTION):
-            entries = map(str, group.readEntry(
+        if config.hasKey(self.CONFIG_OPTION):
+            entries = map(str, config.readEntry(
                                 self.CONFIG_OPTION, QtCore.QStringList()))
         else:
             entries = self.CONFIG_OPTION_DEFAULT.split(',')
@@ -1376,9 +1384,8 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
             entry = '%s:%d:%d' % (name, width, visible)
             entries[self.visualIndex(logical)] = entry
 
-        self.config = kdecore.KGlobal.config()
-        self.config.group(self.CONFIG_SECTION).writeEntry(
-                                self.CONFIG_OPTION, entries)
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writeEntry(self.CONFIG_OPTION, entries)
 
 ##
 

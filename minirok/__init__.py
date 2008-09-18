@@ -5,6 +5,7 @@
 # Licensed under the terms of the MIT license.
 
 import os
+import re
 import sys
 import logging
 
@@ -91,7 +92,10 @@ _do_exit = False
 _not_found = []
 
 try:
-    import PyQt4
+    from PyQt4 import (
+        QtGui,
+        QtCore, # used below
+    )
 except ImportError:
     _do_exit = True
     _not_found.append('PyQt')
@@ -122,6 +126,22 @@ except ImportError:
 except pygst.RequiredVersionError:
     _do_exit = True
     _not_found.append('GStreamer Python bindings (>= 0.10)')
+
+try:
+    import dbus
+    import dbus.mainloop.qt
+except ImportError:
+    _has_dbus = False
+else:
+    match = re.match(r'(\d+)\.(\d+).(\d+)', str(QtCore.qVersion()))
+    version = tuple(map(int, match.groups())) # XXX match could be None?
+
+    if version >= (4, 4, 0):
+        _has_dbus = True
+    else:
+        logger.warn('disabling DBus interface: ' \
+                    'Qt version is %s, but 4.4.0 is needed', QtCore.qVersion())
+        _has_dbus = False
 
 try:
     import lastfm

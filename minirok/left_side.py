@@ -134,9 +134,8 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         self.completion_object = kio.KUrlCompletion(kio.KUrlCompletion.DirCompletion)
         self.setCompletionObject(self.completion_object)
 
-        self.config = kdecore.KGlobal.config()
-        urls = self.config.group(self.CONFIG_SECTION).readPathEntry(
-                            self.CONFIG_HISTORY_OPTION, QtCore.QStringList())
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        urls = config.readPathEntry(self.CONFIG_HISTORY_OPTION, QtCore.QStringList())
         self.setUrls(urls)
 
         self.connect(self, QtCore.SIGNAL('urlActivated(const KUrl &)'),
@@ -163,6 +162,5 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
         self.emit(QtCore.SIGNAL('change_url'), url)
 
     def slot_save_config(self):
-        self.config = kdecore.KGlobal.config()
-        self.config.group(self.CONFIG_SECTION).writePathEntry(
-                            self.CONFIG_HISTORY_OPTION, self.urls())
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writePathEntry(self.CONFIG_HISTORY_OPTION, self.urls())
