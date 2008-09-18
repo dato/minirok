@@ -72,10 +72,6 @@ def main():
     application = kdeui.KApplication()
     main_window = mw.MainWindow()
 
-    # See the "Known bugs" section in README.Bugs
-    if QtGui.QApplication.style().objectName() == 'oxygen':
-        QtGui.QApplication.setStyle('Cleanlooks')
-
     if minirok._has_dbus:
         import dbus
         import dbus.service

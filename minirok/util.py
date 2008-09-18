@@ -92,14 +92,10 @@ def create_action(name, text, slot, icon=None, shortcut=None,
         action.setIcon(kdeui.KIcon(icon))
 
     if shortcut is not None:
-        action.setShortcut(kdeui.KShortcut(shortcut),
-                # XXX-KDE4 ../pykde4-bugs/01_kaction_setShortcut_requires_two_arguments.py
-                kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
+        action.setShortcut(kdeui.KShortcut(shortcut))
 
     if global_shortcut is not None:
-        action.setGlobalShortcut(kdeui.KShortcut(global_shortcut),
-                # XXX-KDE4 here too
-                kdeui.KAction.ShortcutType(kdeui.KAction.ActiveShortcut | kdeui.KAction.DefaultShortcut))
+        action.setGlobalShortcut(kdeui.KShortcut(global_shortcut))
 
     return action
 
