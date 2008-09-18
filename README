@@ -87,7 +87,7 @@ for the program to run:
   * PyQt and PyKDE (version 4)
     Debian and Ubuntu: python-qt4, python-kde4
     Source: http://www.riverbankcomputing.co.uk/pyqt/download.php
-            http://www.riverbankcomputing.co.uk/pykde/download.php (XXX-KDE4?)
+            http://www.riverbankcomputing.co.uk/pykde/download.php
 
   * Mutagen (audio metadata library)
     Debian and Ubuntu: python-mutagen

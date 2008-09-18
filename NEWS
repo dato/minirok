@@ -2,16 +2,15 @@
 
   PORTED TO KDE 4
 
-    * Minirok now uses PyQt4 and PyKDE4. As a result:
+    Minirok now uses PyQt4 and PyKDE4. As a result:
 
-      - global keybindings work natively, without needing KHotKeys + DCOP.
-	(TODO)
+      * global keybindings work natively, without needing KHotKeys.
 
-      - the buttons that appear in the toolbar can be configured, as in
-	other KDE applications.
+      * the set of buttons in the toolbar can be configured, as in other
+	KDE applications.
 
-      - DBUS is used instead of DCOP, bla bla bla.
-	(TODO)
+      * the DCOP interface is gone, replaced by DBus. See README.Usage
+	for details.
 
   PLAYLIST
 
