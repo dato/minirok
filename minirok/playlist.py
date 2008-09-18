@@ -17,7 +17,7 @@ from minirok import drag, engine, proxy, tag_reader, util
 
 ##
 
-class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig):
+class Playlist(QtCore.QAbstractTableModel, util.HasConfig, util.HasGUIConfig):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
@@ -31,7 +31,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
     def __init__(self, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         util.HasConfig.__init__(self)
-        # util.HasGUIConfig.__init__(self)
+        util.HasGUIConfig.__init__(self)
 
         # Core model stuff
         self._itemlist = []
@@ -687,12 +687,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
 
     ##
 
-    # XXX-KDE4 TODO
     def apply_preferences(self):
-        self._regex = None
-        self._regex_mode = 'Always'
-        return # XXX-KDE4
-
         prefs = minirok.Globals.preferences
 
         if prefs.tags_from_regex:
@@ -705,6 +700,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
                 self._regex_mode = 'Always'
             else:
                 self._regex_mode = prefs.tag_regex_mode
+                assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
         else:
             self._regex = None
             self._regex_mode = 'Always'
@@ -777,8 +773,6 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig):#, util.HasGUIConfig)
             regex_failed = False
 
         item = PlaylistItem(path, tags)
-
-        assert self._regex_mode in ['Always', 'OnRegexFail', 'Never']
 
         if self._regex_mode == 'Always' or (regex_failed
                 and self._regex_mode == 'OnRegexFail'):

@@ -10,11 +10,11 @@ from PyQt4 import QtGui, QtCore
 from PyKDE4 import kio, kdeui, kdecore
 
 import minirok
-from minirok import left_side, right_side, statusbar, util # XXX-KDE4 preferences
+from minirok import left_side, preferences, right_side, statusbar, util
 
 ##
 
-class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
+class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig):
 
     CONFIG_SECTION = 'MainWindow'
     CONFIG_OPTION_SPLITTER_STATE = 'splitterState'
@@ -22,10 +22,9 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
     def __init__ (self, *args):
         kdeui.KXmlGuiWindow.__init__(self, *args)
         util.HasConfig.__init__(self)
-        util.HasGUIConfig.__init__(self)
 
         minirok.Globals.action_collection = self.actionCollection()
-        # XXX-KDE4 minirok.Globals.preferences = preferences.Preferences()
+        minirok.Globals.preferences = preferences.Preferences()
 
         self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view)
@@ -41,7 +40,6 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
 
         self.init_systray()
         self.init_actions()
-        # XXX-KDE4 self.apply_preferences()
 
         self.setHelpMenuEnabled(False)
         self.setCentralWidget(self.main_view)
@@ -92,10 +90,8 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         self.action_toggle_window = util.create_action('action_toggle_window',
                 'Show/Hide window', self.systray.toggleActive, global_shortcut='Ctrl+Alt+M')
 
-        return # XXX-KDE4
-
-        self.action_preferences = kdeui.KStdAction.preferences(
-                self.slot_preferences, ac)
+        self.action_preferences = kdeui.KStandardAction.preferences(
+                self.slot_preferences, actionCollection)
         self.action_preferences.setShortcutConfigurable(False)
 
     def init_systray(self):
@@ -103,39 +99,6 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         self.systray.connect(self.systray, QtCore.SIGNAL('quitSelected()'),
             self.slot_really_quit)
         self.systray.show()
-
-    ##
-
-    def apply_preferences(self):
-        if not minirok.Globals.preferences.use_amarok_classic_theme:
-            alternate_bg_color = \
-                    kdecore.KGlobalSettings.alternateBackgroundColor()
-            self.unsetPalette()
-        else:
-            # This comes from amarok/App::applyColorScheme().
-            # QColor(0xRRGGBB) does not seem to work, though.
-            blue = qt.QColor(32, 32, 80) # 0x202050
-            grey = qt.QColor(215, 215, 239) # 0xD7D7EF
-            alternate_bg_color = qt.QColor(57, 64, 98)
-            group = qt.QColorGroup(qt.QApplication.palette().active())
-
-            group.setColor(qt.QColorGroup.Base, blue)
-            group.setColor(qt.QColorGroup.Text, qt.Qt.white)
-            group.setColor(qt.QColorGroup.Foreground, grey)
-            group.setColor(qt.QColorGroup.Background, alternate_bg_color)
-
-            group.setColor(qt.QColorGroup.Button, alternate_bg_color)
-            group.setColor(qt.QColorGroup.ButtonText, grey)
-            group.setColor(qt.QColorGroup.Highlight, qt.Qt.white)
-            group.setColor(qt.QColorGroup.HighlightedText, blue)
-
-            # this one is for the disabled "Search" test in the tree_search
-            group.setColor(qt.QColorGroup.Light, qt.Qt.black)
-
-            self.setPalette(qt.QPalette(group, group, group))
-
-        for lv in self.queryList('KListView'):
-            lv.setAlternateBackground(alternate_bg_color)
 
     ##
 
@@ -163,7 +126,8 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig, util.HasGUIConfig):
         else:
             dialog = preferences.Dialog(self, 'preferences dialog',
                 minirok.Globals.preferences)
-            self.connect(dialog, qt.SIGNAL('settingsChanged()'),
+            self.connect(dialog,
+                    QtCore.SIGNAL('settingsChanged(const QString &)'),
                     util.HasGUIConfig.settings_changed)
             dialog.show()
 

@@ -6,4 +6,4 @@ clean:
 	rm -f $(PYFILES) $(patsubst %.py,%.pyc,$(PYFILES))
 
 %.py: %.ui
-	kdepyuic -a $^
+	pykdeuic4 -o $@ $^

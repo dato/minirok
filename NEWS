@@ -23,6 +23,11 @@
       discarded, and all playable files underneath them will be added to
       the playlist.
 
+  OTHER NEWS
+
+    * Support for Amarok's classic "funky-monkey" theme has been
+      dropped. Sorry!
+
   FOO
 
     * XXX Mention the improvement when loading in the tree view a
