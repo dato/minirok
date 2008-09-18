@@ -9,7 +9,7 @@ Homepage: http://chistera.yi.org/~adeodato/code/minirok
 Package: minirok
 Architecture: all
 Depends: python (>= 2.4),
- python-qt4, python-kde4,
+ python-qt4, python-kde4 (>= 4:4.1.1),
  python-mutagen,
  python-gst0.10, gstreamer0.10-alsa | gstreamer0.10-audiosink,
  gstreamer0.10-plugins-base, gstreamer0.10-plugins-good, gstreamer0.10-plugins-ugly,
