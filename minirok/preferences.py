@@ -82,11 +82,12 @@ class Dialog(kdeui.KConfigDialog):
         regex = util.kurl_to_path(self.general_page.kcfg_TagRegex.text())
         try:
             re.compile(regex)
-            return True
         except re.error, e:
             msg = 'The introduced regular expression is not valid:\n%s' % e
             kdeui.KMessageBox.error(self, msg, 'Invalid regular expression')
             return False
+        else:
+            return True
 
     ##
 
