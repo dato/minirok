@@ -39,10 +39,7 @@
           <widget class="QLineEdit" name="kcfg_TagRegex" />
          </item>
          <item>
-          <widget class="QGroupBox" name="kcfg_TagRegexMode" >
-           <property name="title" >
-            <string/>
-           </property>
+          <widget class="KButtonGroup" name="kcfg_TagRegexMode" >
            <property name="flat" >
             <bool>true</bool>
            </property>
@@ -109,6 +106,14 @@ but still read the tags in the background</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KButtonGroup</class>
+   <extends>QGroupBox</extends>
+   <header>kbuttongroup.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
