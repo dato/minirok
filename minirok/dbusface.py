@@ -12,6 +12,10 @@ from minirok import util
 
 ##
 
+DBUS_SERVICE_NAME = 'org.kde.minirok'
+
+##
+
 class Player(dbus.service.Object):
 
     def __init__(self):
@@ -28,9 +32,9 @@ class Player(dbus.service.Object):
             return action.trigger
     ##
 
-    decorator = dbus.service.method('org.kde.minirok')
-    decorator_as = dbus.service.method('org.kde.minirok', 'as')
-    decorator_s_s = dbus.service.method('org.kde.minirok', 's', 's')
+    decorator = dbus.service.method(DBUS_SERVICE_NAME)
+    decorator_as = dbus.service.method(DBUS_SERVICE_NAME, 'as')
+    decorator_s_s = dbus.service.method(DBUS_SERVICE_NAME, 's', 's')
 
     @decorator
     def Play(self):
