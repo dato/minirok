@@ -5,6 +5,9 @@
     * Fix crashes that randomly happened while moving from one track to
       another.
 
+    * Minirok no longer hangs on exit, which had started happening with
+      Python 2.5.
+
 
 0.9.1	2008-05-21
 

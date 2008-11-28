@@ -67,6 +67,7 @@ class GStreamerEngine(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
+        self.setDaemon(True)
 
         self._qobject = self.QObject()
         self.exit_engine = threading.Event() # join() sets this
