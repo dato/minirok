@@ -29,6 +29,8 @@ __thanksto__    = [
         # ('Name', 'Task', 'Email', 'Webpage'),
         ('The Amarok developers', 'For their design and ideas, which I copied.\n'
          'And their code, which I frequently also copied.', '', 'http://amarok.kde.org'),
+        ('Pino Toscano', 'For saving me from KConfigDialogManager + QButtonGroup misery.',
+         'pino@kde.org', ''),
 ]
 
 __license__ = '''\
