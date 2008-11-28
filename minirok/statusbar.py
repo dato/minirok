@@ -64,11 +64,11 @@ class StatusBar(kdeui.KStatusBar):
         self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
                 self.slot_start)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
-                self.slot_engine_status_changed)
+        minirok.Globals.engine.connect(
+                qt.PYSIGNAL('status_changed'), self.slot_engine_status_changed)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('seek_finished'),
-                self.slot_engine_seek_finished)
+        minirok.Globals.engine.connect(
+                qt.PYSIGNAL('seek_finished'), self.slot_engine_seek_finished)
 
         # Actions
         self.action_next_repeat_mode = kdeui.KAction('Change repeat mode',

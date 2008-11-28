@@ -1,3 +1,11 @@
+minirok (0.9.2-1) UNRELEASED; urgency=low
+
+  * New upstream bugfix release:
+    + fix crashes that randomly happened while moving from one track to
+      another. (Closes: #507115)
+
+ -- Adeodato Simó <dato@net.com.org.es>  Fri, 28 Nov 2008 10:51:48 +0100
+
 minirok (0.9.1-1) unstable; urgency=low
 
   * New upstream bugfix release:

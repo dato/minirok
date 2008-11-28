@@ -50,8 +50,8 @@ class LastfmSubmitter(qt.QObject, util.HasGUIConfig):
         func(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
                 self.slot_new_track)
 
-        func(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
-                self.slot_engine_status_changed)
+        minirok.Globals.engine.connect(
+                qt.PYSIGNAL('status_changed'), self.slot_engine_status_changed)
 
         func(self.timer, qt.SIGNAL('timeout()'), self.slot_submit)
 

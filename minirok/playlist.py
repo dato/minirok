@@ -69,11 +69,11 @@ class Playlist(kdeui.KListView, util.HasConfig, util.HasGUIConfig):
 
         self.connect(self, qt.PYSIGNAL('list_changed'), self.slot_list_changed)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
-                self.slot_engine_status_changed)
+        minirok.Globals.engine.connect(
+                qt.PYSIGNAL('status_changed'), self.slot_engine_status_changed)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('end_of_stream'),
-                self.slot_engine_end_of_stream)
+        minirok.Globals.engine.connect(
+                qt.PYSIGNAL('end_of_stream'), self.slot_engine_end_of_stream)
 
         self.init_actions()
         self.apply_preferences()

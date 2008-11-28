@@ -1,3 +1,11 @@
+0.9.2	IN DEVELOPMENT
+
+  BUGFIXES
+
+    * Fix crashes that randomly happened while moving from one track to
+      another.
+
+
 0.9.1	2008-05-21
 
   BUGFIXES

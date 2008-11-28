@@ -216,8 +216,8 @@ class Systray(kdeui.KSystemTray):
         self.connect(minirok.Globals.playlist, qt.PYSIGNAL('new_track'),
                 self.slot_set_tooltip)
 
-        self.connect(minirok.Globals.engine, qt.PYSIGNAL('status_changed'),
-                self.slot_engine_status_changed)
+        minirok.Globals.engine.connect(
+                qt.PYSIGNAL('status_changed'), self.slot_engine_status_changed)
 
     def slot_set_tooltip(self):
         tags = minirok.Globals.playlist.currently_playing

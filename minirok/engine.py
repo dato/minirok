@@ -26,7 +26,7 @@ class State:
 
 ##
 
-class GStreamerEngine(qt.QObject, threading.Thread):
+class GStreamerEngine(threading.Thread):
     SINK = 'alsasink'
 
     PLUGINS = {
@@ -36,10 +36,39 @@ class GStreamerEngine(qt.QObject, threading.Thread):
             'vorbis': [ '.ogg' ],
     }
 
+    class QObject(qt.QObject):
+        # The Engine class it's a thread; in Qt3, sending signals accross
+        # threads is not supported, so the Engine will send custom events to
+        # this class, and this class will emit the signals instead. Other parts
+        # of the code will transparently connect() to this interface instead of
+        # directly to the Engine object.
+
+        STATUS_CHANGED = qt.QEvent.User + 1
+        END_OF_STREAM  = qt.QEvent.User + 2
+        SEEK_FINISHED  = qt.QEvent.User + 3
+
+        def customEvent(self, event):
+            t = event.type()
+            data = event.data()
+
+            if t == self.STATUS_CHANGED:
+                self.emit(qt.PYSIGNAL('status_changed'), (data,))
+
+            elif t == self.END_OF_STREAM:
+                self.emit(qt.PYSIGNAL('end_of_stream'), (data,))
+
+            elif t == self.SEEK_FINISHED:
+                self.emit(qt.PYSIGNAL('seek_finished'), ())
+
+            else:
+                minirok.logger.error('unknown custom event: %d', t)
+
+    ##
+
     def __init__(self):
-        qt.QObject.__init__(self)
         threading.Thread.__init__(self)
 
+        self._qobject = self.QObject()
         self.exit_engine = threading.Event() # join() sets this
 
         self._supported_extensions = []
@@ -80,10 +109,17 @@ class GStreamerEngine(qt.QObject, threading.Thread):
 
     ##
 
+    def connect(self, signal, slot):
+        qt.QObject.connect(self._qobject, signal, slot)
+
+    ##
+
     def _set_status(self, value):
         if value != self._status:
             self._status = value
-            self.emit(qt.PYSIGNAL('status_changed'), (value,))
+            event = qt.QCustomEvent(self.QObject.STATUS_CHANGED)
+            event.setData(value)
+            qt.QApplication.postEvent(self._qobject, event)
 
     status = property(lambda self: self._status, _set_status)
 
@@ -141,7 +177,9 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def _message_eos(self, bus, message):
         self.bin.set_state(gst.STATE_NULL)
         self.status = State.STOPPED
-        self.emit(qt.PYSIGNAL('end_of_stream'), (self.uri,))
+        event = qt.QCustomEvent(self.QObject.END_OF_STREAM)
+        event.setData(self.uri)
+        qt.QApplication.postEvent(self._qobject, event)
 
     def _message_error(self, bus, message):
         error, debug_info = message.parse_error()
@@ -151,7 +189,8 @@ class GStreamerEngine(qt.QObject, threading.Thread):
     def _message_async_done(self, bus, message):
         if self.seek_pending:
             self.seek_pending = False
-            self.emit(qt.PYSIGNAL('seek_finished'), ())
+            qt.QApplication.postEvent(self._qobject,
+                    qt.QCustomEvent(self.QObject.SEEK_FINISHED))
 
 ##
 
