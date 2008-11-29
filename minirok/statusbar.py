@@ -165,7 +165,7 @@ class NegativeTimeLabel(TimeLabel):
 
 ##
 
-class MultiIconLabel(QtGui.QLabel, util.HasConfig):
+class MultiIconLabel(QtGui.QLabel):
     """A clickable label that shows a series of icons.
 
     The label automatically changes the icon on click, and then emits a
@@ -181,7 +181,7 @@ class MultiIconLabel(QtGui.QLabel, util.HasConfig):
         :param tooltips: tooltips associated with each icon/state.
         """
         QtGui.QLabel.__init__(self, parent)
-        util.HasConfig.__init__(self)
+        util.CallbackRegistry.register_save_config(self.save_config)
         self.connect(self, QtCore.SIGNAL('clicked(int)'), self.slot_clicked)
 
         if icons is not None:
@@ -227,7 +227,7 @@ class MultiIconLabel(QtGui.QLabel, util.HasConfig):
         raise NotImplementedError, \
             'MultiIconLabel.slot_clicked must be reimplemented in subclasses.'
 
-    def slot_save_config(self):
+    def save_config(self):
         if self.CONFIG_OPTION is not None:
             config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
             config.writeEntry(self.CONFIG_OPTION, QtCore.QVariant(self.state))

@@ -18,7 +18,7 @@ from minirok import engine, proxy, tag_reader, util
 
 ##
 
-class Playlist(QtCore.QAbstractTableModel, util.HasConfig, util.HasGUIConfig):
+class Playlist(QtCore.QAbstractTableModel):
     # This is the value self.current_item has whenver just the first item on
     # the playlist should be used. Only set to this value when the playlist
     # contains items!
@@ -31,8 +31,8 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig, util.HasGUIConfig):
 
     def __init__(self, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
-        util.HasConfig.__init__(self)
-        util.HasGUIConfig.__init__(self)
+        util.CallbackRegistry.register_save_config(self.save_config)
+        util.CallbackRegistry.register_apply_prefs(self.apply_preferences)
 
         # Core model stuff
         self._itemlist = []
@@ -708,7 +708,7 @@ class Playlist(QtCore.QAbstractTableModel, util.HasConfig, util.HasGUIConfig):
 
     ##
 
-    def slot_save_config(self):
+    def save_config(self):
         """Saves the current playlist."""
         paths = (item.path for item in self._itemlist)
 
@@ -1249,7 +1249,7 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
 
 ##
 
-class Columns(QtGui.QHeaderView, util.HasConfig):
+class Columns(QtGui.QHeaderView):
 
     # We use a single configuration option, which contains the order in which
     # columns are to be displayed, their width, and whether they are hidden or
@@ -1261,7 +1261,7 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
 
     def __init__(self, parent):
         QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
-        util.HasConfig.__init__(self)
+        util.CallbackRegistry.register_save_config(self.save_config)
 
         self.setMovable(True)
         self.setStretchLastSection(False)
@@ -1372,7 +1372,7 @@ class Columns(QtGui.QHeaderView, util.HasConfig):
 
     ##
 
-    def slot_save_config(self):
+    def save_config(self):
         entries = [None] * self.count()
 
         for logical, name in enumerate(self.sorted_column_names()):

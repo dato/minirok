@@ -31,6 +31,8 @@ __thanksto__    = [
          'And their code, which I frequently also copied.', '', 'http://amarok.kde.org'),
         ('David Faure', 'Invaluable help on #kde-devel when dealing with KDirLister.',
          'faure@kde.org', 'http://www.kdab.net/~dfaure'),
+        ('Pino Toscano', 'For saving me from KConfigDialogManager + QButtonGroup misery.',
+         'pino@kde.org', ''),
 ]
 
 __license__ = '''\

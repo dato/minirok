@@ -5,5 +5,9 @@ If you want to install Minirok from source (instead of installing
 packages from your distribution), run `./setup.sh install`.
 
 That will install files under the appropriate locations as determined by
-kde4-config. If the kde-config binary can't be found, installation will
+kde4-config. If the kde4-config binary can't be found, installation will
 be aborted.
+
+However, Minirok should run just fine from the unpacked source
+directory, with just `./minirok.py` (you can make a symlink to that
+from eg. ~/bin/minirok).

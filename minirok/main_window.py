@@ -14,14 +14,14 @@ from minirok import left_side, preferences, right_side, statusbar, util
 
 ##
 
-class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig):
+class MainWindow(kdeui.KXmlGuiWindow):
 
     CONFIG_SECTION = 'MainWindow'
     CONFIG_OPTION_SPLITTER_STATE = 'splitterState'
 
     def __init__ (self, *args):
         kdeui.KXmlGuiWindow.__init__(self, *args)
-        util.HasConfig.__init__(self)
+        util.CallbackRegistry.register_save_config(self.save_config)
 
         minirok.Globals.action_collection = self.actionCollection()
         minirok.Globals.preferences = preferences.Preferences()
@@ -126,10 +126,10 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig):
                 minirok.Globals.preferences)
             self.connect(dialog,
                     QtCore.SIGNAL('settingsChanged(const QString &)'),
-                    util.HasGUIConfig.settings_changed)
+                    util.CallbackRegistry.apply_preferences_all)
             dialog.show()
 
-    def slot_save_config(self):
+    def save_config(self):
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
         config.writeEntry(self.CONFIG_OPTION_SPLITTER_STATE, self.main_view.saveState())
 
@@ -141,6 +141,11 @@ class MainWindow(kdeui.KXmlGuiWindow, util.HasConfig):
             # We want to save the shown/hidden status on session quit
             self.hide()
         return self._flag_really_quit or finishing_session
+
+    def queryExit(self):
+        util.CallbackRegistry.save_config_all()
+        kdecore.KGlobal.config().sync()
+        return True
 
     def saveProperties(self, config):
         config.writeEntry('docked', bool(self.isHidden()))

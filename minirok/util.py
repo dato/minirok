@@ -147,34 +147,40 @@ def playable_from_untrusted(files, warn=False):
 
 ##
 
-class HasConfig(object):
-    """A class that connects its slot_save_config to kApp.aboutToQuit()."""
+class CallbackRegistry(object):
+
+    SAVE_CONFIG = object()
+    APPLY_PREFS = object()
 
     def __init__(self):
-        QtCore.QObject.connect(kdeui.KApplication.kApplication(),
-                QtCore.SIGNAL('aboutToQuit()'), self.slot_save_config)
+        self._callbacks = {}
 
-    def slot_save_config(self):
-        raise NotImplementedError, \
-            "slot_save_config must be reimplemented in %s" % self.__class__
+    def register(self, type, callback):
+        self._callbacks.setdefault(type, []).append(callback)
 
-##
+    def invoke_callbacks(self, type):
+        assert type in self._callbacks
 
-class HasGUIConfig(object):
-    """Class to keep track of objects that should re-read its config after
-       changes in the preferences dialog. Their apply_preferences() method
-       is called.
-    """
+        for callback in self._callbacks[type]:
+            callback()
 
-    OBJECTS = []
+    ##
 
-    def __init__(self):
-        self.OBJECTS.append(self)
+    def register_save_config(self, callback):
+        self.register(self.SAVE_CONFIG, callback)
 
-    @staticmethod
-    def settings_changed():
-        for object_ in HasGUIConfig.OBJECTS:
-            object_.apply_preferences()
+    def register_apply_prefs(self, callback):
+        self.register(self.APPLY_PREFS, callback)
+
+    ##
+
+    def save_config_all(self):
+        self.invoke_callbacks(self.SAVE_CONFIG)
+
+    def apply_preferences_all(self):
+        self.invoke_callbacks(self.APPLY_PREFS)
+
+CallbackRegistry = CallbackRegistry()
 
 ##
 

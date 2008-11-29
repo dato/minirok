@@ -67,14 +67,14 @@ class TreeView(QtGui.QTreeView):
 
 ##
 
-class Model(QtCore.QAbstractItemModel, util.HasConfig):
+class Model(QtCore.QAbstractItemModel):
 
     CONFIG_SECTION = 'Tree View'
     CONFIG_RECURSE_OPTION = 'RecurseScan'
 
     def __init__(self, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
-        util.HasConfig.__init__(self)
+        util.CallbackRegistry.register_save_config(self.save_config)
 
         # always points to the current root; not None initially so that
         # rowCount() works from the beginning without special casing
@@ -279,7 +279,7 @@ class Model(QtCore.QAbstractItemModel, util.HasConfig):
                     kio.KDirLister.OpenUrlFlag(
                         kio.KDirLister.Keep | kio.KDirLister.Reload))
 
-    def slot_save_config(self):
+    def save_config(self):
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
         config.writeEntry(self.CONFIG_RECURSE_OPTION,
                             QtCore.QVariant(self._recurse))

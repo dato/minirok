@@ -19,7 +19,7 @@ from minirok import engine, util
 
 ##
 
-class LastfmSubmitter(QtCore.QObject, util.HasGUIConfig):
+class LastfmSubmitter(QtCore.QObject):
     """An object that takes care of submiting played tracks to Last.fm.
 
     It relies on the Playlist.new_track signal. Upon receiving it, it starts a
@@ -28,7 +28,7 @@ class LastfmSubmitter(QtCore.QObject, util.HasGUIConfig):
     """
     def __init__(self):
         QtCore.QObject.__init__(self)
-        util.HasGUIConfig.__init__(self)
+        util.CallbackRegistry.register_apply_prefs(self.apply_preferences)
 
         self.data = None
         self.timer = util.QTimerWithPause(self)
