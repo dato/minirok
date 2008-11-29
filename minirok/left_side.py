@@ -76,7 +76,7 @@ class LeftSide(QtGui.QWidget):
 
 ##
 
-class MyComboBox(kio.KUrlComboBox, util.HasConfig):
+class MyComboBox(kio.KUrlComboBox):
     """A KURLComboBox that saves the introduced directories in the config."""
 
     CONFIG_SECTION = 'Tree View'
@@ -84,7 +84,7 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
 
     def __init__(self, parent):
         kio.KUrlComboBox.__init__(self, kio.KUrlComboBox.Directories, True, parent)
-        util.HasConfig.__init__(self)
+        util.CallbackRegistry.register_save_config(self.save_config)
 
         self.completion_object = kio.KUrlCompletion(kio.KUrlCompletion.DirCompletion)
         self.setCompletionObject(self.completion_object)
@@ -118,6 +118,6 @@ class MyComboBox(kio.KUrlComboBox, util.HasConfig):
 
         self.emit(QtCore.SIGNAL('new_directory_selected'), directory)
 
-    def slot_save_config(self):
+    def save_config(self):
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
         config.writePathEntry(self.CONFIG_HISTORY_OPTION, self.urls())
