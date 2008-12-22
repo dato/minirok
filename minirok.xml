@@ -140,7 +140,7 @@
       </varlistentry>
     </variablelist>
     <para>
-      Minirok also accepts many other option for using the Qt and KDE
+      Minirok also accepts many other options for using the Qt and KDE
       libraries. Run <command>minirok --help-all</command> for a
       comprehensive list.
     </para>
