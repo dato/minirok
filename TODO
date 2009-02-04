@@ -41,5 +41,7 @@ Other:
     But probably when ported to Qt4, see:
       http://www.riverbankcomputing.com/pipermail/pyqt/2008-January/018103.html
   * Use __slots__ for TreeViewItems?
+  * Last.fm submission should report any errors, eg. failure to write to
+    the spool directory.
 
 vi: sw=2
