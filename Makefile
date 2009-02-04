@@ -4,6 +4,7 @@ ui:
 	$(MAKE) -C $(CURDIR)/minirok/ui
 
 clean:
+	rm -f minirok.1
 	$(MAKE) -C $(CURDIR)/minirok/ui clean
 
 minirok.1: minirok.xml
