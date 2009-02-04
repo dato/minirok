@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import re
@@ -92,8 +92,11 @@ class Dialog(kdeui.KConfigDialog):
     ##
 
     def slotButtonClicked(self, button):
-        if (button not in (kdeui.KDialog.Ok, kdeui.KDialog.Apply)
-                or self.check_valid_regex()):
+        if (button in (kdeui.KDialog.Ok, kdeui.KDialog.Apply)
+                and not hasattr(options1.Ui_Page, 'NO_UI')
+                and not self.check_valid_regex()):
+            pass # Don't let the button close the dialog.
+        else:
             kdeui.KConfigDialog.slotButtonClicked(self, button)
 
 ##
