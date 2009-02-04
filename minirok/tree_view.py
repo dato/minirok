@@ -1,15 +1,15 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
 import re
 import stat
 
-from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
+from PyKDE4 import kdeui, kdecore
 
 import minirok
 from minirok import drag, engine, util
@@ -17,6 +17,9 @@ from minirok import drag, engine, util
 ##
 
 class TreeView(QtGui.QTreeWidget):
+
+    CONFIG_SECTION = 'Tree View'
+    CONFIG_RECURSE_OPTION = 'RecurseScan'
 
     def __init__(self, *args):
         QtGui.QTreeWidget.__init__(self, *args)
@@ -27,17 +30,42 @@ class TreeView(QtGui.QTreeWidget):
         self.automatically_opened = set()
 
         self.timer = QtCore.QTimer(self)
-        self.connect(self.timer, QtCore.SIGNAL('timeout()'), self.slot_populate_done)
+
+        # Recursing the tree to enable the search widget is configurable;
+        # the LeftSide communicates with us via the "recurse" property.
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        self._recurse = config.readEntry(
+                self.CONFIG_RECURSE_OPTION, QtCore.QVariant(False)).toBool()
+
+        util.CallbackRegistry.register_save_config(self.save_config)
+
+        ##
 
         self.header().hide()
         self.setDragDropMode(self.DragOnly)
         self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
-        self.connect(self, QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
+        self.connect(self.timer, QtCore.SIGNAL('timeout()'),
+                self.slot_populate_done)
+
+        self.connect(self,
+                QtCore.SIGNAL('itemActivated(QTreeWidgetItem *, int)'),
                 self.slot_append_selected)
 
         self.connect(self, QtCore.SIGNAL('itemExpanded(QTreeWidgetItem *)'),
                 lambda item: item.repopulate())
+
+    ##
+
+    def _set_recurse(self, value):
+        if self._recurse ^ value:
+            self._recurse = bool(value)
+            if self._recurse:
+                self.timer.start(0)
+            else:
+                self.timer.stop()
+
+    recurse = property(lambda self: self._recurse, _set_recurse)
 
     ##
 
@@ -116,7 +144,9 @@ class TreeView(QtGui.QTreeWidget):
         self.emit(QtCore.SIGNAL('scan_in_progress'), True)
 
         self.populate_pending = _directory_children(self.invisibleRootItem())
-        self.timer.start(0)
+
+        if self._recurse:
+            self.timer.start(0)
 
         # (¹) There seems to be a bug somewhere, that if setSortingEnabled(True)
         # is called, without calling some function like sortItems() where the
@@ -194,6 +224,13 @@ class TreeView(QtGui.QTreeWidget):
     def startDrag(self, action):
         dragobj = drag.FileListDrag(self.selected_files(), self)
         dragobj.exec_(action)
+
+    ##
+
+    def save_config(self):
+        config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        config.writeEntry(self.CONFIG_RECURSE_OPTION,
+                            QtCore.QVariant(self._recurse))
 
 ##
 
@@ -310,17 +347,6 @@ class TreeViewSearchLineWidget(kdeui.KTreeWidgetSearchLineWidget):
 
     def createSearchLine(self, qtreewidget):
         return TreeViewSearchLine(self, qtreewidget)
-
-    ##
-
-    def slot_scan_in_progress(self, scanning):
-        """Disables itself with an informative tooltip while scanning."""
-        if scanning:
-            self.setToolTip('Search disabled while reading directory contents')
-        else:
-            self.setToolTip('')
-
-        self.setEnabled(not scanning)
 
 ##
 

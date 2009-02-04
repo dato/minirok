@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
@@ -20,8 +20,8 @@ class LeftSide(QtGui.QWidget):
         QtGui.QWidget.__init__(self, *args)
 
         self.tree_view = tree_view.TreeView()
+        self.tree_search = QtGui.QWidget(self)
         self.combo_toolbar = kdeui.KToolBar(None)
-        self.tree_search = tree_view.TreeViewSearchLineWidget()
 
         layout = QtGui.QVBoxLayout()
         layout.setSpacing(0)
@@ -30,6 +30,20 @@ class LeftSide(QtGui.QWidget):
         layout.addWidget(self.combo_toolbar)
         layout.addWidget(self.tree_view)
         self.setLayout(layout)
+
+        self.search_widget = tree_view.TreeViewSearchLineWidget()
+        self.button_action = 'Enable'
+        self.search_button = QtGui.QPushButton(self.button_action)
+
+        self.search_widget.setEnabled(False)
+        self.search_button.setEnabled(False)
+
+        layout2 = QtGui.QHBoxLayout()
+        layout2.setSpacing(0)
+        layout2.setContentsMargins(0, 0, 0, 0)
+        layout2.addWidget(self.search_widget)
+        layout2.addWidget(self.search_button)
+        self.tree_search.setLayout(layout2)
 
         self.path_combo = MyComboBox(self.combo_toolbar)
         self.combo_toolbar.addWidget(self.path_combo)
@@ -46,18 +60,21 @@ class LeftSide(QtGui.QWidget):
 
         ##
 
-        self.tree_search.searchLine().setTreeWidget(self.tree_view)
+        self.search_widget.searchLine().setTreeWidget(self.tree_view)
 
-        self.connect(self.tree_search.searchLine(),
+        self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
+                self.slot_tree_view_does_scan)
+
+        self.connect(self.search_button, QtCore.SIGNAL('clicked(bool)'),
+                self.slot_do_button)
+
+        self.connect(self.search_widget.searchLine(),
                 QtCore.SIGNAL('search_finished'),
                 self.tree_view.slot_search_finished)
 
-        self.connect(self.tree_search.searchLine(),
+        self.connect(self.search_widget.searchLine(),
                 QtCore.SIGNAL('returnPressed(const QString &)'),
                 self.tree_view.slot_append_visible)
-
-        self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
-                self.tree_search.slot_scan_in_progress)
 
         self.connect(self.path_combo, QtCore.SIGNAL('new_directory_selected'),
                 self.tree_view.slot_show_directory)
@@ -73,6 +90,27 @@ class LeftSide(QtGui.QWidget):
             width = self.path_combo.fontMetrics().width(text)
             self.path_combo.setEditText(text)
             self.path_combo.setMinimumWidth(width + 30) # add pixels for arrow
+
+    ##
+
+    def slot_tree_view_does_scan(self, scanning):
+        negated = not scanning
+        self.search_button.setHidden(negated)
+        self.search_widget.setEnabled(negated)
+        self.search_button.setEnabled(scanning)
+        self.button_action = self.tree_view.recurse and 'Stop scan' or 'Enable'
+        self.search_button.setText(self.button_action)
+        if scanning:
+            self.search_widget.setToolTip('Search disabled while reading directory contents')
+        else:
+            self.search_widget.setToolTip('')
+
+
+    def slot_do_button(self):
+        enable = (self.button_action == 'Enable')
+        self.tree_view.recurse = enable
+        self.button_action = enable and 'Stop scan' or 'Enable'
+        self.search_button.setText(self.button_action)
 
 ##
 
