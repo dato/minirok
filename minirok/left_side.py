@@ -31,12 +31,10 @@ class LeftSide(QtGui.QWidget):
         layout.addWidget(self.tree_view)
         self.setLayout(layout)
 
-        self.search_widget = tree_view.TreeViewSearchLineWidget()
         self.button_action = 'Enable'
         self.search_button = QtGui.QPushButton(self.button_action)
-
+        self.search_widget = tree_view.TreeViewSearchLineWidget()
         self.search_widget.setEnabled(False)
-        self.search_button.setEnabled(False)
 
         layout2 = QtGui.QHBoxLayout()
         layout2.setSpacing(0)
@@ -111,6 +109,8 @@ class LeftSide(QtGui.QWidget):
         self.tree_view.recurse = enable
         self.button_action = enable and 'Stop scan' or 'Enable'
         self.search_button.setText(self.button_action)
+        if not enable:
+            self.search_widget.setToolTip('')
 
 ##
 

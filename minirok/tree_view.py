@@ -62,6 +62,7 @@ class TreeView(QtGui.QTreeWidget):
             self._recurse = bool(value)
             if self._recurse:
                 self.timer.start(0)
+                self.emit(QtCore.SIGNAL('scan_in_progress'), True)
             else:
                 self.timer.stop()
 
@@ -141,12 +142,12 @@ class TreeView(QtGui.QTreeWidget):
         self.populating = True
         _populate_tree(self.invisibleRootItem(), self.root)
         self.sortItems(0, QtCore.Qt.AscendingOrder) # (¹)
-        self.emit(QtCore.SIGNAL('scan_in_progress'), True)
 
         self.populate_pending = _directory_children(self.invisibleRootItem())
 
         if self._recurse:
             self.timer.start(0)
+            self.emit(QtCore.SIGNAL('scan_in_progress'), True)
 
         # (¹) There seems to be a bug somewhere, that if setSortingEnabled(True)
         # is called, without calling some function like sortItems() where the
