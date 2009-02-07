@@ -5,7 +5,7 @@ Minirok can submit played tracks to Last.fm if the program "lastfmsubmitd"
 is installed. If you get stuck configuring it, here's a simple recipe to
 have it running in one minute:
 
-    % mkdir -p ~/.lastfmsubmitd/spool
+    % mkdir ~/.lastfmsubmitd
     % cat >~/.lastfmsubmitd/conf
     [account]
     user = you
@@ -22,12 +22,13 @@ or just start it by hand when you see fit.
 If you're using lastfmsubmitd 1.0.1 or older
 --------------------------------------------
 
-If your lastfmsubmitd is older than 1.0.2, you'll need to symlink your
-conf file as ~/.lastfmsubmitd.conf:
+If your lastfmsubmitd is older than 1.0.2, you'll need to ensure the
+spool directory exists, and symlink your conf file as ~/.lastfmsubmitd.conf:
 
-    % ln -s ~/.lastfmsubmitd/conf ~/~/.lastfmsubmitd.conf
+    % mkdir ~/.lastfmsubmitd/spool
+    % ln -s ~/.lastfmsubmitd/conf ~/.lastfmsubmitd.conf
 
-and to append this stanza to it:
+And append this stanza to the conf file as well:
 
     [paths]
     log = /home/you/.lastfmsubmitd/log
