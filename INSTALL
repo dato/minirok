@@ -10,4 +10,5 @@ be aborted.
 
 However, Minirok should run just fine from the unpacked source
 directory, with just `./minirok.py` (you can make a symlink to that
-from eg. ~/bin/minirok).
+from eg. ~/bin/minirok). Be sure to run `make ui` if you want the
+Preferences dialog to work.

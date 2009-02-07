@@ -110,7 +110,7 @@ but still read the tags in the background</string>
   <customwidget>
    <class>KButtonGroup</class>
    <extends>QGroupBox</extends>
-   <header>kbuttongroup.h</header>
+   <header>PyKDE4.kdeui</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

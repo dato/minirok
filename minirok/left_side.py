@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 from PyQt4 import QtGui, QtCore
@@ -18,20 +18,20 @@ class LeftSide(QtGui.QWidget):
         QtGui.QWidget.__init__(self, *args)
 
         self.path_combo = MyComboBox(self)
-        self.search_foo = QtGui.QWidget(self)
         self.tree_view = tree_view.TreeView(self)
+        self.tree_search = QtGui.QWidget(self)
 
         layout = QtGui.QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(4, 4, 4, 0)
-        layout.addWidget(self.search_foo)
+        layout.addWidget(self.tree_search)
         layout.addWidget(self.path_combo)
         layout.addWidget(self.tree_view)
         self.setLayout(layout)
 
-        self.search_widget = proxy.LineWidget()
         self.button_action = 'Enable'
         self.search_button = QtGui.QPushButton(self.button_action)
+        self.search_widget = proxy.LineWidget()
 
         self.search_widget.setEnabled(False)
         self.search_button.setEnabled(False)
@@ -41,7 +41,7 @@ class LeftSide(QtGui.QWidget):
         layout2.setContentsMargins(0, 0, 0, 0)
         layout2.addWidget(self.search_widget)
         layout2.addWidget(self.search_button)
-        self.search_foo.setLayout(layout2)
+        self.tree_search.setLayout(layout2)
 
         self.tree = tree_view.Model()
         self.proxy = tree_view.Proxy()
@@ -87,6 +87,8 @@ class LeftSide(QtGui.QWidget):
             self.path_combo.setEditText(text)
             self.path_combo.setMinimumWidth(width + 30) # add pixels for arrow
 
+    ##
+
     def slot_model_does_scan(self, scanning):
         negated = not scanning
         self.search_button.setHidden(negated)
@@ -94,12 +96,18 @@ class LeftSide(QtGui.QWidget):
         self.search_button.setEnabled(scanning)
         self.button_action = self.tree.recurse and 'Stop scan' or 'Enable'
         self.search_button.setText(self.button_action)
+        if scanning:
+            self.search_widget.setToolTip('Search disabled while reading directory contents')
+        else:
+            self.search_widget.setToolTip('')
 
     def slot_do_button(self):
         enable = (self.button_action == 'Enable')
         self.tree.recurse = enable
         self.button_action = enable and 'Stop scan' or 'Enable'
         self.search_button.setText(self.button_action)
+        if not enable:
+            self.search_widget.setToolTip('')
 
     def slot_append_visible(self, string):
         if not unicode(string).strip():

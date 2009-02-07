@@ -1,5 +1,7 @@
 /minirok.1
+/minirok/tags
 /minirok/ui/*.py
 
 /debian/files
 /debian/minirok
+/debian/*.debhelper*

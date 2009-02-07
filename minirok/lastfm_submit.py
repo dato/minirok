@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import time
@@ -35,7 +35,7 @@ class LastfmSubmitter(QtCore.QObject):
         self.timer.setSingleShot(True)
 
         if _has_lastfm_client:
-            self.lastfm_client = lastfm.client.Client('minirok')
+            self.lastfm_client = lastfm.client.Client('lastfmsubmitd')
         else:
             self.spool_path = lastfm.config.Config('lastfmsubmitd').spool_path
 
