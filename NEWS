@@ -12,11 +12,9 @@
       * the DCOP interface is gone, replaced by DBus. See README.Usage
 	for details.
 
-  PLAYLIST
+  IMPROVEMENTS
 
     * The playlist now supports Undo/Redo functionality.
-
-  IMPROVEMENTS
 
     * If you don't use the search in the tree view, it is now possible
       to disable it, saving Minirok from having to recurse your entire
