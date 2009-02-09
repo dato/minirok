@@ -433,8 +433,11 @@ class Model(QtCore.QAbstractItemModel):
 
     """Filtering, outsourced from the Proxy below."""
 
-    def invalidateFilter(self, clear_filter):
-        self.patternId = not clear_filter and object() or None
+    def newPattern(self, pattern):
+        if unicode(pattern).strip():
+            self.patternId = object()
+        else:
+            self.patternId = None
 
     def filterAcceptsIndex(self, index, regexes):
         def update_visibility(item):
@@ -487,8 +490,7 @@ class Proxy(proxy.Model):
     ##
 
     def setPattern(self, pattern):
-        self.sourceModel().invalidateFilter(
-                clear_filter=not unicode(pattern).strip())
+        self.sourceModel().newPattern(pattern)
         proxy.Model.setPattern(self, pattern)
 
     def filterAcceptsRow(self, row, parent):
