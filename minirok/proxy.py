@@ -21,7 +21,8 @@ class Model(QtGui.QSortFilterProxyModel):
         (for the column given with filterKeyColumn(), or all columns if < 0)
 
       * patterns will be split into words, and an item will match if it
-        matches (either as full words or subwords) *all* the words in pattern
+        matches (either as full words or subwords) *all* the words in pattern,
+        in any order.
     """
     def __init__(self, parent=None):
         QtGui.QSortFilterProxyModel.__init__(self, parent)
