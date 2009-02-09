@@ -437,11 +437,12 @@ class Model(QtCore.QAbstractItemModel):
         self.patternId = not clear_filter and object() or None
 
     def filterAcceptsIndex(self, index, regexes):
-        def update_item(item):
+        def update_visibility(item):
             if item.IS_DIR:
                 visible = False
                 for i in item.children:
-                    visible |= update_item(i)
+                    update_visibility(i)
+                    visible |= i.visible[0]
             else:
                 for regex in regexes:
                     if not regex.search(item.relpath):
@@ -451,22 +452,18 @@ class Model(QtCore.QAbstractItemModel):
                     visible = True
 
             item.visible = (visible, self.patternId)
-            return visible
 
         ##
-
-        # item = index.internalPointer()
 
         if self.patternId is None:
             return True
         else:
             item = index.internalPointer()
-            visible, patternId = item.visible
 
-            if patternId is not self.patternId:
-                visible = update_item(item)
+            if item.visible[1] is not self.patternId:
+                update_visibility(item)
 
-            return visible
+            return item.visible[0]
 
 ##
 
