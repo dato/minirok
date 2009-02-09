@@ -550,11 +550,11 @@ class DirectoryItem(TreeItem):
         self.children = []
         self.populated = False
 
-        p = self
-        while p.parent is not None:
-            p = p.parent
+        if self.parent is None:
+            self.root = self
+        else:
+            self.root = self.parent.root
 
-        self.root = p
         self.kurl.adjustPath(self.kurl.AddTrailingSlash) # for relativeUrl()
 
 ##
