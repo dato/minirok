@@ -175,7 +175,7 @@ class Model(QtCore.QAbstractItemModel):
         if parent is self.root:
             return QtCore.QModelIndex()
         else:
-            return self.createIndex(parent.row(), 0, parent)
+            return self.createIndex(parent.row, 0, parent)
 
     def data(self, index, role):
         if not index.isValid():
@@ -310,7 +310,7 @@ class Model(QtCore.QAbstractItemModel):
             if parent is self.root:
                 index = QtCore.QModelIndex()
             else:
-                index = self.createIndex(parent.row(), 0, parent)
+                index = self.createIndex(parent.row, 0, parent)
 
         def myinsert(mylist, items):
             """Insert items into mylist so that it remains sorted.
@@ -330,6 +330,8 @@ class Model(QtCore.QAbstractItemModel):
                 upto = len(items)
 
             beginInsertRows(index, pos, pos + upto - 1)
+            for i, item in enumerate(items[0:upto]):
+                item.row = i + pos
             mylist[pos:0] = items[0:upto]
             endInsertRows()
 
@@ -389,10 +391,12 @@ class Model(QtCore.QAbstractItemModel):
                     if parent is self.root:
                         index = QtCore.QModelIndex()
                     else:
-                        index = self.createIndex(parent.row(), 0, parent)
+                        index = self.createIndex(parent.row, 0, parent)
 
                 beginRemoveRows(index, i, i)
                 parent.children.pop(i)
+                for item in parent.children[i:]:
+                    item.row -= 1
                 endRemoveRows()
                 break
         else:
@@ -502,9 +506,10 @@ class Proxy(proxy.Model):
 
 class TreeItem(object):
 
-    __slots__ = [ 'kurl', 'parent', 'name', 'relpath', 'visible' ]
+    __slots__ = [ 'kurl', 'parent', 'name', 'relpath', 'visible', 'row' ]
 
     def __init__(self, kurl, parent):
+        self.row = 0
         self.kurl = kurl
         self.parent = parent
         self.name = kurl.fileName()
@@ -514,18 +519,6 @@ class TreeItem(object):
             self.relpath = ''
         else:
             self.relpath = unicode(kurl.relativeUrl(parent.root.kurl, kurl))
-
-    def row(self):
-        if self.parent:
-            # do not use children.index() here, since that calls __cmp__ below,
-            # and it really hurts performance
-            for i, item in enumerate(self.parent.children):
-                if item is self:
-                    return i
-            else:
-                raise ValueError, 'self not found in parent.children'
-        else:
-            return 0
 
     def __cmp__(self, other):
         return (other.IS_DIR - self.IS_DIR
