@@ -291,26 +291,26 @@ class Model(QtCore.QAbstractItemModel):
     def _dirLister_new_items(self, entries):
         key = _urlkey(entries[0].url(), up=True)
         try:
-            item = self.items[key]
+            parent = self.items[key]
         except KeyError:
             minirok.logger.error('key not found in newItems: %r', unicode(key))
             return
 
         cls = [ FileItem, DirectoryItem ]
-        newitems = [ cls[e.isDir()](e.url(), item) for e in entries ]
+        newitems = [ cls[e.isDir()](e.url(), parent) for e in entries ]
         newitems.sort()
 
-        if item.root is not self.root:
+        if parent.root is not self.root:
             index = None
             beginInsertRows = endInsertRows = lambda *x: None
         else:
             endInsertRows = self.endInsertRows
             beginInsertRows = self.beginInsertRows
 
-            if item is self.root:
+            if parent is self.root:
                 index = QtCore.QModelIndex()
             else:
-                index = self.createIndex(item.row(), 0, item)
+                index = self.createIndex(parent.row(), 0, parent)
 
         def myinsert(mylist, items):
             """Insert items into mylist so that it remains sorted.
@@ -336,7 +336,7 @@ class Model(QtCore.QAbstractItemModel):
             if items[upto:]:
                 myinsert(mylist, items[upto:])
 
-        myinsert(item.children, newitems)
+        myinsert(parent.children, newitems)
 
         ##
 
@@ -344,7 +344,7 @@ class Model(QtCore.QAbstractItemModel):
         for diritem in diritems:
             self.items[_urlkey(diritem.kurl)] = diritem
 
-        self.pending[item.root].update(diritems)
+        self.pending[parent.root].update(diritems)
 
     def _dirLister_completed(self, kurl):
         key = _urlkey(kurl)
@@ -372,27 +372,27 @@ class Model(QtCore.QAbstractItemModel):
 
         key = _urlkey(kurl, up=True)
         try:
-            item = self.items[key]
+            parent = self.items[key]
         except KeyError:
             minirok.logger.error('key not found in deleteItem: %r', unicode(key))
             return
 
-        for i, child in enumerate(item.children):
+        for i, child in enumerate(parent.children):
             if name == child.kurl.fileName():
-                if item.root is not self.root:
+                if parent.root is not self.root:
                     index = None
                     beginRemoveRows = endRemoveRows = lambda *x: None
                 else:
                     endRemoveRows = self.endRemoveRows
                     beginRemoveRows = self.beginRemoveRows
 
-                    if item is self.root:
+                    if parent is self.root:
                         index = QtCore.QModelIndex()
                     else:
-                        index = self.createIndex(item.row(), 0, item)
+                        index = self.createIndex(parent.row(), 0, parent)
 
                 beginRemoveRows(index, i, i)
-                item.children.pop(i)
+                parent.children.pop(i)
                 endRemoveRows()
                 break
         else:
