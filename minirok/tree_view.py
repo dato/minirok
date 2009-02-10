@@ -520,10 +520,13 @@ class TreeItem(object):
         else:
             self.relpath = unicode(kurl.relativeUrl(parent.root.kurl, kurl))
 
-    def __cmp__(self, other):
-        return (other.IS_DIR - self.IS_DIR
-                    or self.name.localeAwareCompare(other.name))
-
+    def __lt__(self, other):
+        # Provide __lt__ rather than __cmp__, because __cmp__ would get used
+        # by DirectoryItem.children.index(), which we want to avoid.
+        if self.IS_DIR ^ other.IS_DIR:
+            return self.IS_DIR
+        else:
+            return self.name.localeAwareCompare(other.name) < 0
 
 class FileItem(TreeItem):
 
