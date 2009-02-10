@@ -20,17 +20,17 @@
     </address>
     <date>2007-09-04</date>
   </refentryinfo>
-  
+
   <refmeta>
     <refentrytitle>minirok</refentrytitle>
     <manvolnum>1</manvolnum>
   </refmeta>
-  
+
   <refnamediv>
-    <refname>minirok</refname> 
+    <refname>minirok</refname>
     <refpurpose>a small music player written in Python</refpurpose>
   </refnamediv>
-  
+
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>minirok</command>
@@ -38,7 +38,7 @@
       <arg choice="opt" rep="repeat">file</arg>
     </cmdsynopsis>
   </refsynopsisdiv>
-  
+
   <refsect1>
     <title>DESCRIPTION</title>
     <para>
@@ -81,7 +81,7 @@
       this, F5 by default.
     </para>
   </refsect1>
-  
+
   <refsect1>
     <title>DBUS INTERFACE</title>
     <para>
