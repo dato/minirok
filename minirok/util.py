@@ -279,7 +279,7 @@ class ThreadedWorker(QtCore.QThread):
     in a "done" queue. Whenever there are done items, the thread emits a
     "items_ready" signal.
     """
-    def __init__(self, function, timer=None):
+    def __init__(self, function):
         """Create a worker.
 
         :param function: The function to invoke on each item.
@@ -394,7 +394,7 @@ class DelayedLineEdit(kdeui.KLineEdit):
     has passed since the last key press from the user.
     """
 
-    DELAY = 300 # ms
+    DELAY = 400 # ms
     SIGNAL = QtCore.SIGNAL('delayed_text_changed')
 
     def __init__(self, parent=None):
