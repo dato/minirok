@@ -1,0 +1,13 @@
+#! /bin/sh
+
+set -e
+
+if [ "$1" = "remove" ]; then
+    if which "kde4-config" >/dev/null 2>&1; then
+        touch "`kde4-config --expandvars --install icon`/hicolor"
+    else
+        touch "/usr/share/icons/hicolor"
+    fi
+fi
+
+#DEBHELPER#
