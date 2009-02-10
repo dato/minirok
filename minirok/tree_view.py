@@ -149,7 +149,7 @@ class Model(QtCore.QAbstractItemModel):
         else:
             item = parent.internalPointer()
 
-        return len(item.children)
+        return len(item.children) # TODO: use children[-1].row + 1?
 
     def index(self, row, column, parent):
         if not self.hasIndex(row, column, parent):
