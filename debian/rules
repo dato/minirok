@@ -1,7 +1,7 @@
 #! /usr/bin/make -f
 
 build:
-	@true
+#	pass
 
 clean:
 	dh_testdir
@@ -9,7 +9,7 @@ clean:
 	dh_clean
 
 binary-arch:
-	@true
+#	pass
 
 binary-indep:
 	dh_testdir
