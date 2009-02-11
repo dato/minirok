@@ -539,6 +539,7 @@ class TreeItem(object):
             self.relpath = unicode(kurl.relativeUrl(parent.root.kurl, kurl))
 
     def __lt__(self, other):
+        """Compare two TreeItems, always sorting directories before files."""
         # Provide __lt__ rather than __cmp__, because __cmp__ would get used
         # by DirectoryItem.children.index(), which we want to avoid.
         if self.IS_DIR ^ other.IS_DIR:
