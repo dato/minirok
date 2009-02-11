@@ -16,7 +16,6 @@ from minirok import proxy, util
 DRAG_MIME_TYPE = 'text/x-minirok-track-list'
 
 # TODO handle rename/refresh
-# TODO drop empty dirs
 # TODO auto open (see AUTOMATICALLY_EXPAND.diff)
 # TODO fetchMore(children) when expanding parent?
 
@@ -296,8 +295,32 @@ class Model(QtCore.QAbstractItemModel):
         try:
             parent = self.items[key]
         except KeyError:
-            minirok.logger.error('key not found in newItems: %r', unicode(key))
-            return
+            # If a parent can't be found in self.items, it is because it
+            # was dropped for being empty. We create its DirectoryItem again,
+            # and those of all its missing parents, but we take care not to
+            # feed them to the KDirLister (by setting their populated attribute
+            # to True), because they are already there.
+            kurl = entries[0].url().upUrl()
+            missing = []
+            while True:
+                key = _urlkey(kurl)
+                try:
+                    parent = self.items[key]
+                except KeyError:
+                    missing.append(kurl)
+                    if kurl == kurl.upUrl():
+                        minirok.logger.warn('could not find a parent for %s',
+                                            entries[0].url.prettyUrl())
+                        return
+                    else:
+                        kurl = kurl.upUrl()
+                else:
+                    break
+            for kurl in reversed(missing):
+                item = DirectoryItem(kurl, parent)
+                item.populated = True # This must come before insert_children()
+                self.insert_children(parent, [item])
+                parent = item
 
         cls = [ FileItem, DirectoryItem ]
         newitems = [ cls[e.isDir()](e.url(), parent) for e in entries ]
@@ -355,7 +378,7 @@ class Model(QtCore.QAbstractItemModel):
         for diritem in diritems:
             self.items[_urlkey(diritem.kurl)] = diritem
 
-        self.pending[parent.root].update(diritems)
+        self.pending[parent.root].update(d for d in diritems if not d.populated)
 
     def _dirLister_completed(self, kurl):
         key = _urlkey(kurl)
@@ -369,10 +392,12 @@ class Model(QtCore.QAbstractItemModel):
         try:
             item = self.items[key]
         except KeyError:
-            minirok.logger.warn('key not found in completed: %r', unicode(key))
+            pass # Emptied item from delete_items()
         else:
             item.populated = True
             self.pending[item.root].discard(item) # err, don't we pop() above?
+            if item.parent and not item.children:
+                self.delete_children(item.parent, [ item.row ])
 
         if self._recurse:
             self.populate_next()
@@ -415,10 +440,16 @@ class Model(QtCore.QAbstractItemModel):
 
         for start, amount in reversed(util.contiguous_chunks(indices)):
             beginRemoveRows(index, start, start + amount - 1)
+            for child in parent.children[start:start+amount]:
+                if child.IS_DIR:
+                    self.items.pop(_urlkey(child.kurl))
             parent.children[start:start+amount] = []
             for item in parent.children[start:]:
                 item.row -= amount
             endRemoveRows()
+
+        if parent.parent and not parent.children:
+            self.delete_children(parent.parent, [ parent.row ])
 
     ##
 
