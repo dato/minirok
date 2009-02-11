@@ -29,6 +29,7 @@ class TreeView(QtGui.QTreeView):
         self.header().hide()
         self.setRootIsDecorated(True)
         self.setAllColumnsShowFocus(True)
+        self.setExpandsOnDoubleClick(False)
         self.setDragDropMode(self.DragOnly)
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.ExtendedSelection)
