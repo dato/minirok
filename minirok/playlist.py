@@ -627,7 +627,7 @@ class Playlist(QtCore.QAbstractTableModel):
         if dequeue:
             indexes = sorted(item.queue_position - 1 for item in dequeue)
 
-            chunks = AlterItemlistMixin.contiguous_chunks(indexes)
+            chunks = util.contiguous_chunks(indexes)
             chunks.append((len(self.queue), 0)) # fake chunk at the end
 
             # Now this is simple (at least compared to what was here before):
@@ -1439,7 +1439,7 @@ class AlterItemlistMixin(object):
         if self.do_queue:
             # TODO Think whether to invalidate these queue positions if the
             # queue changes between a removal and its undo.
-            for pos, amount in self.contiguous_chunks(self.queuepos.keys()):
+            for pos, amount in util.contiguous_chunks(self.queuepos.keys()):
                 items = [ self.queuepos[x] for x in range(pos, pos+amount) ]
                 tail = self.model.queue[pos-1:]
                 self.model.toggle_enqueued_many_items(tail + items)
@@ -1492,27 +1492,6 @@ class AlterItemlistMixin(object):
             result.extend(items)
         return result
 
-    @staticmethod # TODO Move elsewhere
-    def contiguous_chunks(intlist):
-        """Calculate a list of contiguous areas in a possibly unsorted list.
-
-        >>> removecmd.contiguous_chunks([2, 9, 3, 5, 8, 1])
-        [ (1, 3), (5, 1), (8, 2) ]
-        """
-        if len(intlist) == 0:
-            return []
-
-        mylist = sorted(intlist)
-        result = [ [mylist[0], 1] ]
-
-        for x in mylist[1:]:
-            if x == sum(result[-1]):
-                result[-1][1] += 1
-            else:
-                result.append([x, 1])
-
-        return map(tuple, result)
-
 
 class InsertItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
     """Command to insert a list of items at a certain position."""
@@ -1541,7 +1520,7 @@ class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
         AlterItemlistMixin.__init__(self, model, do_queue)
 
         if rows:
-            self.chunks = self.contiguous_chunks(rows)
+            self.chunks = util.contiguous_chunks(rows)
             self.model.undo_stack.push(self)
 
     undo = AlterItemlistMixin.insert_items

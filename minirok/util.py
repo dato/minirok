@@ -145,6 +145,26 @@ def playable_from_untrusted(files, warn=False):
 
     return result
 
+def contiguous_chunks(intlist):
+    """Calculate a list of contiguous areas in a possibly unsorted list.
+
+    >>> contiguous_chunks([2, 9, 3, 5, 8, 1])
+    [ (1, 3), (5, 1), (8, 2) ]
+    """
+    if len(intlist) == 0:
+        return []
+
+    mylist = sorted(intlist)
+    result = [ [mylist[0], 1] ]
+
+    for x in mylist[1:]:
+        if x == sum(result[-1]):
+            result[-1][1] += 1
+        else:
+            result.append([x, 1])
+
+    return map(tuple, result)
+
 ##
 
 class CallbackRegistry(object):
