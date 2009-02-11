@@ -277,8 +277,7 @@ class DirectoryItem(TreeViewItem):
         else:
             self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
 
-        if not self.treeWidget().isSortingEnabled():
-            self.sortChildren(0, QtCore.Qt.AscendingOrder)
+        self.sortChildren(0, QtCore.Qt.AscendingOrder)
 
 ##
 
