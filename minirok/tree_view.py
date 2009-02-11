@@ -302,7 +302,13 @@ class Model(QtCore.QAbstractItemModel):
         cls = [ FileItem, DirectoryItem ]
         newitems = [ cls[e.isDir()](e.url(), parent) for e in entries ]
         newitems.sort()
+        self.insert_children(parent, newitems)
 
+    def insert_children(self, parent, items):
+        """Insert items into parent.children.
+
+        items must be sorted already.
+        """
         if parent.root is not self.root:
             index = None
             beginInsertRows = endInsertRows = lambda *x: None
@@ -341,11 +347,11 @@ class Model(QtCore.QAbstractItemModel):
             if upto < len(items):
                 myinsert(mylist, items[upto:])
 
-        myinsert(parent.children, newitems)
+        myinsert(parent.children, items)
 
         ##
 
-        diritems = set(x for x in newitems if x.IS_DIR)
+        diritems = set(x for x in items if x.IS_DIR)
         for diritem in diritems:
             self.items[_urlkey(diritem.kurl)] = diritem
 
