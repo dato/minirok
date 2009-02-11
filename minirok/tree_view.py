@@ -117,14 +117,17 @@ class Model(QtCore.QAbstractItemModel):
         self.dirLister.setMimeFilter(['inode/directory'] +
                             minirok.Globals.engine.mime_types())
 
-        self.connect(self.dirLister, QtCore.SIGNAL('newItems(const KFileItemList &)'),
+        self.connect(self.dirLister,
+                QtCore.SIGNAL('newItems(const KFileItemList &)'),
                 self._dirLister_new_items)
 
-        self.connect(self.dirLister, QtCore.SIGNAL('completed(const KUrl &)'),
+        self.connect(self.dirLister,
+                QtCore.SIGNAL('completed(const KUrl &)'),
                 self._dirLister_completed)
 
-        self.connect(self.dirLister, QtCore.SIGNAL('deleteItem(const KFileItem &)'),
-                self._dirLister_delete_item)
+        self.connect(self.dirLister,
+                QtCore.SIGNAL('itemsDeleted(const KFileItemList &)'),
+                self._dirLister_delete_items)
 
     def _set_recurse(self, value):
         if self._recurse ^ value:
@@ -368,39 +371,44 @@ class Model(QtCore.QAbstractItemModel):
         if self._recurse:
             self.populate_next()
 
-    def _dirLister_delete_item(self, entry):
-        kurl = entry.url()
-        name = kurl.fileName()
-
-        key = _urlkey(kurl, up=True)
+    def _dirLister_delete_items(self, entries):
+        key = _urlkey(entries[0].url(), up=True)
         try:
             parent = self.items[key]
         except KeyError:
-            minirok.logger.error('key not found in deleteItem: %r', unicode(key))
+            minirok.logger.error(
+                    'key not found in itemsDeleted: %r', unicode(key))
             return
 
-        for i, child in enumerate(parent.children):
-            if name == child.kurl.fileName():
-                if parent.root is not self.root:
-                    index = None
-                    beginRemoveRows = endRemoveRows = lambda *x: None
-                else:
-                    endRemoveRows = self.endRemoveRows
-                    beginRemoveRows = self.beginRemoveRows
-
-                    if parent is self.root:
-                        index = QtCore.QModelIndex()
-                    else:
-                        index = self.createIndex(parent.row, 0, parent)
-
-                beginRemoveRows(index, i, i)
-                parent.children.pop(i)
-                for item in parent.children[i:]:
-                    item.row -= 1
-                endRemoveRows()
-                break
+        if parent.root is not self.root:
+            index = None
+            beginRemoveRows = endRemoveRows = lambda *x: None
         else:
-            minirok.logger.warn('unknown item to delete: %s', kurl.prettyUrl())
+            endRemoveRows = self.endRemoveRows
+            beginRemoveRows = self.beginRemoveRows
+
+            if parent is self.root:
+                index = QtCore.QModelIndex()
+            else:
+                index = self.createIndex(parent.row, 0, parent)
+
+        have_names = dict((unicode(x.name), i)
+                            for i, x in enumerate(parent.children))
+        drop_indices = []
+        for e in entries:
+            name = unicode(e.url().fileName())
+            try:
+                drop_indices.append(have_names[name])
+            except KeyError:
+                minirok.logger.warn(
+                    'unknown item to delete: %s', e.url().prettyUrl())
+
+        for start, amount in reversed(util.contiguous_chunks(drop_indices)):
+            beginRemoveRows(index, start, start + amount - 1)
+            parent.children[start:start+amount] = []
+            for item in parent.children[start:]:
+                item.row -= amount
+            endRemoveRows()
 
     ##
 
