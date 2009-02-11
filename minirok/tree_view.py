@@ -239,15 +239,17 @@ class TreeViewItem(QtGui.QTreeWidgetItem):
 
     IS_DIR = 0 # TODO Use QTreeWidgetItem::type() instead?
 
-    def __init__(self, parent, path):
+    def __init__(self, path, root):
         self.path = path
-
         dirname, self.filename = os.path.split(path)
-        QtGui.QTreeWidgetItem.__init__(self, parent,
+
+        # Note that we don't pass a parent here, because I've found that
+        # to be slow. Instead, we always construct parentless items, and
+        # add them to the parent with addChildren() in _populate_tree().
+        QtGui.QTreeWidgetItem.__init__(self,
                 [ util.unicode_from_path(self.filename) ])
 
         # optimization for TreeViewSearchLine.itemMatches() below
-        root = self.treeWidget().root
         rel_path = re.sub('^%s/*' % re.escape(root), '', path)
         self.unicode_rel_path = util.unicode_from_path(rel_path)
 
@@ -264,8 +266,8 @@ class DirectoryItem(TreeViewItem):
 
     IS_DIR = 1
 
-    def __init__(self, parent, path):
-        TreeViewItem.__init__(self, parent, path)
+    def __init__(self, path, root):
+        TreeViewItem.__init__(self, path, root)
         self.setChildIndicatorPolicy(QtGui.QTreeWidgetItem.ShowIndicator)
 
     def repopulate(self):
@@ -398,14 +400,21 @@ def _populate_tree(parent, directory, force_refresh=False):
     # Pointer to the parent QTreeWidget, for empty_directories
     treewidget = parent.treeWidget()
 
+    items = []
     for filename in files:
         path = os.path.join(directory, filename)
         if stat.S_ISDIR(contents[filename].st_mode):
-            item = DirectoryItem(parent, path)
+            item = DirectoryItem(path, treewidget.root)
             treewidget.empty_directories.add(item)
         elif minirok.Globals.engine.can_play_path(path):
-            FileItem(parent, path)
+            item = FileItem(path, treewidget.root)
             prune_this_parent = False
+        else:
+            continue
+        items.append(item)
+
+    if items:
+        parent.addChildren(items)
 
     if not prune_this_parent:
         while parent:
