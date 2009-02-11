@@ -338,7 +338,7 @@ class Model(QtCore.QAbstractItemModel):
             mylist[pos:0] = items[0:upto]
             endInsertRows()
 
-            if items[upto:]:
+            if upto < len(items):
                 myinsert(mylist, items[upto:])
 
         myinsert(parent.children, newitems)
