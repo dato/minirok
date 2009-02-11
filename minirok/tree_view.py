@@ -380,6 +380,21 @@ class Model(QtCore.QAbstractItemModel):
                     'key not found in itemsDeleted: %r', unicode(key))
             return
 
+        have_names = dict((unicode(x.name), i)
+                            for i, x in enumerate(parent.children))
+        drop_indices = []
+        for e in entries:
+            name = unicode(e.url().fileName())
+            try:
+                drop_indices.append(have_names[name])
+            except KeyError:
+                minirok.logger.warn(
+                    'unknown item to delete: %s', e.url().prettyUrl())
+
+        self.delete_children(parent, drop_indices)
+
+    def delete_children(self, parent, indices):
+        """Drop those items from parent.children indicated by indices."""
         if parent.root is not self.root:
             index = None
             beginRemoveRows = endRemoveRows = lambda *x: None
@@ -392,18 +407,7 @@ class Model(QtCore.QAbstractItemModel):
             else:
                 index = self.createIndex(parent.row, 0, parent)
 
-        have_names = dict((unicode(x.name), i)
-                            for i, x in enumerate(parent.children))
-        drop_indices = []
-        for e in entries:
-            name = unicode(e.url().fileName())
-            try:
-                drop_indices.append(have_names[name])
-            except KeyError:
-                minirok.logger.warn(
-                    'unknown item to delete: %s', e.url().prettyUrl())
-
-        for start, amount in reversed(util.contiguous_chunks(drop_indices)):
+        for start, amount in reversed(util.contiguous_chunks(indices)):
             beginRemoveRows(index, start, start + amount - 1)
             parent.children[start:start+amount] = []
             for item in parent.children[start:]:
