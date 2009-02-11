@@ -1,9 +1,6 @@
 (This list is obviosly not complete, just here to not forget of these.)
 
 IMPORTANT:
-  * As we ship icons, we have to "touch `kde4-config --expandvars
-    --install icon`/hicolor", both in setup.sh and postinst! (postrm
-    too?)
   * Using util.playable_from_untrusted in load_saved_playlist()
     eliminates duplicates.
 

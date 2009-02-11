@@ -1,0 +1,13 @@
+#! /bin/sh
+
+set -e
+
+if [ "$1" = "configure" ]; then
+    # This is needed so that KDE4 knows a rebuild of the icon cache is
+    # in order. Without it, Minirok's icons won't be available. I poked
+    # around to see if there was some dh_foo to automate this, but it
+    # seems there is not. Cook it up ourselves for now. -- Dato, 2009-02-10
+    touch "`kde4-config --expandvars --install icon`/hicolor"
+fi
+
+#DEBHELPER#
