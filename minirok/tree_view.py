@@ -16,7 +16,6 @@ from minirok import proxy, util
 DRAG_MIME_TYPE = 'text/x-minirok-track-list'
 
 # TODO handle rename/refresh
-# TODO auto open (see AUTOMATICALLY_EXPAND.diff)
 # TODO fetchMore(children) when expanding parent?
 
 ##
@@ -25,6 +24,7 @@ class TreeView(QtGui.QTreeView):
 
     def __init__(self, parent=None):
         QtGui.QTreeView.__init__(self, parent)
+        self.auto_expanded = set()
 
         self.header().hide()
         self.setRootIsDecorated(True)
@@ -36,6 +36,41 @@ class TreeView(QtGui.QTreeView):
 
         self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
                 self.slot_append_selected)
+
+    def setModel(self, model):
+        QtGui.QTreeView.setModel(self, model)
+
+        self.connect(model, QtCore.SIGNAL('start_filter_pattern'),
+                     self.slot_close_auto_expanded)
+
+        self.connect(model, QtCore.SIGNAL('finish_filter_pattern'),
+                     self.slot_auto_expand_visible)
+
+    def slot_close_auto_expanded(self):
+        selected = set()
+        for index in self.selectedIndexes():
+            while index.isValid():
+                selected.add(index)
+                index = index.parent()
+
+        for index in self.auto_expanded - selected:
+            self.collapse(index)
+
+        self.auto_expanded &= selected # Close them next time if possible
+
+    def slot_auto_expand_visible(self):
+        model = self.model()
+        indices = set(model.index(row, 0) for row in range(model.rowCount()))
+
+        while indices:
+            index = indices.pop()
+            row_count = model.rowCount(index)
+            if (row_count <= 5
+                    or not index.parent().isValid()):
+                self.expand(index)
+                self.auto_expanded.add(index)
+                children = [ index.child(i, 0) for i in range(row_count) ]
+                indices.update(c for c in children if model.rowCount(c) > 0)
 
     def slot_append_selected(self, index):
         # self.setExpanded(index, not self.isExpanded(index))
@@ -544,8 +579,11 @@ class Proxy(proxy.Model):
     ##
 
     def setPattern(self, pattern):
+        self.emit(QtCore.SIGNAL('start_filter_pattern'))
         self.sourceModel().newPattern(pattern)
         proxy.Model.setPattern(self, pattern)
+        if unicode(pattern).strip():
+            self.emit(QtCore.SIGNAL('finish_filter_pattern'))
 
     def filterAcceptsRow(self, row, parent):
         source = self.sourceModel()
