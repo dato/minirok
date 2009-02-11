@@ -143,6 +143,7 @@ class MainWindow(kdeui.KXmlGuiWindow):
         return self._flag_really_quit or finishing_session
 
     def queryExit(self):
+        self.left_side.tree.dirLister.stop() # XXX Not a nice place for this.
         util.CallbackRegistry.save_config_all()
         kdecore.KGlobal.config().sync()
         return True
