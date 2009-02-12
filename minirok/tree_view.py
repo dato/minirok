@@ -67,8 +67,9 @@ class TreeView(QtGui.QTreeView):
             row_count = model.rowCount(index)
             if (row_count <= 5
                     or not index.parent().isValid()):
-                self.expand(index)
-                self.auto_expanded.add(index)
+                if not self.isExpanded(index):
+                    self.expand(index)
+                    self.auto_expanded.add(index)
                 children = [ index.child(i, 0) for i in range(row_count) ]
                 indices.update(c for c in children if model.rowCount(c) > 0)
 
