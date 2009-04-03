@@ -35,7 +35,7 @@ class LastfmSubmitter(QtCore.QObject):
         self.timer.setSingleShot(True)
 
         if _has_lastfm_client:
-            self.lastfm_client = lastfm.client.Client('lastfmsubmitd')
+            self.lastfm_client = lastfm.client.Client('minirok')
         else:
             self.spool_path = lastfm.config.Config('lastfmsubmitd').spool_path
 
