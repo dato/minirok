@@ -9,7 +9,7 @@ minirok (2.0-1) UNRELEASED; urgency=low
   * Drop lintian override file, now that script-not-executable does not apply
     to files under /usr/share.
 
-  * Bump Standards-Version to 3.8.0 (no changes required).
+  * Bump Standards-Version to 3.8.1 (no changes required).
 
  -- Adeodato Simó <dato@net.com.org.es>  Thu, 03 Jan 2008 17:11:18 +0100
 
