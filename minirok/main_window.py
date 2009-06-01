@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 import os
@@ -29,6 +29,14 @@ class MainWindow(kdeui.KXmlGuiWindow):
         self.main_view = QtGui.QSplitter(self)
         self.left_side = left_side.LeftSide(self.main_view)
         self.right_side = right_side.RightSide(self.main_view, main_window=self)
+
+        policy = QtGui.QSizePolicy()
+        policy.setHorizontalStretch(1)
+        self.left_side.setSizePolicy(policy)
+
+        policy = QtGui.QSizePolicy()
+        policy.setHorizontalStretch(3)
+        self.right_side.setSizePolicy(policy)
 
         self.statusbar = statusbar.StatusBar(self)
         self.setStatusBar(self.statusbar)
