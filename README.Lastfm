@@ -6,7 +6,7 @@ is installed. If you get stuck configuring it, here's a simple recipe to
 have it running in one minute, for lastfmsubmitd 1.0.4 or later (see below
 for older versions):
 
-    % mkdir ~/.lastfmsubmitd
+    % mkdir -p ~/.lastfmsubmitd/spool
     % cat >~/.lastfmsubmitd/conf
     [account]
     user = you
@@ -31,10 +31,8 @@ paths explicitly. Append this to your conf file:
     spool = /home/you/.lastfmsubmitd/spool
     pidfile = /home/you/.lastfmsubmitd/pid
 
-Also, you need to ensure the spool directory exists, and symlink your conf
-file as ~/.lastfmsubmitd.conf:
+Also, you need to symlink your conf file as ~/.lastfmsubmitd.conf:
 
-    % mkdir ~/.lastfmsubmitd/spool
     % ln -s ~/.lastfmsubmitd/conf ~/.lastfmsubmitd.conf
 
 
