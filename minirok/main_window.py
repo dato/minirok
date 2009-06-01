@@ -41,10 +41,12 @@ class MainWindow(kdeui.KXmlGuiWindow):
         self.statusbar = statusbar.StatusBar(self)
         self.setStatusBar(self.statusbar)
 
+        # Restore splitter state
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-        value = config.readEntry(self.CONFIG_OPTION_SPLITTER_STATE,
-                                    QtCore.QVariant(QtCore.QByteArray()))
-        self.main_view.restoreState(value.toByteArray())
+        sstate = config.readEntry(self.CONFIG_OPTION_SPLITTER_STATE,
+                                  QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        if not sstate.isEmpty():
+            self.main_view.restoreState(sstate)
 
         self.init_systray()
         self.init_actions()
