@@ -1272,7 +1272,7 @@ class Columns(QtGui.QHeaderView):
     CONFIG_SECTION = 'Playlist'
     CONFIG_OPTION = 'Columns'
     CONFIG_OPTION_DEFAULT = \
-            'Track:50:1,Artist:200:1,Album:200:0,Title:300:1,Length:75:1'
+            'Track:60:1,Artist:200:1,Album:200:0,Title:275:1,Length:60:1'
 
     def __init__(self, parent):
         QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
