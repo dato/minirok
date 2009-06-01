@@ -2,10 +2,10 @@ Description
 ===========
 
 Minirok is a small music player written in Python for the K Desktop
-Environment. As its name hints, it's modelled after Amarok, but with a
-reduced set of features. In particular, it is designed to cover all the
-needs and wishes of the author, leaving everything else out. The look
-and feel is almost identical to Amarok's, though.
+Environment. As its name hints, it's modelled after Amarok (1.4), but
+with a reduced set of features. In particular, it is designed to cover
+all the needs and wishes of the author, leaving everything else out. The
+look and feel is almost identical to the old Amarok, though.
 
 The main interface is a *tree view of the filesystem*, with a playlist
 that can only be populated via drag and drop. There is no collection
@@ -42,13 +42,13 @@ Mutagen support them (which they probably will).
 Motivation
 ==========
 
-Let me start by saying that I've been a happy Amarok user for more than
-three years, and that I think it's a terrific player which deserves all
-the success it can get. That said, I've always wished some things were
-different... who doesn't? :)
+Let me start by saying that I was a very happy Amarok user for more than
+three years, and that I think at least version 1.4 is a terrific player
+which deserved all the success it got (I haven't tried version 2 at all).
 
-In particular, I always missed a tree view of the filesystem, because my
-music collection is highly structured, and it would've been enough. The
+Anyway, I always wished for some things to be different. In particular,
+I always missed a tree view of the filesystem, because my music
+collection is highly structured, and it would've been enough. The
 collection seemed an overkill to me, though it worked very nicely for me
 until:
 
@@ -77,7 +77,8 @@ Requirements
 Minirok is written in Python, version 2.4 or later is required. If it's
 available from your distribution, I recommend you install that package,
 since it'll take care of installing everything necessary. For Debian and
-derivatives, you can grab the latest package from here:
+derivatives, you should be able to install directly with apt-get, and
+you can check if there's a more recent version here:
 
     http://chistera.yi.org/~adeodato/code/minirok/packages
 
@@ -118,9 +119,9 @@ The following dependencies are optional and enhance Minirok in some way:
     Source: http://www.freedesktop.org/wiki/Software/DBusBindings#python
 
     (You'll also need DBus support compiled-in in the PyQt bindings
-    above; in Debian and Ubuntu, just install python-qt4-dbus.
-    Additionally, you must be running Qt 4.4.0 or later for the DBus
-    interface to work.)
+    above; in Debian and Ubuntu, just install python-qt4-dbus in
+    addition to python-dbus. Additionally, you must be running Qt 4.4.0
+    or later for the DBus interface to work.)
 
   * lastfmsubmitd - enables submission of played tracks to Last.fm
     Debian and Ubuntu: lastfmsubmitd
@@ -132,7 +133,7 @@ The following dependencies are optional and enhance Minirok in some way:
 Author and license
 ==================
 
-Adeodato Simó <dato@net.com.org.es>
-Licensed under the terms of the MIT license.
+Minirok is written by Adeodato Simó (dato@net.com.org.es), and licensed
+under the terms of the MIT license.
 
 vi: sw=2
