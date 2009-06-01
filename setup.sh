@@ -15,10 +15,10 @@ fi
 ##
 
 PREFIX=`kde4-config --prefix`
-BIN=`kde4-config --expandvars --install exe`
-APPS=`kde4-config --expandvars --install data`
-ICONS=`kde4-config --expandvars --install icon`
-DESKTOP=`kde4-config --expandvars --install xdgdata-apps`
+BIN=`kde4-config --install exe`
+APPS=`kde4-config --install data`
+ICONS=`kde4-config --install icon`
+DESKTOP=`kde4-config --install xdgdata-apps`
 MINIROK="$APPS/minirok"
 KONQUEROR_SERVICE_MENU="$APPS/konqueror/servicemenus"
 
