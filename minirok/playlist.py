@@ -343,25 +343,35 @@ class Playlist(QtCore.QAbstractTableModel):
     def init_undo_stack(self):
         self.undo_stack = QtGui.QUndoStack(self)
 
-        self.undo_action = self.undo_stack.createUndoAction(self)
-        self.redo_action = self.undo_stack.createRedoAction(self)
-
-        self.undo_action.setIcon(kdeui.KIcon('edit-undo'))
-        self.redo_action.setIcon(kdeui.KIcon('edit-redo'))
-
-        ac = minirok.Globals.action_collection
-        ac.addAction('action_playlist_undo', self.undo_action)
-        ac.addAction('action_playlist_redo', self.redo_action)
-
-        # Now, we need this for the shortcuts to be configurable...
-        # Note: not using KStandardAction.undo()/redo(), because they'll want
-        # to appear in the main toolbar, and we want that one to be empty.
-        self.undo_kaction = util.create_action('kaction_playlist_undo',
+        # Undo/Redo action handling: this is tricky. We would want for the
+        # actions in the toolbar to be QAction objects as returned by
+        # createUndoAction() and createRedoAction(), because these do enable
+        # and disable themselves as appropriate depending on where there's
+        # stuff to undo or redo, which is nice. However, placing these in the
+        # toolbar directly makes kdelibs emit a warning, so we do with a couple
+        # KActions that watch the QActions and enable and disable themselves
+        # when necessary. The KActions are needed anyway to have configurable
+        # shortcuts for these actions, since the KDE shortcuts dialog doesn't
+        # support configuring QAction shortcuts.
+        self.undo_kaction = util.create_action('action_playlist_undo',
                 'Undo', self.undo_stack.undo, 'edit-undo',
                 kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Undo))
-        self.redo_kaction = util.create_action('kaction_playlist_redo',
+
+        self.redo_kaction = util.create_action('action_playlist_redo',
                 'Redo', self.undo_stack.redo, 'edit-redo',
                 kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Redo))
+
+        self.undo_qaction = self.undo_stack.createUndoAction(self)
+        self.redo_qaction = self.undo_stack.createRedoAction(self)
+
+        self.connect(self.undo_qaction, QtCore.SIGNAL('changed()'),
+                     self.slot_undo_qaction_changed)
+
+        self.connect(self.redo_qaction, QtCore.SIGNAL('changed()'),
+                     self.slot_redo_qaction_changed)
+
+        self.slot_undo_qaction_changed()
+        self.slot_redo_qaction_changed()
 
     ##
 
@@ -489,6 +499,12 @@ class Playlist(QtCore.QAbstractTableModel):
 
         if rows:
             self.my_emit_dataChanged(min(rows), max(rows))
+
+    def slot_undo_qaction_changed(self):
+        self.undo_kaction.setEnabled(self.undo_qaction.isEnabled())
+
+    def slot_redo_qaction_changed(self):
+        self.redo_kaction.setEnabled(self.redo_qaction.isEnabled())
 
     ##
 
