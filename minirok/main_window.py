@@ -45,23 +45,21 @@ class MainWindow(kdeui.KXmlGuiWindow):
         self.setCentralWidget(self.main_view)
         # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check
 
-        # If a minirokui.rc file exists in the standard location, do
-        # not specify one for setupGUI(), else specify one if available.
-        has_std_rc = bool(unicode(kdecore.KStandardDirs.locate(
-                                            'appdata', 'minirokui.rc')))
-
-        args = [ QtCore.QSize(900, 540),
-                 self.StandardWindowOption(
-                     self.ToolBar | self.Keys | self.Save | self.Create) # StatusBar out
+        setupGUI_args = [
+                QtCore.QSize(900, 540),
+                self.StandardWindowOption( # Skip StatusBar
+                    self.ToolBar | self.Keys | self.Save | self.Create)
         ]
 
-        if not has_std_rc:
-            local_rc = os.path.join(
-                    os.path.dirname(minirok.__path__[0]), 'config/minirokui.rc')
+        # If a minirokui.rc file exists in the standard location, do
+        # not specify one for setupGUI(), else specify one if available.
+        if not kdecore.KStandardDirs.locate('appdata', 'minirokui.rc').isEmpty():
+            local_rc = os.path.join(os.path.dirname(minirok.__path__[0]),
+                                    'config/minirokui.rc')
             if os.path.isfile(local_rc):
-                args.append(local_rc)
+                setupGUI_args.append(local_rc)
 
-        self.setupGUI(*args)
+        self.setupGUI(*setupGUI_args)
 
         # We only want the app to exit if Quit was called from the systray icon
         # or from the File menu, not if the main window was closed. Use a flag
