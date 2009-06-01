@@ -24,8 +24,7 @@ class Preferences(kdeui.KConfigSkeleton):
         kdeui.KConfigSkeleton.__init__(self, *args)
 
         self.setCurrentGroup('General')
-        self._enable_lastfm = self.addItemBool(
-                'EnableLastfm', False, minirok._has_lastfm)
+        self._enable_lastfm = self.addItemBool('EnableLastfm', False, False)
 
         self.setCurrentGroup('Playlist')
         self._tag_regex_value = QtCore.QString()
