@@ -1,7 +1,7 @@
 [Desktop Entry]
-Encoding=UTF-8
-ServiceTypes=audio/*
+Type=Service
 Actions=appendToPlaylist;
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin;audio/*
 
 [Desktop Action appendToPlaylist]
 Name=Append to Minirok playlist

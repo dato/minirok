@@ -19,8 +19,8 @@ BIN=`kde4-config --install exe`
 APPS=`kde4-config --install data`
 ICONS=`kde4-config --install icon`
 DESKTOP=`kde4-config --install xdgdata-apps`
+SERVICE_MENUS=`kde4-config --install services`/ServiceMenus
 MINIROK="$APPS/minirok"
-KONQUEROR_SERVICE_MENU="$APPS/konqueror/servicemenus"
 
 ##
 
@@ -87,7 +87,7 @@ case "$1" in
 	install_icons images/icons/private "$MINIROK/icons"
 	install_file config/minirokui.rc "$MINIROK"
 	install_file config/minirok.desktop "$DESKTOP"
-	install_file config/minirok_append.desktop "$KONQUEROR_SERVICE_MENU"
+	install_file config/minirok_append.desktop "$SERVICE_MENUS"
 	install_symlink "$PREFIX/share/minirok/minirok.py" "$BIN/minirok"
 	;;
 
