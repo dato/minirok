@@ -50,8 +50,9 @@ class MainWindow(kdeui.KXmlGuiWindow):
         has_std_rc = bool(unicode(kdecore.KStandardDirs.locate(
                                             'appdata', 'minirokui.rc')))
 
-        args = [ self.StandardWindowOption(
-            self.ToolBar | self.Keys | self.Save | self.Create) # StatusBar out
+        args = [ QtCore.QSize(900, 540),
+                 self.StandardWindowOption(
+                     self.ToolBar | self.Keys | self.Save | self.Create) # StatusBar out
         ]
 
         if not has_std_rc:
