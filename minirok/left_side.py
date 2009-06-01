@@ -106,11 +106,11 @@ class LeftSide(QtGui.QWidget):
 
     def slot_do_button(self):
         enable = (self.button_action == 'Enable')
-        self.tree_view.recurse = enable
         self.button_action = enable and 'Stop scan' or 'Enable'
         self.search_button.setText(self.button_action)
         if not enable:
             self.search_widget.setToolTip('')
+        self.tree_view.recurse = enable
 
 ##
 

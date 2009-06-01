@@ -25,7 +25,7 @@ class TreeView(QtGui.QTreeWidget):
         QtGui.QTreeWidget.__init__(self, *args)
         self.root = None
         self.populating = False
-        self.populate_pending = None
+        self.populate_pending = []
         self.empty_directories = set()
         self.automatically_opened = set()
 
@@ -58,11 +58,12 @@ class TreeView(QtGui.QTreeWidget):
     ##
 
     def _set_recurse(self, value):
-        if self._recurse ^ value:
+        scanning = self.timer.isActive()
+        if scanning ^ value:
             self._recurse = bool(value)
             if self._recurse:
-                self.timer.start(0)
                 self.emit(QtCore.SIGNAL('scan_in_progress'), True)
+                self.timer.start(0)
             else:
                 self.timer.stop()
 
@@ -130,7 +131,7 @@ class TreeView(QtGui.QTreeWidget):
         if directory != self.root or self.populating:
             # Not refreshing
             self.clear()
-            self.populate_pending = None
+            self.populate_pending = []
             self.setSortingEnabled(False) # dog slow otherwise
             self.empty_directories.clear()
             self.automatically_opened.clear()
