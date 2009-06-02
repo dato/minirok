@@ -19,6 +19,10 @@ Playlist:
   * Make Undo preserve stuff like the "stop after".
   * Make Undo/Redo preserve the selection?
 
+  * Bug: Load album A; start song X; stop; clear playlist;
+         load album B; start song Y; stop; hit Undo twice; play;
+         hit redo twice... song Y shows as playing.
+
 UI:
   * connect track change / playlist change with statusbar and caption
 
@@ -41,4 +45,4 @@ Other:
   * Last.fm submission should report any errors, eg. failure to write to
     the spool directory.
 
-vi: sw=2
+vi: sw=2 et
