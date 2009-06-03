@@ -1089,6 +1089,9 @@ class PlaylistView(QtGui.QTreeView):
             else:
                 return QtGui.QTreeView.mousePressEvent(self, event)
 
+        elif keymod != Qt.NoModifier: # Eat them up
+            return QtGui.QTreeView.mousePressEvent(self, event)
+
         elif button & Qt.MidButton:
             if index.data(Playlist.RoleQueryIsPlaying).toBool():
                 minirok.Globals.action_collection.action('action_pause').trigger()
