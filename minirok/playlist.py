@@ -1230,7 +1230,8 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
                 s_width = 8
                 s_height = 8
             else:
-                s_width = s_height = 0
+                s_width = 1 # Seems to prevent an artifact
+                s_height = 0
 
             if queue_pos:
                 queue_pos = str(queue_pos)
