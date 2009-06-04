@@ -91,7 +91,7 @@ class LineWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
-        self._label = QtGui.QLabel('S&earch:', self)
+        self._label = QtGui.QLabel('S&earch: ', self)
         self._searchLine = self.createSearchLine()
 
         self._searchLine.show()
