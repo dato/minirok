@@ -1040,6 +1040,7 @@ class PlaylistView(QtGui.QTreeView):
 
     def drawRow(self, painter, styleopt, index):
         if index.data(Playlist.RoleQueryIsPlaying).toBool():
+            # XXX This does not work with at least Qt 4.5
             styleopt = QtGui.QStyleOptionViewItem(styleopt) # make a copy
             styleopt.font.setItalic(True)
 
