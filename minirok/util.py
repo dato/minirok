@@ -171,7 +171,12 @@ def ensure_utf8(string):
     If string is already in UTF-8, it will be returned unmodified; if string is
     an unicode object, it'll be encoded to UTF-8 and returned; else, it'll be
     assumed to be in ISO-8859-1 and returned as UTF-8.
+
+    Additionally, None can be passed, in which case the empty string will be
+    returned.
     """
+    if string is None:
+        return ''
     if isinstance(string, unicode):
         return string.encode('utf-8')
     else:
