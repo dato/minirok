@@ -143,12 +143,6 @@ else:
                     'Qt version is %s, but 4.4.0 is needed', QtCore.qVersion())
         _has_dbus = False
 
-try:
-    import lastfm
-    _has_lastfm = True
-except ImportError:
-    _has_lastfm = False
-
 if _not_found:
     print >>sys.stderr, ('''\
 The following required libraries could not be found on your system:

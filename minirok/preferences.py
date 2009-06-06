@@ -109,20 +109,10 @@ class GeneralPage(QtGui.QWidget, options1.Ui_Page):
             # This Ui_Page comes from ui/error.py.
             return
 
-        ##
-
         self.connect(self.kcfg_TagsFromRegex, QtCore.SIGNAL('toggled(bool)'),
                 self.slot_tags_from_regex_toggled)
 
         self.slot_tags_from_regex_toggled(preferences.tags_from_regex)
-
-        ##
-
-        if not minirok._has_lastfm:
-            self.kcfg_EnableLastfm.setToolTip(
-                    'Feature disabled because lastfmsubmitd is not available')
-
-        self.kcfg_EnableLastfm.setEnabled(minirok._has_lastfm)
 
     def slot_tags_from_regex_toggled(self, checked):
         self.regexInfoGroup.setEnabled(checked)
