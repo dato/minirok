@@ -1142,8 +1142,6 @@ class PlaylistItem(object):
 
     ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
 
-    TRACK_COLUMN_INDEX = 0 # used by the model
-
     def __init__(self, path, tags=None):
         self.path = path
 
