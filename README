@@ -74,7 +74,7 @@ hack on, so that too.
 Requirements
 ============
 
-Minirok is written in Python, version 2.4 or later is required. If it's
+Minirok is written in Python, version 2.5 or later is required. If it's
 available from your distribution, I recommend you install that package,
 since it'll take care of installing everything necessary. For Debian and
 derivatives, you should be able to install directly with apt-get, and
