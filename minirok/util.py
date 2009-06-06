@@ -165,6 +165,23 @@ def contiguous_chunks(intlist):
 
     return map(tuple, result)
 
+def ensure_utf8(string):
+    """Return an UTF-8 string out of the passed string.
+
+    If string is already in UTF-8, it will be returned unmodified; if string is
+    an unicode object, it'll be encoded to UTF-8 and returned; else, it'll be
+    assumed to be in ISO-8859-1 and returned as UTF-8.
+    """
+    if isinstance(string, unicode):
+        return string.encode('utf-8')
+    else:
+        try:
+            string.decode('utf-8')
+        except UnicodeDecodeError:
+            return string.decode('iso-8859-1').encode('utf-8')
+        else:
+            return string
+
 ##
 
 class CallbackRegistry(object):
