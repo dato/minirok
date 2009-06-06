@@ -25,7 +25,7 @@ Other features include:
   * reading of tags when adding to the playlist can be disabled by
     specifying a regular expression to extract them from the filename
 
-  * submission of played songs to Last.fm (with lastfmsubmitd)
+  * submission of played songs to Last.fm
 
   * global shortcuts
 
@@ -122,12 +122,6 @@ The following dependencies are optional and enhance Minirok in some way:
     above; in Debian and Ubuntu, just install python-qt4-dbus in
     addition to python-dbus. Additionally, you must be running Qt 4.4.0
     or later for the DBus interface to work.)
-
-  * lastfmsubmitd - enables submission of played tracks to Last.fm
-    Debian and Ubuntu: lastfmsubmitd
-    Source: http://www.red-bean.com/~decklin/software/lastfmsubmitd
-
-    (See README.Lastfm for tips on configuring it.)
 
 
 Author and license
