@@ -299,6 +299,47 @@ class RandomOrderedList(list):
 
 ##
 
+class Enum(object):
+    """An attribute-based implementation of enumerations.
+
+    >>> Color = Enum('White', 'Black', 'Gray.50')
+    >>> Color.White
+    'White'
+    >>> Color.Gray50
+    'Gray.50'
+    >>> Color.Red
+    Traceback (most recent call last):
+      ...
+    AttributeError: unknown value for enum: 'Red'
+
+    >>> Color.is_valid('Blue')
+    False
+    >>> Color.is_valid('Gray.50')
+    True
+    >>> Color.is_valid('Gray50')
+    True
+
+    >>> Color.get_all_values()
+    ['White', 'Black', 'Gray.50']
+    """
+    def __init__(self, *values):
+        self._values = list(values)
+        self._map = dict((re.sub(r'\W+', '', x), x) for x in self._values)
+
+    def __getattr__(self, name):
+        try:
+            return self._map[name]
+        except KeyError:
+            raise AttributeError('unknown value for enum: %r' % (name,))
+
+    def is_valid(self, name):
+        return name in self._map or name in self._values
+
+    def get_all_values(self):
+        return self._values[:]
+
+##
+
 def needs_lock(mutex_name):
     """Helper decorator for ThreadedWorker."""
     def decorator(function):
