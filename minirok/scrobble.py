@@ -238,6 +238,12 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 if req.failed:
                     minirok.logger.info(
                         'could not send "now playing" information: %s', req.error)
+                    if req.error.startswith('BADSESSION'):
+                        self.session_key = None # Trigger re-handshake
+                    else:
+                        self.failure_count += 1
+                        if self.failure_count >= MAX_FAILURES:
+                            self.session_key = None
                 else:
                     minirok.logger.debug('sent "now playing" information successfully') # XXX
 
