@@ -170,6 +170,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         self.password_hash = hashlib.md5(parser.get('account', 'password')).hexdigest()
 
     def slot_new_track(self):
+        self.timer.stop()
         self.current_track = None
         tags = minirok.Globals.playlist.get_current_tags()
 
@@ -181,8 +182,8 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             minirok.logger.info('track shorter than %d seconds, '
                                 'not scrobbling', TRACK_MIN_LENGTH)
         else:
-            length = self.current_track.length
-            runtime = min(TRACK_SUBMIT_SECONDS, length * TRACK_SUBMIT_PERCENT)
+            runtime = min(TRACK_SUBMIT_SECONDS,
+                          self.current_track.length * TRACK_SUBMIT_PERCENT)
             self.timer.start(runtime * 1000)
 
         with self.mutex:
@@ -224,7 +225,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 if not (current_track or scrobble_tracks):
                     continue
                 else:
-                    self.scrobble_queue[:] = []
+                    self.scrobble_queue[:] = [] # We may return them later
 
             ##
 
