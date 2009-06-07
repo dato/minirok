@@ -28,6 +28,10 @@ from minirok import engine, util
 ##
 
 Server = util.Enum('Last.fm', 'Libre.fm', 'Other')
+ServerURL = {
+    Server.Lastfm: 'http://post.audioscrobbler.com:80/',
+    Server.Librefm: 'http://turtle.libre.fm:80/',
+}
 
 PROTOCOL_VERSION = '1.2.1'
 CLIENT_IDENTIFIER = 'mrk'
@@ -329,11 +333,9 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             self.user = prefs.user
             # TODO: The password is stored in plain in the configuration file..
             self.password_hash = hashlib.md5(prefs.password).hexdigest()
-            if prefs.server == Server.Lastfm:
-                self.handshake_url = 'http://post.audioscrobbler.com:80/'
-            elif prefs.server == Server.Librefm:
-                self.handshake_url = 'http://turtle.libre.fm:80/'
-            else:
+            try:
+                self.handshake_url = ServerURL[prefs.server]
+            except KeyError:
                 self.handshake_url = prefs.handshake_url
             self.session_key = None
             with self.configured:
