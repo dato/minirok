@@ -36,11 +36,11 @@ class Preferences(kdeui.KConfigSkeleton):
 
     @property
     def enable_lastfm(self):
-        return self._enable_lastfm.property().toBool()
+        return self._enable_lastfm.value()
 
     @property
     def tags_from_regex(self):
-        return self._tags_from_regex.property().toBool()
+        return self._tags_from_regex.value()
 
     @property
     def tag_regex(self):
@@ -53,10 +53,7 @@ class Preferences(kdeui.KConfigSkeleton):
                 1: 'OnRegexFail',
                 2: 'Never',
         }
-        key, okp = self._tag_regex_mode.property().toInt()
-
-        if not okp:
-            key = -1 # ensure KeyError is raised below
+        key = self._tag_regex_mode.value()
 
         try:
             return _dict[key]
