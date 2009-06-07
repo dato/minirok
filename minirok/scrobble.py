@@ -256,14 +256,12 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
                 if req.failed:
                     failed_index = start
-                    if self.error.startswith('BADSESSION'):
+                    if req.error.startswith('BADSESSION'):
                         self.session_key = None # Trigger re-handshake
                     else:
                         minirok.logger.info('scrobbling %d track(s) failed: %s',
                                             len(tracks), req.error)
-
                         self.failure_count += 1
-
                         if self.failure_count >= MAX_FAILURES:
                             self.session_key = None
                     break # Do not remove without changing the extend() below
