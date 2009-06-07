@@ -237,26 +237,6 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
             ##
 
-            if current_track is not None:
-                params = { 's': self.session_key }
-                params.update(current_track.get_now_playing_params())
-
-                req = Request(self.now_playing_url, params)
-
-                if req.failed:
-                    minirok.logger.info(
-                        'could not send "now playing" information: %s', req.error)
-                    if req.error.startswith('BADSESSION'):
-                        self.session_key = None # Trigger re-handshake
-                    else:
-                        self.failure_count += 1
-                        if self.failure_count >= MAX_FAILURES:
-                            self.session_key = None
-                else:
-                    minirok.logger.debug('sent "now playing" information successfully') # XXX
-
-            ##
-
             failed_index = None
 
             for start in range(0, len(scrobble_tracks), MAX_TRACKS_AT_ONCE):
@@ -285,6 +265,26 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             if failed_index is not None:
                 with self.mutex:
                     self.scrobble_queue.extend(scrobble_tracks[failed_index:])
+
+            ##
+
+            if current_track is not None:
+                params = { 's': self.session_key }
+                params.update(current_track.get_now_playing_params())
+
+                req = Request(self.now_playing_url, params)
+
+                if req.failed:
+                    minirok.logger.info(
+                        'could not send "now playing" information: %s', req.error)
+                    if req.error.startswith('BADSESSION'):
+                        self.session_key = None # Trigger re-handshake
+                    else:
+                        self.failure_count += 1
+                        if self.failure_count >= MAX_FAILURES:
+                            self.session_key = None
+                else:
+                    minirok.logger.debug('sent "now playing" information successfully') # XXX
 
     def do_handshake(self):
         while True:
