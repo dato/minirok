@@ -23,11 +23,12 @@ from minirok import engine, util
 # TODO: Quitting Minirok while playing will not submit the current track, even
 # the required playing time has passed.
 # TODO: Spool directory, of course...
-# TODO: Preferences dialog: get password (KWallet yes or no?), server, etc.
+# TODO: Use KWallet?
 
 ##
 
-HANDSHAKE_URL = 'http://post.audioscrobbler.com:80/' # TODO: needs to be configurable
+Server = util.Enum('Last.fm', 'Libre.fm', 'Other')
+
 PROTOCOL_VERSION = '1.2.1'
 CLIENT_IDENTIFIER = 'mrk'
 
@@ -146,6 +147,10 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         threading.Thread.__init__(self)
         self.setDaemon(True)
 
+        self.user = None
+        self.password_hash = None
+        self.handshake_url = None
+
         self.session_key = None
         self.scrobble_url = None
         self.now_playing_url = None
@@ -157,17 +162,11 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
         self.mutex = threading.Condition()
         self.timer = util.QTimerWithPause()
+        self.configured = threading.Condition()
         self.timer.setSingleShot(True)
 
         util.CallbackRegistry.register_apply_prefs(self.apply_preferences)
-        self.apply_preferences() # Connect signals/slots
-
-        ## XXX This is in place until I update the preferences dialog
-        import os
-        from ConfigParser import SafeConfigParser
-        parser = SafeConfigParser()
-        parser.read([ os.path.expanduser('~/.lastfmsubmitd/conf') ])
-        self.password_hash = hashlib.md5(parser.get('account', 'password')).hexdigest()
+        self.apply_preferences() # Connect signals/slots, read user/passwd
 
     def slot_new_track(self):
         self.timer.stop()
@@ -209,6 +208,11 @@ class Scrobbler(QtCore.QObject, threading.Thread):
     ##
 
     def run(self):
+        if self.user is None:
+            # We're not configured to run, so we hang on here.
+            with self.configured:
+                self.configured.wait()
+
         while True:
             if self.session_key is None:
                 try:
@@ -286,11 +290,11 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 'p': PROTOCOL_VERSION,
                 'c': CLIENT_IDENTIFIER,
                 'v': minirok.__version__,
-                'u': 'dato',
+                'u': self.user,
                 't': now,
                 'a': hashlib.md5(self.password_hash + now).hexdigest(),
             }
-            req = HandshakeRequest(HANDSHAKE_URL, params)
+            req = HandshakeRequest(self.handshake_url, params)
 
             if req.failed:
                 minirok.logger.info('scrobbler handshake failed (%s), '
@@ -312,8 +316,22 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
     def apply_preferences(self):
         # TODO: what if there's a queue and we get disabled?
-        if minirok.Globals.preferences.enable_lastfm:
+        prefs = minirok.Globals.preferences.lastfm
+
+        if prefs.enable:
             func = self.connect
+            self.user = prefs.user
+            # TODO: The password is stored in plain in the configuration file..
+            self.password_hash = hashlib.md5(prefs.password).hexdigest()
+            if prefs.server == Server.Lastfm:
+                self.handshake_url = 'http://post.audioscrobbler.com:80/'
+            elif prefs.server == Server.Librefm:
+                self.handshake_url = 'http://turtle.libre.fm:80/'
+            else:
+                self.handshake_url = prefs.handshake_url
+            self.session_key = None
+            with self.configured:
+                self.configured.notify()
         else:
             func = self.disconnect
 

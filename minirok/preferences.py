@@ -10,7 +10,7 @@ from PyKDE4 import kdeui
 from PyQt4 import QtGui, QtCore
 
 import minirok
-from minirok import util
+from minirok import scrobble, util
 try:
     from minirok.ui import options1
 except ImportError:
@@ -23,20 +23,14 @@ class Preferences(kdeui.KConfigSkeleton):
     def __init__(self, *args):
         kdeui.KConfigSkeleton.__init__(self, *args)
 
-        self.setCurrentGroup('General')
-        self._enable_lastfm = self.addItemBool('EnableLastfm', False, False)
-
         self.setCurrentGroup('Playlist')
         self._tag_regex_value = QtCore.QString()
         self._tags_from_regex = self.addItemBool('TagsFromRegex', False, False)
         self._tag_regex = self.addItemString('TagRegex', self._tag_regex_value, '')
         self._tag_regex_mode = self.addItemInt('TagRegexMode', 0, 0)
 
+        self.lastfm = LastfmPreferences(self)
         self.readConfig()
-
-    @property
-    def enable_lastfm(self):
-        return self._enable_lastfm.property().toBool()
 
     @property
     def tags_from_regex(self):
@@ -64,6 +58,44 @@ class Preferences(kdeui.KConfigSkeleton):
             minirok.logger.error('invalid value for TagRegexMode: %s',
                     self._tag_regex_mode.property().toString())
             return _dict[0]
+
+##
+
+class LastfmPreferences(object):
+
+    def __init__(self, skel):
+        skel.setCurrentGroup('Last.fm')
+
+        self._user = QtCore.QString()
+        self._pass = QtCore.QString()
+        self._hs_url = QtCore.QString()
+
+        self._enable = skel.addItemBool('EnableLastfm', False, False)
+        self._user_item = skel.addItemString('LastfmUser', self._user, '')
+        self._pass_item = skel.addItemString('LastfmPassword', self._pass, '')
+        self._server = skel.addItemInt('LastfmServer', 0, 0)
+        self._hs_url_item = skel.addItemString('LastfmURL', self._hs_url, '')
+
+    @property
+    def enable(self):
+        return self._enable.value()
+
+    @property
+    def user(self):
+        return str(self._user)
+
+    @property
+    def password(self):
+        return str(self._pass)
+
+    @property
+    def server(self):
+        index = self._server.value()
+        return scrobble.Server.get_all_values()[index]
+
+    @property
+    def handshake_url(self):
+        return str(self._hs_url)
 
 ##
 
@@ -109,10 +141,26 @@ class GeneralPage(QtGui.QWidget, options1.Ui_Page):
             # This Ui_Page comes from ui/error.py.
             return
 
+        self.kcfg_LastfmServer.addItems(scrobble.Server.get_all_values())
+
         self.connect(self.kcfg_TagsFromRegex, QtCore.SIGNAL('toggled(bool)'),
                 self.slot_tags_from_regex_toggled)
 
+        self.connect(self.kcfg_EnableLastfm, QtCore.SIGNAL('toggled(bool)'),
+                self.slot_enable_lastfm_toggled)
+
+        self.connect(self.kcfg_LastfmServer,
+                QtCore.SIGNAL('currentIndexChanged(const QString &)'),
+                self.slot_lastfm_server_changed)
+
+        self.slot_enable_lastfm_toggled(preferences.lastfm.enable)
         self.slot_tags_from_regex_toggled(preferences.tags_from_regex)
+
+    def slot_enable_lastfm_toggled(self, checked):
+        self.lastfmFrame.setEnabled(checked)
 
     def slot_tags_from_regex_toggled(self, checked):
         self.regexInfoGroup.setEnabled(checked)
+
+    def slot_lastfm_server_changed(self, server):
+        self.kcfg_LastfmURL.setEnabled(str(server) == scrobble.Server.Other)
