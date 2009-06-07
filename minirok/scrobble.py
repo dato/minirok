@@ -131,7 +131,7 @@ class HandshakeRequest(Request):
         super(HandshakeRequest, self).__init__(url, params)
 
         if self.failed:
-            if re.search(r'^(BANNED|BADAUTH|BADTIME)', self.error):
+            if re.search(r'^(BANNED|BADTIME)', self.error):
                 raise HandshakeFatalError(self.error)
         elif len(self.body) != 4:
             self.failed = True
@@ -297,12 +297,18 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             req = HandshakeRequest(self.handshake_url, params)
 
             if req.failed:
-                minirok.logger.info('scrobbler handshake failed (%s), '
-                    'retrying in %d minute(s)', req.error, self.pause_duration)
-                time.sleep(self.pause_duration * 60)
-                if self.pause_duration < MAX_SLEEP_MINUTES:
-                    self.pause_duration = min(MAX_SLEEP_MINUTES,
-                                              self.pause_duration * 2)
+                if re.search(r'^BADAUTH', req.error):
+                    minirok.logger.warn(
+                        'scrobbler handshake failed: bad password')
+                    with self.configured:
+                        self.configured.wait()
+                else:
+                    minirok.logger.info('scrobbler handshake failed (%s), '
+                        'retrying in %d minute(s)', req.error, self.pause_duration)
+                    time.sleep(self.pause_duration * 60)
+                    if self.pause_duration < MAX_SLEEP_MINUTES:
+                        self.pause_duration = min(MAX_SLEEP_MINUTES,
+                                                  self.pause_duration * 2)
             else:
                 self.failure_count = 0
                 self.pause_duration = 1
