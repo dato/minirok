@@ -295,7 +295,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             if req.failed:
                 minirok.logger.info('scrobbler handshake failed (%s), '
                     'retrying in %d minute(s)', req.error, self.pause_duration)
-                self.sleep(self.pause_duration * 60)
+                time.sleep(self.pause_duration * 60)
                 if self.pause_duration < MAX_SLEEP_MINUTES:
                     self.pause_duration = min(MAX_SLEEP_MINUTES,
                                               self.pause_duration * 2)
