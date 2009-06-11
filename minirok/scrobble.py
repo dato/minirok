@@ -164,7 +164,8 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         self.scrobble_queue = []
         self.current_track = None
 
-        self.mutex = threading.Condition()
+        self.mutex = threading.Lock()
+        self.event = threading.Event()
         self.timer = util.QTimerWithPause()
         self.configured = threading.Condition()
         self.timer.setSingleShot(True)
@@ -190,7 +191,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             self.timer.start(runtime * 1000)
 
         with self.mutex:
-            self.mutex.notify()
+            self.event.set()
 
     def slot_engine_status_changed(self, new_status):
         if new_status == engine.State.PAUSED:
@@ -201,7 +202,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             self.timer.stop()
             self.current_track = None
             with self.mutex:
-                self.mutex.notify()
+                self.event.set()
 
     def slot_timer_timeout(self):
         with self.mutex:
@@ -225,8 +226,10 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                     minirok.logger.error('aborting scrobbler: %s', e)
                     return
 
+            self.event.wait()
+
             with self.mutex:
-                self.mutex.wait()
+                self.event.clear()
                 current_track = self.current_track
                 scrobble_tracks = sorted(self.scrobble_queue,
                                          key=lambda t: t.start_time)
