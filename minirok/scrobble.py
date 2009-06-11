@@ -268,7 +268,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
             ##
 
-            if current_track is not None:
+            if current_track is not None and self.session_key is not None:
                 params = { 's': self.session_key }
                 params.update(current_track.get_now_playing_params())
 
