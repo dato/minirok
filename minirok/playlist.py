@@ -365,13 +365,15 @@ class Playlist(QtCore.QAbstractTableModel):
         self.redo_qaction = self.undo_stack.createRedoAction(self)
 
         self.connect(self.undo_qaction, QtCore.SIGNAL('changed()'),
-                     self.slot_undo_qaction_changed)
+            lambda: self.adjust_kaction_from_qaction(self.undo_kaction,
+                                                     self.undo_qaction))
 
         self.connect(self.redo_qaction, QtCore.SIGNAL('changed()'),
-                     self.slot_redo_qaction_changed)
+            lambda: self.adjust_kaction_from_qaction(self.redo_kaction,
+                                                     self.redo_qaction))
 
-        self.slot_undo_qaction_changed()
-        self.slot_redo_qaction_changed()
+        self.adjust_kaction_from_qaction(self.undo_kaction, self.undo_qaction)
+        self.adjust_kaction_from_qaction(self.redo_kaction, self.redo_qaction)
 
     ##
 
@@ -499,12 +501,6 @@ class Playlist(QtCore.QAbstractTableModel):
 
         if rows:
             self.my_emit_dataChanged(min(rows), max(rows))
-
-    def slot_undo_qaction_changed(self):
-        self.undo_kaction.setEnabled(self.undo_qaction.isEnabled())
-
-    def slot_redo_qaction_changed(self):
-        self.redo_kaction.setEnabled(self.redo_qaction.isEnabled())
 
     ##
 
@@ -873,6 +869,12 @@ class Playlist(QtCore.QAbstractTableModel):
             return self.currently_playing.tags()
         else:
             return {}
+
+    ##
+
+    def adjust_kaction_from_qaction(self, kaction, qaction):
+        kaction.setToolTip(qaction.text())
+        kaction.setEnabled(qaction.isEnabled())
 
 ##
 
