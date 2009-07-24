@@ -1,5 +1,11 @@
 2.1	IN DEVELOPMENT
 
+  IMPROVEMENTS
+
+    * Allow for a global shortcut to be configured to the Stop, Next and
+      Previous actions. (No default shortcut is provided, but one can be
+      set by the user.)
+
 
 2.0	2009-06-01
 

@@ -319,15 +319,19 @@ class Playlist(QtCore.QAbstractTableModel):
                 self.slot_play_pause, 'media-playback-start', 'Ctrl+P', 'Ctrl+Alt+P',
                 factory=kdeui.KToggleAction)
 
+        # The following actions have their global shortcut set to the empty
+        # string. This allows the user to configure a global shortcut for these
+        # actions, without us having to provide a default one (and polluting
+        # the global shortcut namespace).
         self.action_stop = util.create_action('action_stop', 'Stop',
-                self.slot_stop, 'media-playback-stop', 'Ctrl+O',# 'Ctrl+Alt+I,O',
+                self.slot_stop, 'media-playback-stop', 'Ctrl+O', '',
                 factory=StopAction)
 
         self.action_next = util.create_action('action_next', 'Next',
-                self.slot_next, 'media-skip-forward', 'Ctrl+N')#, 'Ctrl+Alt+I,N')
+                self.slot_next, 'media-skip-forward', 'Ctrl+N', '')
 
         self.action_previous = util.create_action('action_previous', 'Previous',
-                self.slot_previous, 'media-skip-backward', 'Ctrl+I')#, 'Ctrl+Alt+I,P')
+                self.slot_previous, 'media-skip-backward', 'Ctrl+I', '')
 
         # Note: the icon here is named minirok_foo-bar and not minirok-foo-bar,
         # because if it isn't found, minirok-* seems to select the minirok.png
