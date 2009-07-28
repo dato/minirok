@@ -6,6 +6,10 @@
       Previous actions. (No default shortcut is provided, but one can be
       set by the user.)
 
+  BUGFIXES
+
+    * When running from source, correctly show the playlist controls
+      toolbar (was not being displayed at all).
 
 2.0	2009-06-01
 

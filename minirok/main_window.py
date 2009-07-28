@@ -63,7 +63,7 @@ class MainWindow(kdeui.KXmlGuiWindow):
 
         # If a minirokui.rc file exists in the standard location, do
         # not specify one for setupGUI(), else specify one if available.
-        if not kdecore.KStandardDirs.locate('appdata', 'minirokui.rc').isEmpty():
+        if kdecore.KStandardDirs.locate('appdata', 'minirokui.rc').isEmpty():
             local_rc = os.path.join(os.path.dirname(minirok.__path__[0]),
                                     'config/minirokui.rc')
             if os.path.isfile(local_rc):
