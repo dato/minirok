@@ -1012,6 +1012,10 @@ class PlaylistView(QtGui.QTreeView):
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.ExtendedSelection)
 
+        self.action_queue_tracks = util.create_action(
+                'action_enqueue_dequeue_selected', 'Enqueue/dequeue selection',
+                self.slot_enqueue_dequeue_selected, None, 'Ctrl+E')
+
     def setModel(self, playlist):
         QtGui.QTreeView.setModel(self, playlist)
         self.header().setup_from_config()
@@ -1140,6 +1144,11 @@ class PlaylistView(QtGui.QTreeView):
 
         else:
             return QtGui.QTreeView.mousePressEvent(self, event)
+
+    ##
+
+    def slot_enqueue_dequeue_selected(self):
+        self.model().toggle_enqueued_many(sorted(self.uniqSelectedIndexes()))
 
 ##
 

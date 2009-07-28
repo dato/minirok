@@ -1,6 +1,7 @@
 minirok (2.1-1) UNRELEASED; urgency=low
 
-  * New upstream release.
+  * New upstream release:
+    + allows to enqueue/dequeue tracks with a shortcut. (Closes: #507484)
 
  -- Adeodato Simó <dato@net.com.org.es>  Sat, 06 Jun 2009 13:50:25 +0200
 

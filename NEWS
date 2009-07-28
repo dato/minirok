@@ -2,6 +2,9 @@
 
   IMPROVEMENTS
 
+    * Allow to enqueue/dequeue selected tracks with a shortcut (Ctrl+E
+      by default).
+
     * Allow for a global shortcut to be configured to the Stop, Next and
       Previous actions. (No default shortcut is provided, but one can be
       set by the user.)
