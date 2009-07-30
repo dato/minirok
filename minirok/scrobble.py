@@ -240,11 +240,9 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
             ##
 
-            failed_index = None
-
-            for start in range(0, len(scrobble_tracks), MAX_TRACKS_AT_ONCE):
+            for idx in range(0, len(scrobble_tracks), MAX_TRACKS_AT_ONCE):
                 params = { 's': self.session_key }
-                tracks = scrobble_tracks[start:start+MAX_TRACKS_AT_ONCE]
+                tracks = scrobble_tracks[idx:idx+MAX_TRACKS_AT_ONCE]
 
                 for i, track in enumerate(tracks):
                     params.update(track.get_params(i))
@@ -252,7 +250,6 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 req = Request(self.scrobble_url, params)
 
                 if req.failed:
-                    failed_index = start
                     if req.error.startswith('BADSESSION'):
                         self.session_key = None # Trigger re-handshake
                     else:
@@ -261,13 +258,11 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                         self.failure_count += 1
                         if self.failure_count >= MAX_FAILURES:
                             self.session_key = None
-                    break # Do not remove without changing the extend() below
+                    with self.mutex:
+                        self.scrobble_queue[0:0] = scrobble_tracks[idx:]
+                    break
                 else:
                     minirok.logger.debug('scrobbled %d track(s) successfully', len(scrobble_tracks)) # XXX
-
-            if failed_index is not None:
-                with self.mutex:
-                    self.scrobble_queue.extend(scrobble_tracks[failed_index:])
 
             ##
 
