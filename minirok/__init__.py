@@ -128,6 +128,15 @@ except pygst.RequiredVersionError:
     _not_found.append('GStreamer Python bindings (>= 0.10)')
 
 try:
+    import json
+except ImportError:
+    try:
+        import simplejson
+    except ImportError:
+        _do_exit = True
+        _not_found.append('json or simplejson module')
+
+try:
     import dbus
     import dbus.mainloop.qt
 except ImportError:

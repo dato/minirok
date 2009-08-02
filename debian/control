@@ -10,7 +10,7 @@ Package: minirok
 Architecture: all
 Depends: python (>= 2.5),
  python-qt4, python-kde4 (>= 4:4.1.1),
- python-mutagen,
+ python-mutagen, python (>= 2.6) | python-simplejson,
  python-gst0.10, gstreamer0.10-alsa | gstreamer0.10-audiosink,
  gstreamer0.10-plugins-base, gstreamer0.10-plugins-good, gstreamer0.10-plugins-ugly,
  ${misc:Depends}, ${python:Depends}

@@ -94,6 +94,10 @@ for the program to run:
     Debian and Ubuntu: python-mutagen
     Source: http://www.sacredchao.net/quodlibet/wiki/Development/Mutagen
 
+  * The json or simplejson modules (shipped with Python 2.6 already)
+    Debian and Ubuntu: python-simplejson | python (>= 2.6)
+    Source: http://undefined.org/python/#simplejson
+
   * The GStreamer media framework, in particular:
 
     + The GStreamer Python bindings

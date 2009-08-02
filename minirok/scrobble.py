@@ -6,23 +6,31 @@
 
 from __future__ import with_statement
 
+import os
 import re
 import time
+import errno
 import socket
+import string
 import urllib
 import hashlib
 import httplib
 import urlparse
 import threading
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from PyQt4 import QtCore
+from PyKDE4 import kdecore
 
 import minirok
 from minirok import engine, util
 
-# TODO: Quitting Minirok while playing will not submit the current track, even
+# TODO: Quitting Minirok while playing will not submit the current track until
+# the next time Minirok starts (via the spool).
 # the required playing time has passed.
-# TODO: Spool directory, of course...
 # TODO: Use KWallet?
 
 ##
@@ -72,6 +80,7 @@ class Submission(object):
         elif tag_dict['Length'] < TRACK_MIN_LENGTH:
             raise self.TrackTooShort()
 
+        self.path = None
         self.length = tag_dict['Length']
         self.start_time = int(time.time())
 
@@ -92,6 +101,30 @@ class Submission(object):
 
     def get_now_playing_params(self):
         return dict((k, self.param[k]) for k in list('atblnm'))
+
+    def serialize(self):
+        return json.dumps(self.param, indent=4)
+
+    @classmethod
+    def load_from_file(cls, path):
+        with open(path) as f:
+            try:
+                param = json.load(f)
+            except ValueError:
+                return None
+            else:
+                # TODO: could it be possible to get json to give us str objects?
+                param = dict((k, util.ensure_utf8(param[k])) for k in param)
+
+        if set(param.keys()) == set('mrolintba'):
+            obj = cls.__new__(cls)
+            obj.path = path
+            obj.param = param
+            obj.length = int(param['l'])
+            obj.start_time = int(param['i'])
+            return obj
+        else:
+            return None
 
 ##
 
@@ -173,6 +206,25 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         util.CallbackRegistry.register_apply_prefs(self.apply_preferences)
         self.apply_preferences() # Connect signals/slots, read user/passwd
 
+        appdata = str(kdecore.KGlobal.dirs().saveLocation('appdata'))
+        self.spool = os.path.join(appdata, 'scrobble')
+
+        if not os.path.isdir(self.spool):
+            try:
+                os.mkdir(self.spool)
+            except OSError, e:
+                minirok.logger.error('could not create scrobbling spool: %s', e)
+                self.spool = None
+        elif not os.access(self.spool, os.R_OK | os.W_OK):
+            minirok.logger.error('scrobbling spool is not readable/writable')
+            self.spool = None
+        else:
+            files = [ os.path.join(self.spool, x)
+                        for x in sorted(os.listdir(self.spool)) ]
+            if files:
+                self.scrobble_queue.extend(
+                        s for s in map(Submission.load_from_file, files) if s)
+
     def slot_new_track(self):
         self.timer.stop()
         self.current_track = None
@@ -205,10 +257,44 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 self.event.set()
 
     def slot_timer_timeout(self):
+        if not self.isAlive():
+            # Abort this function if the scrobbling thread is not running; this
+            # happens if we received a BANNED or BADTIME from the server. In
+            # such cases, it's probably not a bad idea not to write anything to
+            # disk. (Well, supposedly there's precious data we could save in
+            # the case of BANNED, and submit it again with a fixed version, hm.)
+            return
+
         with self.mutex:
             self.scrobble_queue.append(self.current_track)
+
+            if self.spool is not None:
+                path = self.write_track_to_spool(self.current_track)
+
+                if path is None:
+                    minirok.logger.warn(
+                        'could not create file in scrobbling spool')
+                else:
+                    self.current_track.path = path
+
             self.current_track = None
             minirok.logger.debug('track queued for scrobbling') # XXX
+
+    def write_track_to_spool(self, track):
+        path = os.path.join(self.spool, str(track.start_time))
+
+        for x in [''] + list(string.ascii_lowercase):
+            try:
+                fd = os.open(path + x,
+                             os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0644)
+            except OSError, e:
+                if e.errno != errno.EEXIST:
+                    raise
+            else:
+                os.write(fd, track.serialize())
+                os.fsync(fd)
+                os.close(fd)
+                return path + x
 
     ##
 
@@ -217,6 +303,10 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             # We're not configured to run, so we hang on here.
             with self.configured:
                 self.configured.wait()
+
+        if self.scrobble_queue: # Any tracks loaded from spool?
+            with self.mutex:
+                self.event.set()
 
         while True:
             if self.session_key is None:
@@ -257,6 +347,15 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                     break
                 else:
                     minirok.logger.debug('scrobbled %d track(s) successfully', len(tracks)) # XXX
+
+                    for t in tracks:
+                        if t.path is not None:
+                            try:
+                                os.unlink(t.path)
+                            except OSError, e:
+                                if e.errno != errno.ENOENT:
+                                    raise
+
                     with self.mutex:
                         self.scrobble_queue[0:len(tracks)] = []
 
