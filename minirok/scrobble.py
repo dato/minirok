@@ -262,7 +262,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                         self.scrobble_queue[0:0] = scrobble_tracks[idx:]
                     break
                 else:
-                    minirok.logger.debug('scrobbled %d track(s) successfully', len(scrobble_tracks)) # XXX
+                    minirok.logger.debug('scrobbled %d track(s) successfully', len(tracks)) # XXX
 
             ##
 
