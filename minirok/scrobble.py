@@ -231,18 +231,14 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             with self.mutex:
                 self.event.clear()
                 current_track = self.current_track
-                scrobble_tracks = sorted(self.scrobble_queue,
-                                         key=lambda t: t.start_time)
-                if not (current_track or scrobble_tracks):
-                    continue
-                else:
-                    self.scrobble_queue[:] = [] # We may return them later
 
             ##
 
-            for idx in range(0, len(scrobble_tracks), MAX_TRACKS_AT_ONCE):
+            while self.scrobble_queue:
                 params = { 's': self.session_key }
-                tracks = scrobble_tracks[idx:idx+MAX_TRACKS_AT_ONCE]
+
+                with self.mutex:
+                    tracks = self.scrobble_queue[0:MAX_TRACKS_AT_ONCE]
 
                 for i, track in enumerate(tracks):
                     params.update(track.get_params(i))
@@ -258,11 +254,11 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                         self.failure_count += 1
                         if self.failure_count >= MAX_FAILURES:
                             self.session_key = None
-                    with self.mutex:
-                        self.scrobble_queue[0:0] = scrobble_tracks[idx:]
                     break
                 else:
                     minirok.logger.debug('scrobbled %d track(s) successfully', len(tracks)) # XXX
+                    with self.mutex:
+                        self.scrobble_queue[0:len(tracks)] = []
 
             ##
 
