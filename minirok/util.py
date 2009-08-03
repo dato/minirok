@@ -187,6 +187,11 @@ def ensure_utf8(string):
         else:
             return string
 
+def creat_excl(path, mode=0644):
+    """Return a write-only file object created with O_EXCL."""
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
+    return os.fdopen(fd, 'w')
+
 ##
 
 class CallbackRegistry(object):
