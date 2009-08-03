@@ -155,6 +155,7 @@ class GeneralPage(QtGui.QWidget, options1.Ui_Page):
 
         self.slot_enable_lastfm_toggled(preferences.lastfm.enable)
         self.slot_tags_from_regex_toggled(preferences.tags_from_regex)
+        self.slot_lastfm_server_changed(preferences.lastfm.server)
 
     def slot_enable_lastfm_toggled(self, checked):
         self.lastfmFrame.setEnabled(checked)
@@ -163,4 +164,5 @@ class GeneralPage(QtGui.QWidget, options1.Ui_Page):
         self.regexInfoGroup.setEnabled(checked)
 
     def slot_lastfm_server_changed(self, server):
+        # TODO: do something fancy and show the URL that'll be used for !Other?
         self.kcfg_LastfmURL.setEnabled(str(server) == scrobble.Server.Other)
