@@ -220,10 +220,12 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             self.spool = None
         else:
             files = [ os.path.join(self.spool, x)
-                        for x in sorted(os.listdir(self.spool)) ]
-            if files:
-                self.scrobble_queue.extend(
-                        s for s in map(Submission.load_from_file, files) if s)
+                        for x in os.listdir(self.spool) ]
+            tracks = sorted(
+                        [ t for t in map(Submission.load_from_file, files)
+                            if t is not None ], key=lambda t: t.start_time)
+            if tracks:
+                self.scrobble_queue.extend(tracks)
 
     def slot_new_track(self):
         self.timer.stop()
