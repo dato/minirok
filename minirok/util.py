@@ -315,7 +315,7 @@ class Enum(object):
     >>> Color.Red
     Traceback (most recent call last):
       ...
-    AttributeError: unknown value for enum: 'Red'
+    ValueError: unknown value for enum: 'Red'
 
     >>> Color.is_valid('Blue')
     False
@@ -335,7 +335,7 @@ class Enum(object):
         try:
             return self._map[name]
         except KeyError:
-            raise AttributeError('unknown value for enum: %r' % (name,))
+            raise ValueError('unknown value for enum: %r' % (name,))
 
     def is_valid(self, name):
         return name in self._map or name in self._values
