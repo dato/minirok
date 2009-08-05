@@ -1289,8 +1289,10 @@ class Columns(QtGui.QHeaderView):
     # not.
     CONFIG_SECTION = 'Playlist'
     CONFIG_OPTION = 'Columns'
-    CONFIG_OPTION_DEFAULT = \
-            'Track:60:1,Artist:200:1,Album:200:0,Title:275:1,Length:60:1'
+    DEFAULT_COLUMNS = [
+        ('Track', 60, 1), ('Artist', 200, 1),
+        ('Album', 200, 0), ('Title', 275, 1), ('Length', 60, 1)
+    ]
 
     def __init__(self, parent):
         QtGui.QHeaderView.__init__(self, Qt.Horizontal, parent)
@@ -1320,53 +1322,49 @@ class Columns(QtGui.QHeaderView):
         a model/view associated with the object.
         """
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
+        columns = []
+        model_columns = self.sorted_column_names()
+        unseen_columns = set(model_columns)
 
         if config.hasKey(self.CONFIG_OPTION):
+            warn = minirok.logger.warn
             entries = map(str, config.readEntry(
                                 self.CONFIG_OPTION, QtCore.QStringList()))
-        else:
-            entries = self.CONFIG_OPTION_DEFAULT.split(',')
 
-        columns = []
-        warn = minirok.logger.warn
-        model_columns = self.sorted_column_names()
-        known_columns = set(model_columns)
+            for entry in entries:
+                try:
+                    name, width, visible = entry.split(':', 2)
+                except ValueError:
+                    warn('skipping invalid entry in column config: %r', entry)
+                    continue
 
-        for entry in entries:
-            try:
-                name, width, visible = entry.split(':', 2)
-            except ValueError:
-                warn('skipping invalid entry in column config: %r', entry)
-                continue
+                try:
+                    width = int(width)
+                except ValueError:
+                    warn('invalid column width for %s: %r', name, width)
+                    continue
 
-            try:
-                width = int(width)
-            except ValueError:
-                warn('invalid column width for %s: %r', name, width)
-                continue
+                # TODO Maybe this one ought to be more flexible
+                try:
+                    visible = bool(int(visible))
+                except ValueError:
+                    warn('invalid visibility value for %s: %r', name, visible)
+                    continue
 
-            # TODO Maybe this one ought to be more flexible
-            try:
-                visible = bool(int(visible))
-            except ValueError:
-                warn('invalid visibility value for %s: %r', name, visible)
-                continue
+                try:
+                    unseen_columns.remove(name)
+                except KeyError:
+                    warn('skipping unknown or duplicated column: %r', name)
+                    continue
 
-            try:
-                known_columns.remove(name)
-            except KeyError:
-                warn('skipping unknown or duplicated column: %r', name)
-                continue
+                columns.append((name, width, visible))
 
-            columns.append((name, width, visible))
-
-        if len(known_columns) > 0:
-            defaults = dict((x.split(':')[0], map(int, x.split(':')[1:]))
-                                for x in self.CONFIG_OPTION_DEFAULT.split(','))
-            for c in known_columns:
-                warn('column %s missing in config, adding with default values', c)
-                width, visible = defaults[c]
-                columns.append((c, width, visible))
+        if unseen_columns:
+            missing = [ d for d in self.DEFAULT_COLUMNS
+                             if d[0] in unseen_columns ]
+            warn('these columns could not be found in config, '
+                 'creating from defaults: %s', ', '.join(d[0] for d in missing))
+            columns.extend(missing)
 
         ##
 
