@@ -14,6 +14,15 @@
     * When running from source, correctly show the playlist controls
       toolbar (was not being displayed at all).
 
+    * Fix the following warning when running with PyQt 4.5:
+
+        WARNING: skipping invalid entry in column config: '<PyQt4.QtCore.QVariant object at ...>'
+
+      Also, if you had experienced this warning and saw the columns in
+      the playlist come up in a weird default order, that's been fixed
+      too.
+
+
 2.0	2009-06-01
 
   PORTED TO KDE 4

@@ -1326,9 +1326,19 @@ class Columns(QtGui.QHeaderView):
         unseen_columns = set(model_columns)
 
         if config.hasKey(self.CONFIG_OPTION):
+            def str_maybe_from_QVariant(x):
+                # When running under PyQt 4.5, the return value of readEntry()
+                # below is a list of QVariant() objects instead of QString().
+                try:
+                    x = x.toString()
+                except AttributeError:
+                    pass
+                return str(x)
+
             warn = minirok.logger.warn
-            entries = map(str, config.readEntry(
-                                self.CONFIG_OPTION, QtCore.QStringList()))
+            entries = map(str_maybe_from_QVariant,
+                          config.readEntry(self.CONFIG_OPTION,
+                                           QtCore.QStringList()))
 
             for entry in entries:
                 try:
