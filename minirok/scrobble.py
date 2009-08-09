@@ -379,6 +379,14 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 else:
                     minirok.logger.debug('sent "now playing" information successfully') # XXX
 
+            ##
+
+            if self.session_key is None:
+                # Ensure we retry pending actions as soon
+                # as we've successfully handshaked again.
+                with self.mutex:
+                    self.event.set()
+
     def do_handshake(self):
         while True:
             now = str(int(time.time()))
