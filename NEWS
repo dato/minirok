@@ -1,5 +1,19 @@
 2.1	IN DEVELOPMENT
 
+  IMPROVEMENTS
+
+    * Submissions to Last.fm or a Last.fm-compatible service are
+      performed directly by Minirok now, and the lastfmsubmitd daemon is
+      no longer a dependency. If you were previously using lastfmsubmitd,
+      you will need to provide Minirok with your username and password
+      in the preferences dialog now.
+
+      If listening to music offline, or if the Last.fm server is not
+      responding, submissions are stored on disk by Minirok and submitted
+      later on. For this functionality, the "simplejson" module has been
+      added as a dependency. This module comes already with Python 2.6,
+      see the README file for details.
+
   OTHER NEWS
 
     * Python 2.5 or later is required now.
