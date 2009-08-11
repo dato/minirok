@@ -287,13 +287,15 @@ class Scrobbler(QtCore.QObject, threading.Thread):
 
         for x in [''] + list(string.ascii_lowercase):
             try:
-                filep = util.creat_excl(path + x)
+                f = util.creat_excl(path + x)
             except OSError, e:
                 if e.errno != errno.EEXIST:
                     raise
             else:
-                filep.write(track.serialize())
-                filep.close()
+                f.write(track.serialize())
+                f.flush() # Otherwise the write() syscall happens after fsync()
+                os.fsync(f.fileno())
+                f.close()
                 return path + x
 
     ##
