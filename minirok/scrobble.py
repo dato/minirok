@@ -17,10 +17,18 @@ import hashlib
 import httplib
 import urlparse
 import threading
+
 try:
     import json
 except ImportError:
     import simplejson as json
+
+try:
+    import psutil
+except ImportError:
+    _has_psutil = False
+else:
+    _has_psutil = True
 
 from PyQt4 import QtCore
 from PyKDE4 import kdecore
@@ -57,6 +65,9 @@ SOURCE_UNKNOWN = 'U'
 MAX_FAILURES = 3
 MAX_SLEEP_MINUTES = 120
 MAX_TRACKS_AT_ONCE = 50
+
+APPDATA_SCROBBLE = 'scrobble'
+APPDATA_SCROBBLE_LOCK = 'scrobble.lock'
 
 ##
 
@@ -177,6 +188,77 @@ class HandshakeRequest(Request):
 
 ##
 
+class ProcInfo(object):
+
+    def __init__(self, pid=None):
+        if pid is None:
+            pid = os.getpid()
+
+        d = self.data = {}
+
+        if not _has_psutil:
+            d['pid'] = pid
+            d['version'] = '1.0'
+        else:
+            d['pid'] = pid
+            d['version'] = '1.1'
+            try:
+                d['cmdline'] = psutil.Process(pid).cmdline
+            except psutil.error:
+                d['version'] = '1.0'
+
+    def serialize(self):
+        return json.dumps(self.data, indent=4)
+
+    def isRunning(self):
+        if self.data['version'] == '1.0':
+            try:
+                os.kill(self.data['pid'], 0)
+            except OSError, e:
+                return (e.errno != errno.ESRCH) # ESRCH: No such PID
+            else:
+                return True
+
+        elif self.data['version'] == '1.1':
+            try:
+                proc = psutil.Process(self.data['pid'])
+            except psutil.error.NoSuchProcess:
+                return False
+            else:
+                return proc.cmdline == self.data['cmdline']
+
+    @classmethod
+    def load_from_fileobj(cls, fileobj):
+        try:
+            param = json.load(fileobj)
+        except ValueError:
+            return None
+        else:
+            version = param.get('version', None)
+
+            if version == '1.0':
+                keys = ['version', 'pid']
+
+            elif version == '1.1':
+                if _has_psutil:
+                    keys = ['version', 'pid', 'cmdline']
+                else: # Downgrade format
+                    param['version'] = '1.0'
+                    keys = ['version', 'pid']
+
+            else:
+                return None
+
+            obj = cls.__new__(cls)
+            try:
+                obj.data = dict((k, param[k]) for k in keys)
+            except KeyError:
+                return None
+            else:
+                return obj
+
+##
+
 class Scrobbler(QtCore.QObject, threading.Thread):
 
     def __init__(self):
@@ -207,18 +289,58 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         self.apply_preferences() # Connect signals/slots, read user/passwd
 
         appdata = str(kdecore.KGlobal.dirs().saveLocation('appdata'))
-        self.spool = os.path.join(appdata, 'scrobble')
+        do_queue = False
+        self.spool = os.path.join(appdata, APPDATA_SCROBBLE)
 
+        # Spool directory handling: create it if it doesn't exist...
         if not os.path.isdir(self.spool):
             try:
                 os.mkdir(self.spool)
             except OSError, e:
                 minirok.logger.error('could not create scrobbling spool: %s', e)
                 self.spool = None
+
+        # ... else ensure it is readable and writable
         elif not os.access(self.spool, os.R_OK | os.W_OK):
             minirok.logger.error('scrobbling spool is not readable/writable')
             self.spool = None
+
+        # If not, we try to assess whether this Minirok instance should try to
+        # submit the existing entries, if any. Supposedly, the Last.fm server
+        # has some support for detecting duplicate submissions, but we're
+        # adviced not to rely on it (<4A7FECF7.5030100@last.fm>), so we use a
+        # lock file to signal that some Minirok process is taking care of the
+        # submissions from the spool directory. (This scheme, I realize,
+        # doesn't get all corner cases right, but will have to suffice for now.
+        # For example, if Minirok A starts, then Minirok B starts, and finally
+        # Minirok A quits and Minirok C starts, Minirok B and C will end up
+        # both trying to submit B's entries that haven't been able to be
+        # submitted yet. There's also the race-condition-du-jour, of course.)
         else:
+            scrobble_lock = os.path.join(appdata, APPDATA_SCROBBLE_LOCK)
+            try:
+                lockfile = open(scrobble_lock)
+            except IOError, e:
+                if e.errno == errno.ENOENT:
+                    do_queue = True
+                else:
+                    raise
+            else:
+                proc = ProcInfo.load_from_fileobj(lockfile)
+
+                if proc and proc.isRunning():
+                    minirok.logger.info(
+                        'Minirok already running (pid=%d), '
+                        'not scrobbling existing items', proc.data['pid'])
+                else:
+                    do_queue = True
+
+        if do_queue:
+            self.lock_file = scrobble_lock
+
+            with open(self.lock_file, 'w') as lock:
+                lock.write(ProcInfo().serialize())
+
             files = [ os.path.join(self.spool, x)
                         for x in os.listdir(self.spool) ]
             tracks = sorted(
@@ -226,6 +348,17 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                             if t is not None ], key=lambda t: t.start_time)
             if tracks:
                 self.scrobble_queue.extend(tracks)
+        else:
+            self.lock_file = None
+
+        util.CallbackRegistry.register_save_config(self.cleanup)
+
+    def cleanup(self):
+        if self.lock_file is not None:
+            try:
+                os.unlink(self.lock_file)
+            except:
+                pass
 
     def slot_new_track(self):
         self.timer.stop()

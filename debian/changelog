@@ -1,6 +1,7 @@
 minirok (2.1-1) UNRELEASED; urgency=low
 
   * debian/control:
+    + add python-psutil to Recommends.
     + bump required Python version to 2.5.
     + ensure json or simplejson are available.
     + drop lastfmsubmitd from Suggests (submissions are done by Minirok

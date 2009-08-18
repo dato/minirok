@@ -127,6 +127,10 @@ The following dependencies are optional and enhance Minirok in some way:
     addition to python-dbus. Additionally, you must be running Qt 4.4.0
     or later for the DBus interface to work.)
 
+  * python-psutil - makes the scrobble lock handling more robust
+    Debian and Ubuntu: python-psutil
+    Source: http://code.google.com/p/psutil/
+
 
 Author and license
 ==================

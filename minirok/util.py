@@ -196,6 +196,8 @@ def creat_excl(path, mode=0644):
 
 class CallbackRegistry(object):
 
+    # TODO: rename "save_config" to something else, eg. "at_exit".
+
     SAVE_CONFIG = object()
     APPLY_PREFS = object()
 
