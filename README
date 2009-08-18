@@ -25,7 +25,7 @@ Other features include:
   * reading of tags when adding to the playlist can be disabled by
     specifying a regular expression to extract them from the filename
 
-  * submission of played songs to Last.fm (with lastfmsubmitd)
+  * submission of played songs to Last.fm
 
   * global shortcuts
 
@@ -74,7 +74,7 @@ hack on, so that too.
 Requirements
 ============
 
-Minirok is written in Python, version 2.4 or later is required. If it's
+Minirok is written in Python, version 2.5 or later is required. If it's
 available from your distribution, I recommend you install that package,
 since it'll take care of installing everything necessary. For Debian and
 derivatives, you should be able to install directly with apt-get, and
@@ -93,6 +93,10 @@ for the program to run:
   * Mutagen (audio metadata library)
     Debian and Ubuntu: python-mutagen
     Source: http://www.sacredchao.net/quodlibet/wiki/Development/Mutagen
+
+  * The json or simplejson modules (shipped with Python 2.6 already)
+    Debian and Ubuntu: python-simplejson | python (>= 2.6)
+    Source: http://undefined.org/python/#simplejson
 
   * The GStreamer media framework, in particular:
 
@@ -123,11 +127,9 @@ The following dependencies are optional and enhance Minirok in some way:
     addition to python-dbus. Additionally, you must be running Qt 4.4.0
     or later for the DBus interface to work.)
 
-  * lastfmsubmitd - enables submission of played tracks to Last.fm
-    Debian and Ubuntu: lastfmsubmitd
-    Source: http://www.red-bean.com/~decklin/software/lastfmsubmitd
-
-    (See README.Lastfm for tips on configuring it.)
+  * python-psutil - makes the scrobble lock handling more robust
+    Debian and Ubuntu: python-psutil
+    Source: http://code.google.com/p/psutil/
 
 
 Author and license

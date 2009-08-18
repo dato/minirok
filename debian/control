@@ -8,14 +8,14 @@ Homepage: http://chistera.yi.org/~adeodato/code/minirok
 
 Package: minirok
 Architecture: all
-Depends: python (>= 2.4),
+Depends: python (>= 2.5),
  python-qt4, python-kde4 (>= 4:4.1.1),
- python-mutagen,
+ python-mutagen, python (>= 2.6) | python-simplejson,
  python-gst0.10, gstreamer0.10-alsa | gstreamer0.10-audiosink,
  gstreamer0.10-plugins-base, gstreamer0.10-plugins-good, gstreamer0.10-plugins-ugly,
  ${misc:Depends}, ${python:Depends}
-Recommends: python-dbus, python-qt4-dbus
-Suggests: lastfmsubmitd, gstreamer0.10-plugins-bad
+Recommends: python-dbus, python-qt4-dbus, python-psutil
+Suggests: gstreamer0.10-plugins-bad
 Description: a small music player written in Python and inspired by Amarok
  Minirok is a small music player written in Python for the K Desktop
  Environment. As its name hints, it's modelled after Amarok, but with a
@@ -41,7 +41,7 @@ Description: a small music player written in Python and inspired by Amarok
   * reading of tags when adding to the playlist can be disabled by
     specifying a regular expression to extract them from the filename
  .
-  * submission of played songs to Last.fm (with lastfmsubmitd)
+  * submission of played songs to Last.fm
  .
   * global shortcuts
  .

@@ -1,67 +1,68 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>Page</class>
- <widget class="QWidget" name="Page" >
-  <property name="geometry" >
+ <widget class="QWidget" name="Page">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>517</width>
-    <height>552</height>
+    <width>502</width>
+    <height>673</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Configuring Minirok</string>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="QGroupBox" name="playlistGroup" >
-     <property name="title" >
+    <widget class="QGroupBox" name="playlistGroup">
+     <property name="title">
       <string>Playlist</string>
      </property>
-     <layout class="QVBoxLayout" >
+     <layout class="QVBoxLayout">
       <item>
-       <widget class="QCheckBox" name="kcfg_TagsFromRegex" >
-        <property name="text" >
+       <widget class="QCheckBox" name="kcfg_TagsFromRegex">
+        <property name="text">
          <string>Use a &amp;regular expression to guess tags from the filename</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="regexInfoGroup" >
-        <property name="title" >
+       <widget class="QGroupBox" name="regexInfoGroup">
+        <property name="title">
          <string/>
         </property>
-        <property name="flat" >
+        <property name="flat">
          <bool>true</bool>
         </property>
-        <layout class="QVBoxLayout" >
+        <layout class="QVBoxLayout">
          <item>
-          <widget class="QLineEdit" name="kcfg_TagRegex" />
+          <widget class="QLineEdit" name="kcfg_TagRegex"/>
          </item>
          <item>
-          <widget class="KButtonGroup" name="kcfg_TagRegexMode" >
-           <property name="flat" >
+          <widget class="KButtonGroup" name="kcfg_TagRegexMode">
+           <property name="flat">
             <bool>true</bool>
            </property>
-           <layout class="QVBoxLayout" >
+           <layout class="QVBoxLayout">
             <item>
-             <widget class="QRadioButton" name="radio1" >
-              <property name="text" >
+             <widget class="QRadioButton" name="radio1">
+              <property name="text">
                <string>Use this regex to populate the playlist initially,
 but still read the tags in the background</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="radio2" >
-              <property name="text" >
+             <widget class="QRadioButton" name="radio2">
+              <property name="text">
                <string>Do not read tags if the regex matches</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QRadioButton" name="radio3" >
-              <property name="text" >
+             <widget class="QRadioButton" name="radio3">
+              <property name="text">
                <string>Never read tags from files</string>
               </property>
              </widget>
@@ -76,30 +77,165 @@ but still read the tags in the background</string>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="lastfmGroup" >
-     <property name="title" >
+    <widget class="QGroupBox" name="lastfmGroup">
+     <property name="title">
       <string>Last.fm</string>
      </property>
-     <layout class="QVBoxLayout" >
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QCheckBox" name="kcfg_EnableLastfm" >
-        <property name="text" >
+       <widget class="QCheckBox" name="kcfg_EnableLastfm">
+        <property name="text">
          <string>Submit played tracks to &amp;Last.fm</string>
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QFrame" name="lastfmFrame">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>User</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="kcfg_LastfmUser">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Password</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="kcfg_LastfmPassword">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Server</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="kcfg_LastfmServer">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="3" column="0">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Minimum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="3" column="1" colspan="2">
+            <widget class="QLineEdit" name="kcfg_LastfmURL">
+             <property name="toolTip">
+              <string extracomment="Handshake URL for a Last.fm-compatible service"/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
+     <zorder>kcfg_EnableLastfm</zorder>
+     <zorder>lastfmFrame</zorder>
+     <zorder></zorder>
     </widget>
    </item>
    <item>
     <spacer>
-     <property name="orientation" >
+     <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>17</width>
+       <height>198</height>
       </size>
      </property>
     </spacer>
@@ -110,7 +246,7 @@ but still read the tags in the background</string>
   <customwidget>
    <class>KButtonGroup</class>
    <extends>QGroupBox</extends>
-   <header>PyKDE4.kdeui</header>
+   <header>kbuttongroup.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

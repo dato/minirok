@@ -116,10 +116,10 @@
   <refsect1>
     <title>LAST.FM</title>
     <para>
-      Minirok can submit played tracks to the Last.fm service. For this,
-      you just need to install lastfmsubmitd and configure it
-      appropriately. See the <filename>README.Lastfm</filename> file for
-      a short guide to configuring lastfmsubmitd.
+      Minirok can submit played tracks to Last.fm, or any other
+      Last.fm-compatible service (such as Libre.fm). You will just need
+      to configure your username and password in the preferences dialog.
+      Starting with Minirok 2.1, no external software is needed any more.
     </para>
   </refsect1>
 

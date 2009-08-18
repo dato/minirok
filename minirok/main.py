@@ -66,11 +66,13 @@ def main():
     # These imports happen here rather than at the top level because if gst
     # gets imported before the above KCmdLineArgs.init() call, it steals our
     # --help option
-    from minirok import engine, main_window as mw
+    from minirok import engine, main_window as mw, scrobble
 
     minirok.Globals.engine = engine.Engine()
     application = kdeui.KApplication()
     main_window = mw.MainWindow()
+    scrobbler = scrobble.Scrobbler()
+    scrobbler.start()
 
     if minirok._has_dbus:
         import dbus
@@ -81,10 +83,6 @@ def main():
         dbus.mainloop.qt.DBusQtMainLoop(set_as_default=True)
         name = dbus.service.BusName('org.kde.minirok', dbus.SessionBus())
         player = dbusface.Player()
-
-    if minirok._has_lastfm:
-        from minirok import lastfm_submit
-        lastfm_submitter = lastfm_submit.LastfmSubmitter()
 
     if files:
         minirok.Globals.playlist.add_files_untrusted(files, clear_playlist=True)

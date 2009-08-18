@@ -165,9 +165,38 @@ def contiguous_chunks(intlist):
 
     return map(tuple, result)
 
+def ensure_utf8(string):
+    """Return an UTF-8 string out of the passed string.
+
+    If string is already in UTF-8, it will be returned unmodified; if string is
+    an unicode object, it'll be encoded to UTF-8 and returned; else, it'll be
+    assumed to be in ISO-8859-1 and returned as UTF-8.
+
+    Additionally, None can be passed, in which case the empty string will be
+    returned.
+    """
+    if string is None:
+        return ''
+    if isinstance(string, unicode):
+        return string.encode('utf-8')
+    else:
+        try:
+            string.decode('utf-8')
+        except UnicodeDecodeError:
+            return string.decode('iso-8859-1').encode('utf-8')
+        else:
+            return string
+
+def creat_excl(path, mode=0644):
+    """Return a write-only file object created with O_EXCL."""
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
+    return os.fdopen(fd, 'w')
+
 ##
 
 class CallbackRegistry(object):
+
+    # TODO: rename "save_config" to something else, eg. "at_exit".
 
     SAVE_CONFIG = object()
     APPLY_PREFS = object()
@@ -274,6 +303,47 @@ class RandomOrderedList(list):
     def extend(self, seq):
         list.extend(self, seq)
         random.shuffle(self)
+
+##
+
+class Enum(object):
+    """An attribute-based implementation of enumerations.
+
+    >>> Color = Enum('White', 'Black', 'Gray.50')
+    >>> Color.White
+    'White'
+    >>> Color.Gray50
+    'Gray.50'
+    >>> Color.Red
+    Traceback (most recent call last):
+      ...
+    ValueError: unknown value for enum: 'Red'
+
+    >>> Color.is_valid('Blue')
+    False
+    >>> Color.is_valid('Gray.50')
+    True
+    >>> Color.is_valid('Gray50')
+    True
+
+    >>> Color.get_all_values()
+    ['White', 'Black', 'Gray.50']
+    """
+    def __init__(self, *values):
+        self._values = list(values)
+        self._map = dict((re.sub(r'\W+', '', x), x) for x in self._values)
+
+    def __getattr__(self, name):
+        try:
+            return self._map[name]
+        except KeyError:
+            raise ValueError('unknown value for enum: %r' % (name,))
+
+    def is_valid(self, name):
+        return name in self._map or name in self._values
+
+    def get_all_values(self):
+        return self._values[:]
 
 ##
 
