@@ -1325,7 +1325,9 @@ class Columns(QtGui.QHeaderView):
         model_columns = self.sorted_column_names()
         unseen_columns = set(model_columns)
 
-        if config.hasKey(self.CONFIG_OPTION):
+        if not config.hasKey(self.CONFIG_OPTION):
+            columns.extend(self.DEFAULT_COLUMNS)
+        else:
             def str_maybe_from_QVariant(x):
                 # When running under PyQt 4.5, the return value of readEntry()
                 # below is a list of QVariant() objects instead of QString().
@@ -1368,12 +1370,12 @@ class Columns(QtGui.QHeaderView):
 
                 columns.append((name, width, visible))
 
-        if unseen_columns:
-            missing = [ d for d in self.DEFAULT_COLUMNS
-                             if d[0] in unseen_columns ]
-            warn('these columns could not be found in config, '
-                 'creating from defaults: %s', ', '.join(d[0] for d in missing))
-            columns.extend(missing)
+            if unseen_columns:
+                missing = [ d for d in self.DEFAULT_COLUMNS
+                                if d[0] in unseen_columns ]
+                warn('these columns could not be found in config, creating from'
+                     ' defaults: %s', ', '.join(d[0] for d in missing))
+                columns.extend(missing)
 
         ##
 
