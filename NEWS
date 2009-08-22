@@ -26,6 +26,9 @@
     * When running from source, correctly show the playlist controls
       toolbar (was not being displayed at all).
 
+    * Fix crash when using File->Open directory if no directory has ever
+      been opened in the tree view.
+
     * Fix the following warning when running with PyQt 4.5:
 
         WARNING: skipping invalid entry in column config: '<PyQt4.QtCore.QVariant object at ...>'
