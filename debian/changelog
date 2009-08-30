@@ -2,6 +2,8 @@ minirok (2.1-1) UNRELEASED; urgency=low
 
   * New upstream release:
     + allows to enqueue/dequeue tracks with a shortcut. (Closes: #507484)
+    + does not segfault when using File-Open directory if no directory has
+      ever been opened in the tree view. (Closes: #544230)
 
   * debian/control:
     + add python-psutil to Recommends.
