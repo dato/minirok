@@ -194,7 +194,7 @@ class MultiIconLabel(QtGui.QLabel):
 
         if self.CONFIG_OPTION is not None:
             config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-            value = util.kurl_to_path(config.readEntry(self.CONFIG_OPTION, '0'))
+            value = config.readEntry(self.CONFIG_OPTION, '0').toString()
             try:
                 self.state = int(value) - 1
             except ValueError:

@@ -1328,19 +1328,10 @@ class Columns(QtGui.QHeaderView):
         if not config.hasKey(self.CONFIG_OPTION):
             columns.extend(self.DEFAULT_COLUMNS)
         else:
-            def str_maybe_from_QVariant(x):
-                # When running under PyQt 4.5, the return value of readEntry()
-                # below is a list of QVariant() objects instead of QString().
-                try:
-                    x = x.toString()
-                except AttributeError:
-                    pass
-                return str(x)
-
             warn = minirok.logger.warn
-            entries = map(str_maybe_from_QVariant,
+            entries = map(str,
                           config.readEntry(self.CONFIG_OPTION,
-                                           QtCore.QStringList()))
+                                           QtCore.QStringList()).toStringList())
 
             for entry in entries:
                 try:
