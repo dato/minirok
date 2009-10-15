@@ -1,4 +1,4 @@
-minirok (2.1-1) UNRELEASED; urgency=low
+minirok (2.1-1) unstable; urgency=low
 
   * New upstream release:
     + allows to enqueue/dequeue tracks with a shortcut. (Closes: #507484)
@@ -14,7 +14,7 @@ minirok (2.1-1) UNRELEASED; urgency=low
     + drop lastfmsubmitd from Suggests (submissions are done by Minirok
       itself now).
 
- -- Adeodato Simó <dato@net.com.org.es>  Sat, 06 Jun 2009 13:50:25 +0200
+ -- Adeodato Simó <dato@net.com.org.es>  Thu, 15 Oct 2009 02:29:11 +0100
 
 minirok (2.0-1) unstable; urgency=low
 
