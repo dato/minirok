@@ -1329,9 +1329,9 @@ class Columns(QtGui.QHeaderView):
             columns.extend(self.DEFAULT_COLUMNS)
         else:
             warn = minirok.logger.warn
-            entries = map(str,
-                          config.readEntry(self.CONFIG_OPTION,
-                                           QtCore.QStringList()).toStringList())
+            entries = map(str, config.readEntry(
+                self.CONFIG_OPTION,
+                QtCore.QVariant(QtCore.QStringList())).toStringList())
 
             for entry in entries:
                 try:
