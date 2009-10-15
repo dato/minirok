@@ -1521,8 +1521,11 @@ class InsertItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
             self.items = { position: items }
             self.model.undo_stack.push(self)
 
-    undo = AlterItemlistMixin.remove_items
-    redo = AlterItemlistMixin.insert_items
+    def undo(self):
+        self.remove_items()
+
+    def redo(self):
+        self.insert_items()
 
 
 class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
@@ -1540,8 +1543,11 @@ class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
             self.chunks = util.contiguous_chunks(rows)
             self.model.undo_stack.push(self)
 
-    undo = AlterItemlistMixin.insert_items
-    redo = AlterItemlistMixin.remove_items
+    def undo(self):
+        self.insert_items()
+
+    def redo(self):
+        self.remove_items()
 
 
 class ClearItemlistCmd(QtGui.QUndoCommand, AlterItemlistMixin):
@@ -1574,8 +1580,11 @@ class ClearItemlistCmd(QtGui.QUndoCommand, AlterItemlistMixin):
             if self.queuepos:
                 self.model.toggle_enqueued_many_items(self.queuepos.values())
 
-    undo = AlterItemlistMixin.insert_items
-    redo = remove_items
+    def undo(self):
+        self.insert_items()
+
+    def redo(self):
+        self.remove_items()
 
 ##
 
