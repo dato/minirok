@@ -113,8 +113,8 @@ class MainWindow(kdeui.KXmlGuiWindow):
         """Open a dialog to select a directory, and set it in the tree view."""
         # NOTE: Not using KFileDialog.getExistingDirectory() here, because
         # it pops up just a tree view which I don't find very useable.
-        # XXX The "current" variable here crashes if we don't make a copy.
-        current = QtCore.QString(self.left_side.path_combo.urls().first())
+        urls = self.left_side.path_combo.urls()
+        current = urls.first() if not urls.isEmpty() else '~'
         dialog = kio.KFileDialog(kdecore.KUrl(current), 'Directories', self)
         dialog.setCaption('Open directory')
         dialog.setMode(kio.KFile.Directory)
