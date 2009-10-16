@@ -1305,7 +1305,8 @@ class Columns(QtGui.QHeaderView):
 
         if config.hasKey(self.CONFIG_OPTION):
             entries = map(str, config.readEntry(
-                                self.CONFIG_OPTION, QtCore.QStringList()))
+                self.CONFIG_OPTION,
+                QtCore.QVariant(QtCore.QStringList())).toStringList())
         else:
             entries = self.CONFIG_OPTION_DEFAULT.split(',')
 
