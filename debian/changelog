@@ -1,3 +1,10 @@
+minirok (2.0.1-1) karmic; urgency=low
+
+  * New upstream bugfix release, making it useable under PyQt 4.6, which
+    karmic has.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Fri, 16 Oct 2009 02:24:17 +0100
+
 minirok (2.0-1) unstable; urgency=low
 
   * New upstream release, ported to KDE 4 now (see the NEWS file for details).

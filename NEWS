@@ -1,3 +1,19 @@
+2.0.1	2009-10-16
+
+  BUGFIXES
+
+    * Fix crash when using File->Open directory if no directory has ever
+      been opened in the tree view.
+
+    * Updates for PyQt 4.6:
+
+      - fix crash at startup due to readEntry() always returning a QVariant
+	object now.
+
+      - make drag and drop work again, PyQt 4.6 has a bug which had broken it
+        (http://www.riverbankcomputing.com/pipermail/pyqt/2009-October/024723.html).
+
+
 2.0	2009-06-01
 
   PORTED TO KDE 4
