@@ -142,15 +142,20 @@ try:
 except ImportError:
     _has_dbus = False
 else:
-    match = re.match(r'(\d+)\.(\d+).(\d+)', str(QtCore.qVersion()))
-    version = tuple(map(int, match.groups())) # XXX match could be None?
+    qtver = str(QtCore.qVersion())
+    match = re.match(r'[\d.]+', qtver)
 
-    if version >= (4, 4, 0):
-        _has_dbus = True
-    else:
-        logger.warn('disabling DBus interface: ' \
-                    'Qt version is %s, but 4.4.0 is needed', QtCore.qVersion())
+    if not match:
+        logger.warn('could not parse Qt version: %s', qtver)
         _has_dbus = False
+    else:
+        version = tuple(map(int, match.group(0).split('.')))
+        if version >= (4, 4, 0):
+            _has_dbus = True
+        else:
+            logger.warn('disabling DBus interface: '
+                        'Qt version is %s, but 4.4.0 is needed', qtver)
+            _has_dbus = False
 
 if _not_found:
     print >>sys.stderr, ('''\
