@@ -146,7 +146,7 @@ class MyComboBox(kio.KUrlComboBox):
             # We can only store QStrings
             url = url.pathOrUrl()
 
-        directory = util.kurl_to_path(url)
+        directory = os.path.expanduser(util.kurl_to_path(url))
 
         if os.path.isdir(directory):
             urls = self.urls()

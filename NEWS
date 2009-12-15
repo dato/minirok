@@ -1,5 +1,9 @@
 2.2	IN DEVELOPMENT
 
+  IMPROVEMENTS
+
+    * The tree view can expand tilde characters on paths, eg. ~/mp3.
+
 
 2.1	2009-10-15
 
