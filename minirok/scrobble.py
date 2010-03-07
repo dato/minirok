@@ -215,7 +215,7 @@ class ProcInfo(object):
             try:
                 os.kill(self.data['pid'], 0)
             except OSError, e:
-                return (e.errno != errno.ESRCH) # ESRCH: No such PID
+                return False if e.errno == errno.ESRCH else True
             else:
                 return True
 
