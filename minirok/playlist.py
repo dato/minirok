@@ -728,7 +728,7 @@ class Playlist(QtCore.QAbstractTableModel):
         paths = (item.path for item in self._itemlist)
 
         try:
-            playlist = file(self.saved_playlist_path(), 'w')
+            playlist = open(self.saved_playlist_path(), 'w')
         except IOError, e:
             minirok.logger.error('could not save playlist: %s', e)
         else:
@@ -737,7 +737,7 @@ class Playlist(QtCore.QAbstractTableModel):
 
     def load_saved_playlist(self):
         try:
-            playlist = file(self.saved_playlist_path())
+            playlist = open(self.saved_playlist_path())
         except IOError, e:
             if e.errno == errno.ENOENT:
                 pass
