@@ -2,6 +2,8 @@ minirok (2.2-1) UNRELEASED; urgency=low
 
   * New upstream release:
     + correctly handles tilde characters in the tree view. (Closes: #539647)
+    + has contextual menu action for removing tracks from playlist. (Closes:
+      #569790)
 
  -- Adeodato Simó <dato@net.com.org.es>  Tue, 15 Dec 2009 00:08:51 +0000
 

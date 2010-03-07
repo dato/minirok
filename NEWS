@@ -4,6 +4,10 @@
 
     * The tree view can expand tilde characters on paths, eg. ~/mp3.
 
+    * There is an explicit action in the playlist contextual menu for
+      "Remove track", for the benefit of displays without a keyboard.
+      (Previously tracks could only be removed with the Delete key.)
+
 
 2.1	2009-10-15
 

@@ -1128,6 +1128,7 @@ class PlaylistView(QtGui.QTreeView):
                 stop_after_action.setCheckable(True)
                 stop_after_action.setChecked(True)
 
+            remove_action = menu.addAction('Remove tracks')
             crop_action = menu.addAction('Crop tracks')
 
             ##
@@ -1138,6 +1139,8 @@ class PlaylistView(QtGui.QTreeView):
                 self.model().toggle_enqueued_many(sorted(selected_indexes))
             elif selected_action == stop_after_action:
                 self.model().toggle_stop_after(index)
+            elif selected_action == remove_action:
+                self.model().removeItemsCmd(self.uniqSelectedIndexes())
             elif selected_action == crop_action:
                 self.model().removeItemsCmd(self.unselectedIndexes())
 
