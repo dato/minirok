@@ -1,14 +1,17 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import dbus
 import dbus.service
 
-import minirok
-from minirok import util
+from minirok import (
+    util,
+)
 
 ##
 

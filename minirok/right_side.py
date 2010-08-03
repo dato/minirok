@@ -1,14 +1,18 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-from PyKDE4 import kdeui
-from PyQt4 import QtGui, QtCore
-
 import minirok
-from minirok import playlist, proxy
+
+from PyKDE4 import kdeui
+from PyQt4 import QtCore, QtGui
+
+from minirok import (
+    playlist,
+    proxy,
+)
 
 ##
 
@@ -24,15 +28,16 @@ class RightSide(QtGui.QWidget):
         self.stretchtoolbar = QtGui.QWidget()
         self.playlist_search = proxy.LineWidget()
         self.toolbar = kdeui.KToolBar('playlistToolBar', main_window,
-                                                QtCore.Qt.BottomToolBarArea)
+                                      QtCore.Qt.BottomToolBarArea)
 
-        self.proxy.setFilterKeyColumn(-1) # all
+        self.proxy.setFilterKeyColumn(-1)  # All.
         self.proxy.setSourceModel(self.playlist)
         self.playlist_view.setModel(self.proxy)
         self.playlist_search.searchLine().setProxyModel(self.proxy)
 
         self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
-        self.playlist.selection_model = self.playlist_view.selectionModel() # ...
+        self.playlist.selection_model = (
+            self.playlist_view.selectionModel())  # "..."
 
         vlayout = QtGui.QVBoxLayout()
         vlayout.setSpacing(0)
@@ -49,8 +54,8 @@ class RightSide(QtGui.QWidget):
         self.stretchtoolbar.setLayout(hlayout)
 
         self.connect(self.playlist_search.searchLine(),
-                QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.slot_play_first_visible)
+                     QtCore.SIGNAL('returnPressed(const QString &)'),
+                     self.slot_play_first_visible)
 
         minirok.Globals.playlist = self.playlist
 

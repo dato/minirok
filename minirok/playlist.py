@@ -1,19 +1,26 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import minirok
+
+import errno
 import os
 import re
-import errno
 
+from PyKDE4 import kdecore, kdeui
+from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
-from PyQt4 import QtGui, QtCore
-from PyKDE4 import kdeui, kdecore
 
-import minirok
-from minirok import drag, engine, proxy, tag_reader, util
+from minirok import (
+    drag,
+    engine,
+    proxy,
+    tag_reader,
+    util,
+)
 
 ##
 
@@ -54,23 +61,28 @@ class Playlist(QtCore.QAbstractTableModel):
         self._current_item = None
         self._currently_playing = None
 
-        self.connect(self, QtCore.SIGNAL('list_changed'), self.slot_list_changed)
+        self.connect(self,
+                     QtCore.SIGNAL('list_changed'),
+                     self.slot_list_changed)
 
-        self.connect(self.tag_reader, QtCore.SIGNAL('items_ready'),
-                self.slot_update_tags)
+        self.connect(self.tag_reader,
+                     QtCore.SIGNAL('items_ready'),
+                     self.slot_update_tags)
 
-        self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
-                self.slot_engine_status_changed)
+        self.connect(minirok.Globals.engine,
+                     QtCore.SIGNAL('status_changed'),
+                     self.slot_engine_status_changed)
 
-        self.connect(minirok.Globals.engine, QtCore.SIGNAL('end_of_stream'),
-                self.slot_engine_end_of_stream)
+        self.connect(minirok.Globals.engine,
+                     QtCore.SIGNAL('end_of_stream'),
+                     self.slot_engine_end_of_stream)
 
         self.init_actions()
         self.init_undo_stack()
         self.apply_preferences()
         self.load_saved_playlist()
 
-        # XXX This is dataChanged() abuse: there are a bunch of places in which
+        # XXX: This is dataChanged() abuse: there are a bunch of places in which
         # the model wants to say: "my state (but not my data) changed somehow,
         # you may want to redraw your visible parts if you're paying attention
         # to state". I don't know of a method in the view that will do that
@@ -88,7 +100,7 @@ class Playlist(QtCore.QAbstractTableModel):
         if parent is None or parent == self._empty_model_index:
             return self._row_count
         else:
-            return 0 # as per QAbstractItemModel::rowCount docs
+            return 0  # As per QAbstractItemModel::rowCount docs.
 
     def columnCount(self, parent=None):
         return self._column_count
@@ -99,8 +111,8 @@ class Playlist(QtCore.QAbstractTableModel):
         column = index.column()
 
         if (not index.isValid()
-                or row > self._row_count
-                or column > self._column_count):
+            or row > self._row_count
+            or column > self._column_count):
             ret = None
 
         elif role == Qt.DisplayRole:
@@ -133,7 +145,7 @@ class Playlist(QtCore.QAbstractTableModel):
     def headerData(self, section, orientation, role):
         if (role == Qt.DisplayRole and orientation == Qt.Horizontal):
             return QtCore.QVariant(
-                    QtCore.QString(PlaylistItem.ALLOWED_TAGS[section]))
+                QtCore.QString(PlaylistItem.ALLOWED_TAGS[section]))
         else:
             return QtCore.QVariant()
 
@@ -154,7 +166,9 @@ class Playlist(QtCore.QAbstractTableModel):
 
     def flags(self, index):
         if index.isValid():
-            return (Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled)
+            return (Qt.ItemIsEnabled |
+                    Qt.ItemIsSelectable |
+                    Qt.ItemIsDragEnabled)
         else:
             return Qt.ItemIsDropEnabled
 
@@ -173,7 +187,7 @@ class Playlist(QtCore.QAbstractTableModel):
     def dropMimeData(self, mimedata, action, row, column, index):
         if mimedata.hasUrls():
             files = map(util.kurl_to_path,
-                            kdecore.KUrl.List.fromMimeData(mimedata))
+                        kdecore.KUrl.List.fromMimeData(mimedata))
 
             if not mimedata.hasFormat(drag.FileListDrag.MIME_TYPE):
                 # Drop does not come from ourselves, so:
@@ -187,14 +201,15 @@ class Playlist(QtCore.QAbstractTableModel):
 
         elif mimedata.hasFormat(self.PLAYLIST_DND_MIME_TYPE):
             bytearray = mimedata.data(self.PLAYLIST_DND_MIME_TYPE)
-            datastream = QtCore.QDataStream(bytearray, QtCore.QIODevice.ReadOnly)
+            datastream = QtCore.QDataStream(bytearray,
+                                            QtCore.QIODevice.ReadOnly)
             rows = set(datastream.readUInt32()
-                        for x in range(datastream.readUInt32()))
+                       for x in range(datastream.readUInt32()))
 
             if row < 0:
                 row = self._row_count
 
-            # now, we remove items after the drop, so...
+            # Now: we remove items after the drop, so...
             row -= len(filter(lambda r: r <= row, rows))
 
             self.undo_stack.beginMacro('move ' + _n_tracks_str(len(rows)))
@@ -204,16 +219,17 @@ class Playlist(QtCore.QAbstractTableModel):
             finally:
                 self.undo_stack.endMacro()
 
-            # restore the selection: better UI experience
+            # Restore the selection: better UI experience.
             top = self.index(row, 0, QtCore.QModelIndex())
             bottom = self.index(row + len(rows) - 1, 0, QtCore.QModelIndex())
-            self.selection_model.select(QtGui.QItemSelection(top, bottom),
-                    QtGui.QItemSelectionModel.Rows
-                    | QtGui.QItemSelectionModel.ClearAndSelect)
+            self.selection_model.select(
+                QtGui.QItemSelection(top, bottom),
+                QtGui.QItemSelectionModel.Rows |
+                QtGui.QItemSelectionModel.ClearAndSelect)
             self.selection_model.setCurrentIndex(
-                    min(rows) > row and top or bottom, # \o/
-                    QtGui.QItemSelectionModel.Rows
-                    | QtGui.QItemSelectionModel.NoUpdate)
+                min(rows) > row and top or bottom,  # \o/
+                QtGui.QItemSelectionModel.Rows
+                | QtGui.QItemSelectionModel.NoUpdate)
             return True
 
         else:
@@ -227,11 +243,11 @@ class Playlist(QtCore.QAbstractTableModel):
     """
 
     def insert_items(self, position, items):
-        # if currently_playing is absent, we'll check whether
-        # it's getting re-added in this call
+        # If currently_playing is absent, we'll check whether it's getting
+        # re-added in this call.
         current_item = None
         if (self.current_item in (None, self.FIRST_ITEM)
-                and self.currently_playing is not None):
+            and self.currently_playing is not None):
             playing_path = self.currently_playing.path
         else:
             playing_path = None
@@ -243,7 +259,7 @@ class Playlist(QtCore.QAbstractTableModel):
             for i, item in enumerate(items):
                 item.position = position + i
                 if (playing_path is not None
-                        and playing_path == item.path):
+                    and playing_path == item.path):
                     current_item = item
                     playing_path = None
             self.beginInsertRows(QtCore.QModelIndex(),
@@ -309,40 +325,46 @@ class Playlist(QtCore.QAbstractTableModel):
     """Initialization."""
 
     def init_actions(self):
-        self.action_play = util.create_action('action_play', 'Play',
-                self.slot_play, 'media-playback-start')
+        self.action_play = util.create_action(
+            'action_play', 'Play', self.slot_play, 'media-playback-start')
 
-        self.action_pause = util.create_action('action_pause', 'Pause',
-                self.slot_pause, 'media-playback-pause', factory=kdeui.KToggleAction)
+        self.action_pause = util.create_action(
+            'action_pause', 'Pause', self.slot_pause, 'media-playback-pause',
+            factory=kdeui.KToggleAction)
 
-        self.action_play_pause = util.create_action('action_play_pause', 'Play/Pause',
-                self.slot_play_pause, 'media-playback-start', 'Ctrl+P', 'Ctrl+Alt+P',
-                factory=kdeui.KToggleAction)
+        self.action_play_pause = util.create_action(
+            'action_play_pause', 'Play/Pause', self.slot_play_pause,
+            'media-playback-start', 'Ctrl+P', 'Ctrl+Alt+P',
+            factory=kdeui.KToggleAction)
 
         # The following actions have their global shortcut set to the empty
         # string. This allows the user to configure a global shortcut for these
         # actions, without us having to provide a default one (and polluting
         # the global shortcut namespace).
-        self.action_stop = util.create_action('action_stop', 'Stop',
-                self.slot_stop, 'media-playback-stop', 'Ctrl+O', '',
-                factory=StopAction)
+        self.action_stop = util.create_action(
+            'action_stop', 'Stop', self.slot_stop, 'media-playback-stop',
+            'Ctrl+O', '', factory=StopAction)
 
-        self.action_next = util.create_action('action_next', 'Next',
-                self.slot_next, 'media-skip-forward', 'Ctrl+N', '')
+        self.action_next = util.create_action(
+            'action_next', 'Next', self.slot_next, 'media-skip-forward',
+            'Ctrl+N', '')
 
-        self.action_previous = util.create_action('action_previous', 'Previous',
-                self.slot_previous, 'media-skip-backward', 'Ctrl+I', '')
+        self.action_previous = util.create_action(
+            'action_previous', 'Previous', self.slot_previous,
+            'media-skip-backward', 'Ctrl+I', '')
 
         # Note: the icon here is named minirok_foo-bar and not minirok-foo-bar,
         # because if it isn't found, minirok-* seems to select the minirok.png
-        # icon automatically. And I'd rather have the "unknown icon" icon instead.
-        self.action_clear = util.create_action('action_clear_playlist', 'Clear playlist',
-                self.slot_clear, 'minirok_playlist-clear', 'Ctrl+L')
+        # icon automatically. And I'd rather have the "unknown icon" icon
+        # instead.
+        self.action_clear = util.create_action(
+            'action_clear_playlist', 'Clear playlist',
+            self.slot_clear, 'minirok_playlist-clear', 'Ctrl+L')
 
         self.action_toggle_stop_after_current = util.create_action(
                 'action_toggle_stop_after_current', 'Stop after current',
                 self.slot_toggle_stop_after_current, 'media-playback-stop',
-                'Ctrl+K')#, 'Ctrl+I+K')
+                'Ctrl+K')
 
     def init_undo_stack(self):
         self.undo_stack = QtGui.QUndoStack(self)
@@ -357,24 +379,26 @@ class Playlist(QtCore.QAbstractTableModel):
         # when necessary. The KActions are needed anyway to have configurable
         # shortcuts for these actions, since the KDE shortcuts dialog doesn't
         # support configuring QAction shortcuts.
-        self.undo_kaction = util.create_action('action_playlist_undo',
-                'Undo', self.undo_stack.undo, 'edit-undo',
-                kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Undo))
+        self.undo_kaction = util.create_action(
+            'action_playlist_undo', 'Undo', self.undo_stack.undo, 'edit-undo',
+            kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Undo))
 
-        self.redo_kaction = util.create_action('action_playlist_redo',
-                'Redo', self.undo_stack.redo, 'edit-redo',
-                kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Redo))
+        self.redo_kaction = util.create_action(
+            'action_playlist_redo', 'Redo', self.undo_stack.redo, 'edit-redo',
+            kdeui.KStandardShortcut.shortcut(kdeui.KStandardShortcut.Redo))
 
         self.undo_qaction = self.undo_stack.createUndoAction(self)
         self.redo_qaction = self.undo_stack.createRedoAction(self)
 
-        self.connect(self.undo_qaction, QtCore.SIGNAL('changed()'),
-            lambda: self.adjust_kaction_from_qaction(self.undo_kaction,
-                                                     self.undo_qaction))
+        self.connect(self.undo_qaction,
+                     QtCore.SIGNAL('changed()'),
+                     lambda: self.adjust_kaction_from_qaction(
+                         self.undo_kaction, self.undo_qaction))
 
-        self.connect(self.redo_qaction, QtCore.SIGNAL('changed()'),
-            lambda: self.adjust_kaction_from_qaction(self.redo_kaction,
-                                                     self.redo_qaction))
+        self.connect(self.redo_qaction,
+                     QtCore.SIGNAL('changed()'),
+                     lambda: self.adjust_kaction_from_qaction(
+                         self.redo_kaction, self.redo_qaction))
 
         self.adjust_kaction_from_qaction(self.undo_kaction, self.undo_qaction)
         self.adjust_kaction_from_qaction(self.redo_kaction, self.redo_qaction)
@@ -394,7 +418,7 @@ class Playlist(QtCore.QAbstractTableModel):
     stop_after = property(lambda self: self._stop_after, _set_stop_after)
 
     def _set_repeat_mode(self, value):
-        self._repeat_mode = value # TODO Check it's a valid value?
+        self._repeat_mode = value  # TODO: Check it's a valid value?
         self.emit(QtCore.SIGNAL('list_changed'))
 
     repeat_mode = property(lambda self: self._repeat_mode, _set_repeat_mode)
@@ -420,7 +444,7 @@ class Playlist(QtCore.QAbstractTableModel):
 
         if self.current_item not in (self.FIRST_ITEM, None):
             self.emit(QtCore.SIGNAL('scroll_needed'),
-                    self.index(self.current_item.position, 0))
+                      self.index(self.current_item.position, 0))
 
     current_item = property(lambda self: self._current_item, _set_current_item)
 
@@ -428,7 +452,8 @@ class Playlist(QtCore.QAbstractTableModel):
         self._currently_playing = item
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
-    currently_playing = property(lambda self: self._currently_playing, _set_currently_playing)
+    currently_playing = property(lambda self: self._currently_playing,
+                                 _set_currently_playing)
 
     ##
 
@@ -436,7 +461,7 @@ class Playlist(QtCore.QAbstractTableModel):
 
     def slot_list_changed(self):
         if self._row_count == 0:
-            self._current_item = None # can't use the property here
+            self._current_item = None  # We can't use the property here.
             self.action_next.setEnabled(False)
             self.action_clear.setEnabled(False)
             self.action_previous.setEnabled(False)
@@ -449,10 +474,11 @@ class Playlist(QtCore.QAbstractTableModel):
                 current = self.current_item.position
             self.action_clear.setEnabled(True)
             self.action_previous.setEnabled(current > 0)
-            self.action_next.setEnabled(bool(self.queue
-                    or self.repeat_mode == RepeatMode.PLAYLIST
-                    or (self.random_mode and self.random_queue)
-                    or (not self.random_mode and current+1 < self._row_count)))
+            self.action_next.setEnabled(
+                bool(self.queue
+                     or self.repeat_mode == RepeatMode.PLAYLIST
+                     or (self.random_mode and self.random_queue)
+                     or (not self.random_mode and current+1 < self._row_count)))
 
         self.slot_engine_status_changed(minirok.Globals.engine.status)
 
@@ -484,7 +510,7 @@ class Playlist(QtCore.QAbstractTableModel):
     def slot_clear(self):
         ClearItemlistCmd(self)
 
-    def slot_activate_index(self, index): # proxy reimplements this too
+    def slot_activate_index(self, index):  # Proxy reimplements this too.
         self.maybe_populate_random_queue()
         self.current_item = self._itemlist[index.row()]
         self.slot_play()
@@ -612,13 +638,14 @@ class Playlist(QtCore.QAbstractTableModel):
 
     def toggle_enqueued(self, index):
         assert index.isValid()
-        self.toggle_enqueued_many_items([ self._itemlist[index.row()] ])
+        self.toggle_enqueued_many_items([self._itemlist[index.row()]])
 
     def toggle_enqueued_many(self, indexes):
-        self.toggle_enqueued_many_items([ self._itemlist[x.row()] for x in indexes ])
+        self.toggle_enqueued_many_items([self._itemlist[x.row()]
+                                         for x in indexes])
 
     def removeItemsCmd(self, indexes):
-        RemoveItemsCmd(self, [ x.row() for x in indexes ])
+        RemoveItemsCmd(self, [x.row() for x in indexes])
 
     ##
 
@@ -637,14 +664,14 @@ class Playlist(QtCore.QAbstractTableModel):
             last item in the queue, see queue_popfront() below.)
         """
         # items to queue, and items to dequeue
-        enqueue = [ item for item in items if not item.queue_position ]
-        dequeue = [ item for item in items if item.queue_position ]
+        enqueue = [item for item in items if not item.queue_position]
+        dequeue = [item for item in items if item.queue_position]
 
         if dequeue:
             indexes = sorted(item.queue_position - 1 for item in dequeue)
 
             chunks = util.contiguous_chunks(indexes)
-            chunks.append((len(self.queue), 0)) # fake chunk at the end
+            chunks.append((len(self.queue), 0))  # Fake chunk at the end.
 
             # Now this is simple (at least compared to what was here before):
             # starting after each removal chunk, and until the beginning of the
@@ -667,7 +694,7 @@ class Playlist(QtCore.QAbstractTableModel):
                 item.queue_position = size+i+1
 
         if (not preserve_stop_after
-                and self.stop_mode == StopMode.AFTER_QUEUE):
+            and self.stop_mode == StopMode.AFTER_QUEUE):
             if not self.queue:
                 self.stop_after = None
                 self.stop_mode = StopMode.AFTER_QUEUE
@@ -678,13 +705,14 @@ class Playlist(QtCore.QAbstractTableModel):
         self.emit(QtCore.SIGNAL('repaint_needed'))
 
     def queue_popfront(self):
-        """Convenience function to dequeue and return the first item from the queue."""
+        """Convenience function to dequeue and return the first item from the
+        queue."""
         try:
             popped = self.queue[0]
         except IndexError:
             minirok.logger.warn('queue_popfront() called on an empty queue')
         else:
-            self.toggle_enqueued_many_items([ popped ], preserve_stop_after=True)
+            self.toggle_enqueued_many_items([popped], preserve_stop_after=True)
             return popped
 
     def my_first_child(self):
@@ -711,7 +739,7 @@ class Playlist(QtCore.QAbstractTableModel):
                 self._regex = re.compile(prefs.tag_regex)
             except re.error, e:
                 minirok.logger.error('invalid regular expresion %s: %s',
-                        prefs.tag_regex, e)
+                                     prefs.tag_regex, e)
                 self._regex = None
                 self._regex_mode = 'Always'
             else:
@@ -745,11 +773,12 @@ class Playlist(QtCore.QAbstractTableModel):
                 minirok.logger.warning('error opening saved playlist: %s', e)
         else:
             files = re.split(r'\0+', playlist.read())
-            if files != ['']: # empty saved playlist
-                # add_files_untrusted() will use InsertItemsCmd, and here
-                # that wouldn't be appropriate: cook up the code ourselves.
-                self.insert_items(0, map(self.create_item,
-                    util.playable_from_untrusted(files, warn=True)))
+            if files != ['']:  # That'd be an empty saved playlist.
+                # add_files_untrusted() will use InsertItemsCmd, and that
+                # wouldn't be appropriate here: cook up the code ourselves.
+                self.insert_items(
+                    0, map(self.create_item,
+                           util.playable_from_untrusted(files, warn=True)))
 
         self.slot_list_changed()
 
@@ -781,7 +810,7 @@ class Playlist(QtCore.QAbstractTableModel):
 
     def create_item(self, path):
         tags = self.tags_from_filename(path)
-        if len(tags) == 0 or tags.get('Title', None) is None:
+        if len(tags) == 0 or tags.get('Title') is None:
             regex_failed = True
             dirname, filename = os.path.split(path)
             tags['Title'] = util.unicode_from_path(filename)
@@ -790,8 +819,8 @@ class Playlist(QtCore.QAbstractTableModel):
 
         item = PlaylistItem(path, tags)
 
-        if self._regex_mode == 'Always' or (regex_failed
-                and self._regex_mode == 'OnRegexFail'):
+        if (self._regex_mode == 'Always'
+            or (regex_failed and self._regex_mode == 'OnRegexFail')):
             item.needs_tag_reader = True
         else:
             item.needs_tag_reader = False
@@ -820,8 +849,8 @@ class Playlist(QtCore.QAbstractTableModel):
     # XXX-KDE4 TODO
     def contentsDragMoveEvent(self, event):
         if (not (kdecore.KApplication.kApplication().keyboardMouseState()
-                    & qt.Qt.ControlButton)
-                or not drag.FileListDrag.canDecode(event)):
+                 & qt.Qt.ControlButton)
+            or not drag.FileListDrag.canDecode(event)):
             if self.visualizer_rect is not None:
                 self.viewport().repaint(self.visualizer_rect, True)
                 self.visualizer_rect = None
@@ -861,9 +890,10 @@ class Playlist(QtCore.QAbstractTableModel):
         else:
             col1 = col2 = column
 
-        self.emit(QtCore.SIGNAL(
-                    'dataChanged(const QModelIndex &, const QModelIndex &)'),
-                    self.index(row1, col1), self.index(row2, col2))
+        self.emit(
+            QtCore.SIGNAL(
+                'dataChanged(const QModelIndex &, const QModelIndex &)'),
+            self.index(row1, col1), self.index(row2, col2))
 
     ##
 
@@ -891,14 +921,19 @@ class Proxy(proxy.Model):
     def setSourceModel(self, model):
         proxy.Model.setSourceModel(self, model)
 
-        self.connect(model, QtCore.SIGNAL('scroll_needed'),
-                self.slot_scroll_needed)
+        self.connect(model,
+                     QtCore.SIGNAL('scroll_needed'),
+                     self.slot_scroll_needed)
 
-        # XXX dataChanged() abuse here too...
-        self.connect(model, QtCore.SIGNAL('repaint_needed'),
-            lambda: self.emit(QtCore.SIGNAL(
-                'dataChanged(const QModelIndex &, const QModelIndex &)'),
-                    self.index(0, 0), self.index(1, self.columnCount())))
+        # XXX: dataChanged() abuse here too...
+        self.connect(
+            model,
+            QtCore.SIGNAL('repaint_needed'),
+            lambda: self.emit(
+                QtCore.SIGNAL(
+                    'dataChanged(const QModelIndex &, const QModelIndex &)'),
+                self.index(0, 0),
+                self.index(1, self.columnCount())))
 
     def setPattern(self, pattern):
         proxy.Model.setPattern(self, pattern)
@@ -943,10 +978,12 @@ class RepeatMode:
     TRACK = object()
     PLAYLIST = object()
 
+
 class StopMode:
     NONE = object()
     AFTER_ONE = object()
     AFTER_QUEUE = object()
+
 
 class StopAction(kdeui.KToolBarPopupAction):
 
@@ -960,14 +997,19 @@ class StopAction(kdeui.KToolBarPopupAction):
         self.action_after_current = menu.addAction('After current')
         self.action_after_queue = menu.addAction('After queue')
 
-        self.connect(menu, QtCore.SIGNAL('aboutToShow()'), self.slot_prepare)
-        self.connect(menu, QtCore.SIGNAL('triggered(QAction *)'), self.slot_activated)
+        self.connect(menu,
+                     QtCore.SIGNAL('aboutToShow()'),
+                     self.slot_prepare)
+
+        self.connect(menu,
+                     QtCore.SIGNAL('triggered(QAction *)'),
+                     self.slot_activated)
 
     def slot_prepare(self):
         playlist = minirok.Globals.playlist
 
         if (playlist.stop_mode == StopMode.AFTER_ONE
-                and playlist.stop_after == playlist.currently_playing):
+            and playlist.stop_after == playlist.currently_playing):
             self.action_after_current.setCheckable(True)
             self.action_after_current.setChecked(True)
         else:
@@ -984,15 +1026,13 @@ class StopAction(kdeui.KToolBarPopupAction):
 
         if action is self.action_now:
             self.trigger()
-
         elif action is self.action_after_current:
             playlist.slot_toggle_stop_after_current()
-
         elif action is self.action_after_queue:
             if playlist.stop_mode == StopMode.AFTER_QUEUE:
                 playlist.stop_after = None
             else:
-                playlist.stop_after = None # clear possible AFTER_ONE mode
+                playlist.stop_after = None  # Clear possible AFTER_ONE mode.
                 playlist.stop_mode = StopMode.AFTER_QUEUE
                 if playlist.queue:
                     playlist.stop_after = playlist.queue[-1]
@@ -1013,8 +1053,8 @@ class PlaylistView(QtGui.QTreeView):
         self.setSelectionMode(self.ExtendedSelection)
 
         self.action_queue_tracks = util.create_action(
-                'action_enqueue_dequeue_selected', 'Enqueue/dequeue selection',
-                self.slot_enqueue_dequeue_selected, None, 'Ctrl+E')
+            'action_enqueue_dequeue_selected', 'Enqueue/dequeue selection',
+            self.slot_enqueue_dequeue_selected, None, 'Ctrl+E')
 
     def setModel(self, playlist):
         QtGui.QTreeView.setModel(self, playlist)
@@ -1022,18 +1062,20 @@ class PlaylistView(QtGui.QTreeView):
 
         for c in range(playlist.columnCount()):
             if playlist.headerData(c, Qt.Horizontal,
-                    Qt.DisplayRole).toString() == 'Track':
+                                   Qt.DisplayRole).toString() == 'Track':
                 self.track_delegate = PlaylistTrackDelegate()
                 self.setItemDelegateForColumn(c, self.track_delegate)
                 break
         else:
             minirok.logger.error('index for Track column not found :-?')
 
-        self.connect(self, QtCore.SIGNAL('activated(const QModelIndex &)'),
-                playlist.slot_activate_index)
+        self.connect(self,
+                     QtCore.SIGNAL('activated(const QModelIndex &)'),
+                     playlist.slot_activate_index)
 
-        self.connect(playlist, QtCore.SIGNAL('scroll_needed'),
-                                lambda index: self.scrollTo(index))
+        self.connect(playlist,
+                     QtCore.SIGNAL('scroll_needed'),
+                     lambda index: self.scrollTo(index))
 
     ##
 
@@ -1044,13 +1086,13 @@ class PlaylistView(QtGui.QTreeView):
         model = self.model()
         all = set(range(model.rowCount()))
         selected = set(x.row() for x in self.selectedIndexes())
-        return [ model.index(x, 0) for x in  all - selected ]
+        return [model.index(x, 0) for x in  all - selected]
 
     ##
 
     def drawRow(self, painter, styleopt, index):
         if index.data(Playlist.RoleQueryIsPlaying).toBool():
-            styleopt = QtGui.QStyleOptionViewItem(styleopt) # make a copy
+            styleopt = QtGui.QStyleOptionViewItem(styleopt)  # Make a copy.
             styleopt.font.setItalic(True)
 
         QtGui.QTreeView.drawRow(self, painter, styleopt, index)
@@ -1064,7 +1106,7 @@ class PlaylistView(QtGui.QTreeView):
             painter.restore()
 
     def startDrag(self, actions):
-        # Override this function to loose the ugly pixmap provided by Qt
+        # Override this function to loose the ugly pixmap provided by Qt.
         indexes = self.selectedIndexes()
         if len(indexes) > 0:
             mimedata = self.model().mimeData(indexes)
@@ -1087,8 +1129,7 @@ class PlaylistView(QtGui.QTreeView):
 
         # TODO: accept event?
 
-        if not index.isValid():
-            # click on viewport
+        if not index.isValid():  # Click on viewport.
             self.clearSelection()
 
         elif keymod & Qt.ControlModifier:
@@ -1099,12 +1140,13 @@ class PlaylistView(QtGui.QTreeView):
             else:
                 return QtGui.QTreeView.mousePressEvent(self, event)
 
-        elif keymod != Qt.NoModifier: # Eat them up
+        elif keymod != Qt.NoModifier:  # Eat them up.
             return QtGui.QTreeView.mousePressEvent(self, event)
 
         elif button & Qt.MidButton:
             if index.data(Playlist.RoleQueryIsPlaying).toBool():
-                minirok.Globals.action_collection.action('action_pause').trigger()
+                (minirok.Globals.action_collection.action('action_pause').
+                 trigger())
 
         elif button & Qt.RightButton:
             QtGui.QTreeView.mousePressEvent(self, event)
@@ -1112,7 +1154,7 @@ class PlaylistView(QtGui.QTreeView):
             menu = kdeui.KMenu(self)
             selected_indexes = self.uniqSelectedIndexes()
 
-            assert len(selected_indexes) > 0 # or maybe use itemAt()
+            assert len(selected_indexes) > 0  # Or maybe use itemAt().
 
             if len(selected_indexes) == 1:
                 enqueue_action = menu.addAction('Enqueue track')
@@ -1158,7 +1200,7 @@ class PlaylistItem(object):
 
     # This class should be considered sort of private to the model
 
-    ALLOWED_TAGS = [ 'Track', 'Artist', 'Album', 'Title', 'Length' ]
+    ALLOWED_TAGS = ['Track', 'Artist', 'Album', 'Title', 'Length']
 
     def __init__(self, path, tags=None):
         self.path = path
@@ -1197,7 +1239,7 @@ class PlaylistItem(object):
                 continue
             if tag == 'Track':
                 try:
-                    # remove leading zeroes
+                    # Remove leading zeroes.
                     value = str(int(value))
                 except ValueError:
                     pass
@@ -1227,7 +1269,6 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
 
     Code originally comes from PlaylistItem::paintCell() in Amarok 1.4.
     """
-
     def paint(self, painter, option, index):
         QtGui.QItemDelegate.paint(self, painter, option, index)
 
@@ -1249,7 +1290,7 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
                 s_width = 8
                 s_height = 8
             else:
-                s_width = 1 # Seems to prevent an artifact
+                s_width = 1  # Seems to prevent an artifact.
                 s_height = 0
 
             if queue_pos:
@@ -1263,10 +1304,13 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
 
             painter.setBrush(option.palette.highlight())
             painter.setPen(option.palette.highlight().color().dark())
-            painter.drawEllipse(width - items_width - e_width/2, e_margin, e_width, e_height)
-            painter.drawRect(width - items_width, e_margin, items_width+1, e_height)
+            painter.drawEllipse(width - items_width - e_width/2, e_margin,
+                                e_width, e_height)
+            painter.drawRect(width - items_width, e_margin,
+                             items_width+1, e_height)
             painter.setPen(option.palette.highlight().color())
-            painter.drawLine(width - items_width, e_margin+1, width - items_width, e_height+1)
+            painter.drawLine(width - items_width, e_margin+1,
+                             width - items_width, e_height+1)
 
             x = width - items_width - e_margin
 
@@ -1278,7 +1322,8 @@ class PlaylistTrackDelegate(QtGui.QItemDelegate):
 
             if queue_pos:
                 painter.setPen(option.palette.highlightedText().color())
-                painter.drawText(x, 0, width-x, q_height, Qt.AlignCenter, queue_pos)
+                painter.drawText(x, 0, width-x, q_height,
+                                 Qt.AlignCenter, queue_pos)
 
             painter.restore()
 
@@ -1306,14 +1351,15 @@ class Columns(QtGui.QHeaderView):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.connect(self,
-                QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'),
-                self.exec_popup)
+                     QtCore.SIGNAL('customContextMenuRequested(const QPoint&)'),
+                     self.exec_popup)
 
     def sorted_column_names(self):
         names = []
         model = self.model()
         for c in range(model.columnCount()):
-            names.append(model.headerData(c, Qt.Horizontal, Qt.DisplayRole).toString())
+            names.append(
+                model.headerData(c, Qt.Horizontal, Qt.DisplayRole).toString())
 
         return map(str, names)
 
@@ -1349,7 +1395,7 @@ class Columns(QtGui.QHeaderView):
                     warn('invalid column width for %s: %r', name, width)
                     continue
 
-                # TODO Maybe this one ought to be more flexible
+                # TODO: Maybe this one ought to be more flexible
                 try:
                     visible = bool(int(visible))
                 except ValueError:
@@ -1365,8 +1411,8 @@ class Columns(QtGui.QHeaderView):
                 columns.append((name, width, visible))
 
             if unseen_columns:
-                missing = [ d for d in self.DEFAULT_COLUMNS
-                                if d[0] in unseen_columns ]
+                missing = [d for d in self.DEFAULT_COLUMNS
+                           if d[0] in unseen_columns]
                 warn('these columns could not be found in config, creating from'
                      ' defaults: %s', ', '.join(d[0] for d in missing))
                 columns.extend(missing)
@@ -1393,7 +1439,7 @@ class Columns(QtGui.QHeaderView):
         for i in range(model.columnCount()):
             logindex = self.logicalIndex(i)
             name = model.headerData(logindex,
-                    Qt.Horizontal, Qt.DisplayRole).toString()
+                                    Qt.Horizontal, Qt.DisplayRole).toString()
             action = menu.addAction(name)
             action.setCheckable(True)
             action.setData(QtCore.QVariant(logindex))
@@ -1414,7 +1460,7 @@ class Columns(QtGui.QHeaderView):
         for logical, name in enumerate(self.sorted_column_names()):
             visible = int(not self.isSectionHidden(logical))
             if not visible:
-                # gross, but sectionSize() would return 0 otherwise :-(
+                # This is gross, but sectionSize() would return 0 otherwise. :-(
                 self.setSectionHidden(logical, False)
             width = self.sectionSize(logical)
             entry = '%s:%d:%d' % (name, width, visible)
@@ -1470,14 +1516,14 @@ class AlterItemlistMixin(object):
 
         # Restore the current item, if we have one *and* the playlist doesn't
         if (self.current_item is not None
-                and self.model.current_item in (None, Playlist.FIRST_ITEM)):
+            and self.model.current_item in (None, Playlist.FIRST_ITEM)):
             self.model.current_item = self.current_item
 
         if self.do_queue:
-            # TODO Think whether to invalidate these queue positions if the
+            # TODO: Think whether to invalidate these queue positions if the
             # queue changes between a removal and its undo.
             for pos, amount in util.contiguous_chunks(self.queuepos.keys()):
-                items = [ self.queuepos[x] for x in range(pos, pos+amount) ]
+                items = [self.queuepos[x] for x in range(pos, pos+amount)]
                 tail = self.model.queue[pos-1:]
                 self.model.toggle_enqueued_many_items(tail + items)
                 self.model.toggle_enqueued_many_items(tail)
@@ -1485,9 +1531,9 @@ class AlterItemlistMixin(object):
     def remove_items(self, chunks=None):
         """Remove items from the playlist.
 
-        :param chunks: should be a list like:
-
-            [ (pos1, amount1), (pos2, amount2), ... ]
+        Args:
+          chunks: should be a list like:
+            [(pos1, amount1), (pos2, amount2), ...]
 
         The items will be removed in *descending* order by position.
         If chunks is None, self.chunks will be used, and if empty, it will be
@@ -1500,8 +1546,8 @@ class AlterItemlistMixin(object):
             if self.chunks:
                 chunks = self.chunks
             else:
-                chunks = self.chunks = sorted((row, len(items))
-                            for row, items in self.items.iteritems())
+                chunks = self.chunks = sorted(
+                    (row, len(items)) for row, items in self.items.iteritems())
 
         self.items.clear()
         self.queuepos.clear()
@@ -1514,8 +1560,9 @@ class AlterItemlistMixin(object):
 
         if self.do_queue:
             for itemlist in self.items.itervalues():
-                self.queuepos.update((item.queue_position, item)
-                        for item in itemlist if item.queue_position)
+                self.queuepos.update(
+                    (item.queue_position, item)
+                    for item in itemlist if item.queue_position)
 
             if self.queuepos:
                 self.model.toggle_enqueued_many_items(self.queuepos.values())
@@ -1538,7 +1585,7 @@ class InsertItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
         AlterItemlistMixin.__init__(self, model, do_queue)
 
         if items:
-            self.items = { position: items }
+            self.items = {position: items}
             self.model.undo_stack.push(self)
 
     def undo(self):
@@ -1554,7 +1601,8 @@ class RemoveItemsCmd(QtGui.QUndoCommand, AlterItemlistMixin):
     def __init__(self, model, rows, do_queue=True):
         """Create the command.
 
-        :param rows: A possibly unsorted/non-contiguous list of rows to remove.
+        Args:
+          rows: A possibly unsorted/non-contiguous list of rows to remove.
         """
         QtGui.QUndoCommand.__init__(self, 'remove ' + _n_tracks_str(len(rows)))
         AlterItemlistMixin.__init__(self, model, do_queue)
@@ -1592,10 +1640,10 @@ class ClearItemlistCmd(QtGui.QUndoCommand, AlterItemlistMixin):
         self.items[0] = self.model.clear_itemlist()
 
         if self.do_queue:
-            # iterate over model's queue directly, since we are
-            # dequeueing *everything*
+            # Iterate over model's queue directly, since we are dequeueing
+            # *everything*.
             self.queuepos.update((item.queue_position, item)
-                    for item in self.model.queue)
+                                 for item in self.model.queue)
 
             if self.queuepos:
                 self.model.toggle_enqueued_many_items(self.queuepos.values())

@@ -1,15 +1,19 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-from PyQt4 import QtGui, QtCore
-from PyKDE4 import kdeui, kdecore
-
 import minirok
-from minirok import engine, util
-from minirok.playlist import RepeatMode
+
+from PyKDE4 import kdecore, kdeui
+from PyQt4 import QtCore, QtGui
+
+from minirok import (
+    engine,
+    util,
+)
+from minirok.playlist import RepeatMode  # Avoid circular dependency, I think.
 
 ##
 
@@ -26,7 +30,7 @@ class StatusBar(kdeui.KStatusBar):
 
         self.timer = util.QTimerWithPause(self)
         self.blink_timer = QtCore.QTimer(self)
-        self.blink_timer_flag = True # used in slot_blink()
+        self.blink_timer_flag = True  # Used in slot_blink().
 
         self.repeat = RepeatLabel(self)
         self.random = RandomLabel(self)
@@ -46,44 +50,53 @@ class StatusBar(kdeui.KStatusBar):
         self.addPermanentWidget(self.label2, 0)
 
         self.slot_stop()
+        self._connect_timer()
 
-        self._connect_timer() # this has a method 'cause we do it several times
+        self.connect(self.blink_timer,
+                     QtCore.SIGNAL('timeout()'),
+                     self.slot_blink)
 
-        self.connect(self.blink_timer, QtCore.SIGNAL('timeout()'), self.slot_blink)
+        self.connect(self.slider,
+                     QtCore.SIGNAL('sliderPressed()'),
+                     lambda: self.handle_slider_event(self.SLIDER_PRESSED))
 
-        self.connect(self.slider, QtCore.SIGNAL('sliderPressed()'),
-                lambda: self.handle_slider_event(self.SLIDER_PRESSED))
+        self.connect(self.slider,
+                     QtCore.SIGNAL('sliderMoved(int)'),
+                     lambda x: self.handle_slider_event(self.SLIDER_MOVED, x))
 
-        self.connect(self.slider, QtCore.SIGNAL('sliderMoved(int)'),
-                lambda x: self.handle_slider_event(self.SLIDER_MOVED, x))
+        self.connect(self.slider,
+                     QtCore.SIGNAL('sliderReleased()'),
+                     lambda: self.handle_slider_event(self.SLIDER_RELEASED))
 
-        self.connect(self.slider, QtCore.SIGNAL('sliderReleased()'),
-                lambda: self.handle_slider_event(self.SLIDER_RELEASED))
+        self.connect(minirok.Globals.playlist,
+                     QtCore.SIGNAL('new_track'),
+                     self.slot_start)
 
-        self.connect(minirok.Globals.playlist, QtCore.SIGNAL('new_track'),
-                self.slot_start)
+        self.connect(minirok.Globals.engine,
+                     QtCore.SIGNAL('status_changed'),
+                     self.slot_engine_status_changed)
 
-        self.connect(minirok.Globals.engine, QtCore.SIGNAL('status_changed'),
-                self.slot_engine_status_changed)
-
-        self.connect(minirok.Globals.engine, QtCore.SIGNAL('seek_finished'),
-                self.slot_engine_seek_finished)
+        self.connect(minirok.Globals.engine,
+                     QtCore.SIGNAL('seek_finished'),
+                     self.slot_engine_seek_finished)
 
         # Actions
-        self.action_next_repeat_mode = util.create_action('action_next_repeat_mode',
-                'Change repeat mode', self.repeat.mousePressEvent,
-                QtGui.QIcon(util.get_png('repeat_track_small')), 'Ctrl+T')
+        self.action_next_repeat_mode = util.create_action(
+            'action_next_repeat_mode', 'Change repeat mode',
+            self.repeat.mousePressEvent,
+            QtGui.QIcon(util.get_png('repeat_track_small')), 'Ctrl+T')
 
-        self.action_toggle_random_mode = util.create_action('action_toggle_random_mode',
-                'Toggle random mode', self.random.mousePressEvent,
-                QtGui.QIcon(util.get_png('random_small')), 'Ctrl+R')
+        self.action_toggle_random_mode = util.create_action(
+            'action_toggle_random_mode', 'Toggle random mode',
+            self.random.mousePressEvent,
+            QtGui.QIcon(util.get_png('random_small')), 'Ctrl+R')
 
     def slot_update(self):
         self.elapsed = minirok.Globals.engine.get_position()
         self.remaining = self.length - self.elapsed
         self.slider.setValue(self.elapsed)
         self.label1.set_time(self.elapsed)
-        self.label2.set_time(self.remaining) # XXX what if length was unset
+        self.label2.set_time(self.remaining)  # XXX: What if length was unset.
 
     def slot_start(self):
         tags = minirok.Globals.playlist.get_current_tags()
@@ -157,7 +170,7 @@ class TimeLabel(QtGui.QLabel):
 
     def set_time(self, seconds):
         self.setText('%s%s' % (self.PREFIX, util.fmt_seconds(seconds)))
-        self.setFixedSize(self.sizeHint()) # make the label.clear() above DTRT
+        self.setFixedSize(self.sizeHint())  # Make the label.clear() above DTRT.
 
 class NegativeTimeLabel(TimeLabel):
 
@@ -177,8 +190,9 @@ class MultiIconLabel(QtGui.QLabel):
     def __init__(self, parent, icons=None, tooltips=[]):
         """Initialize the label.
 
-        :param icons: a list of QPixmaps over which to iterate.
-        :param tooltips: tooltips associated with each icon/state.
+        Args:
+          icons: a list of QPixmaps over which to iterate.
+          tooltips: tooltips associated with each icon/state.
         """
         QtGui.QLabel.__init__(self, parent)
         util.CallbackRegistry.register_save_config(self.save_config)
@@ -187,10 +201,10 @@ class MultiIconLabel(QtGui.QLabel):
         if icons is not None:
             self.icons = list(icons)
         else:
-            self.icons = [ QtGui.QPixmap() ]
+            self.icons = [QtGui.QPixmap()]
 
         self.tooltips = list(tooltips)
-        self.tooltips += [ None ] * (len(self.icons) - len(self.tooltips))
+        self.tooltips += [None] * (len(self.icons) - len(self.tooltips))
 
         if self.CONFIG_OPTION is not None:
             config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
@@ -199,8 +213,8 @@ class MultiIconLabel(QtGui.QLabel):
             try:
                 self.state = int(value) - 1
             except ValueError:
-                minirok.logger.warning('invalid value %r for %s', value,
-                        self.CONFIG_OPTION)
+                minirok.logger.warning('invalid value %r for %s',
+                                       value, self.CONFIG_OPTION)
                 self.state = -1
         else:
             self.state = -1
@@ -233,44 +247,46 @@ class MultiIconLabel(QtGui.QLabel):
             config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
             config.writeEntry(self.CONFIG_OPTION, QtCore.QVariant(self.state))
 
+
 class RepeatLabel(MultiIconLabel):
     CONFIG_OPTION = 'RepeatMode'
 
     STATES = {
-            0: RepeatMode.NONE,
-            1: RepeatMode.TRACK,
-            2: RepeatMode.PLAYLIST,
+        0: RepeatMode.NONE,
+        1: RepeatMode.TRACK,
+        2: RepeatMode.PLAYLIST,
     }
 
     def __init__(self, parent):
         icons = [
-                kdeui.KIcon('go-bottom').pixmap(16,
-                    QtGui.QIcon.Active, QtGui.QIcon.Off),
-                util.get_png('repeat_track_small'),
-                util.get_png('repeat_playlist_small'),
+            kdeui.KIcon('go-bottom').pixmap(
+                16, QtGui.QIcon.Active, QtGui.QIcon.Off),
+            util.get_png('repeat_track_small'),
+            util.get_png('repeat_playlist_small'),
         ]
         tooltips = [
-                'Repeat: Off',
-                'Repeat: Track',
-                'Repeat: Playlist',
+            'Repeat: Off',
+            'Repeat: Track',
+            'Repeat: Playlist',
         ]
         MultiIconLabel.__init__(self, parent, icons, tooltips)
 
     def slot_clicked(self, state):
         minirok.Globals.playlist.repeat_mode = self.STATES[state]
 
+
 class RandomLabel(MultiIconLabel):
     CONFIG_OPTION = 'RandomMode'
 
     def __init__(self, parent):
         icons = [
-                kdeui.KIcon('go-next').pixmap(16,
-                    QtGui.QIcon.Active, QtGui.QIcon.Off),
-                util.get_png('random_small'),
+            kdeui.KIcon('go-next').pixmap(
+                16, QtGui.QIcon.Active, QtGui.QIcon.Off),
+            util.get_png('random_small'),
         ]
         tooltips = [
-                'Random mode: Off',
-                'Random mode: On',
+            'Random mode: Off',
+            'Random mode: On',
         ]
         MultiIconLabel.__init__(self, parent, icons, tooltips)
 

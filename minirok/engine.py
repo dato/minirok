@@ -1,15 +1,16 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import os
 
-import gst
 import gobject
+import gst
 
-import minirok
 from PyQt4 import QtCore
 
 gobject.threads_init()
@@ -28,10 +29,10 @@ class GStreamerEngine(QtCore.QObject):
     SINK = 'alsasink'
 
     PLUGINS = {
-            'flac': [ '.flac' ],
-            'mad': [ '.mp3', ],
-            'musepack': [ '.mpc', '.mp+', ],
-            'vorbis': [ '.ogg' ],
+        'flac': ['.flac'],
+        'mad': ['.mp3'],
+        'musepack': ['.mpc', '.mp+'],
+        'vorbis': ['.ogg'],
     }
 
     def __init__(self):
@@ -105,7 +106,8 @@ class GStreamerEngine(QtCore.QObject):
     def get_position(self):
         """Returns the current position as an int in seconds."""
         try:
-            return int(round(self.bin.query_position(self.time_fmt)[0] / gst.SECOND))
+            return int(round(
+                self.bin.query_position(self.time_fmt)[0] / gst.SECOND))
         except gst.QueryError:
             return 0
 
@@ -116,8 +118,9 @@ class GStreamerEngine(QtCore.QObject):
         after the seek has been performed.
         """
         self.seek_pending = True
-        self.bin.seek_simple(self.time_fmt, gst.SEEK_FLAG_FLUSH |
-                gst.SEEK_FLAG_KEY_UNIT, seconds * gst.SECOND)
+        self.bin.seek_simple(self.time_fmt,
+                             gst.SEEK_FLAG_FLUSH | gst.SEEK_FLAG_KEY_UNIT,
+                             seconds * gst.SECOND)
         # self.bin.get_state(gst.CLOCK_TIME_NONE) # block until done
 
     ##

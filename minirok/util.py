@@ -1,19 +1,19 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import minirok
+
 import os
+import random
 import re
 import stat
 import time
-import random
 
-from PyQt4 import QtGui, QtCore
-from PyKDE4 import kdeui, kdecore
-
-import minirok
+from PyKDE4 import kdecore, kdeui
+from PyQt4 import QtCore, QtGui
 
 ##
 
@@ -27,6 +27,7 @@ def kurl_to_path(kurl):
 
     return unicode(kurl).encode(minirok.filesystem_encoding)
 
+
 def unicode_from_path(path):
     """Convert from the filesystem encoding to unicode."""
     if isinstance(path, unicode):
@@ -35,9 +36,10 @@ def unicode_from_path(path):
         try:
             return unicode(path, minirok.filesystem_encoding)
         except UnicodeDecodeError:
-            minirok.logger.warning('cannot convert %r to %s', path,
-                    minirok.filesystem_encoding)
+            minirok.logger.warning('cannot convert %r to %s',
+                                   path, minirok.filesystem_encoding)
             return unicode(path, minirok.filesystem_encoding, 'replace')
+
 
 def fmt_seconds(seconds):
     """Convert a number of seconds to m:ss or h:mm:ss notation."""
@@ -51,6 +53,9 @@ def fmt_seconds(seconds):
         return '%d:%02d' % (seconds//60, seconds%60)
     else:
         return '%d:%02d:%02d' % (seconds//3600, (seconds%3600)//60, seconds%60)
+
+
+_png_cache = {}
 
 def get_png(name):
     """Return a QPixmap of the named PNG file under $APPDATA/images.
@@ -68,8 +73,10 @@ def get_png(name):
     except KeyError:
         pass
 
-    for path in [ str(kdecore.KStandardDirs.locate('appdata', os.path.join('images', name))),
-            os.path.join(os.path.dirname(__file__), '..', 'images', name) ]:
+    for path in [
+        str(kdecore.KStandardDirs.locate('appdata',
+                                         os.path.join('images', name))),
+        os.path.join(os.path.dirname(__file__), '..', 'images', name)]:
         if os.path.exists(path):
             break
     else:
@@ -77,15 +84,16 @@ def get_png(name):
 
     return _png_cache.setdefault(name, QtGui.QPixmap(path, 'PNG'))
 
-_png_cache = {}
 
 def create_action(name, text, slot, icon=None, shortcut=None,
-                        global_shortcut=None, factory=kdeui.KAction):
+                  global_shortcut=None, factory=kdeui.KAction):
     """Helper to create KAction objects."""
     action = factory(None)
     action.setText(text)
 
-    QtCore.QObject.connect(action, QtCore.SIGNAL('triggered(bool)'), slot)
+    QtCore.QObject.connect(action,
+                           QtCore.SIGNAL('triggered(bool)'),
+                           slot)
     minirok.Globals.action_collection.addAction(name, action)
 
     if icon is not None:
@@ -99,6 +107,7 @@ def create_action(name, text, slot, icon=None, shortcut=None,
 
     return action
 
+
 def playable_from_untrusted(files, warn=False):
     """Filter a list of untrusted paths to only include playable files.
 
@@ -106,8 +115,10 @@ def playable_from_untrusted(files, warn=False):
     exist or the engine can't play. Directories will be read and all its files
     included as appropriate.
 
-    :param warn: If True, emit a warning for each skipped file, stating the
-            reason; if False, debug() statements will be emitted instead.
+    Args:
+      files: list of paths.
+      warn: if true, emit a warning for each skipped file, stating the reason;
+        if false, debug() statements will be emitted instead.
     """
     result = []
 
@@ -145,17 +156,18 @@ def playable_from_untrusted(files, warn=False):
 
     return result
 
+
 def contiguous_chunks(intlist):
     """Calculate a list of contiguous areas in a possibly unsorted list.
 
     >>> contiguous_chunks([2, 9, 3, 5, 8, 1])
-    [ (1, 3), (5, 1), (8, 2) ]
+    [(1, 3), (5, 1), (8, 2)]
     """
     if len(intlist) == 0:
         return []
 
     mylist = sorted(intlist)
-    result = [ [mylist[0], 1] ]
+    result = [[mylist[0], 1]]
 
     for x in mylist[1:]:
         if x == sum(result[-1]):
@@ -164,6 +176,7 @@ def contiguous_chunks(intlist):
             result.append([x, 1])
 
     return map(tuple, result)
+
 
 def ensure_utf8(string):
     """Return an UTF-8 string out of the passed string.
@@ -186,6 +199,7 @@ def ensure_utf8(string):
             return string.decode('iso-8859-1').encode('utf-8')
         else:
             return string
+
 
 def creat_excl(path, mode=0644):
     """Return a write-only file object created with O_EXCL."""
@@ -245,12 +259,14 @@ class QTimerWithPause(QtCore.QObject):
 
         self._timer = QtCore.QTimer(self)
         self._timer.setSingleShot(True)
-        self.connect(self._timer, QtCore.SIGNAL('timeout()'), self._slot_timeout)
+        self.connect(self._timer,
+                     QtCore.SIGNAL('timeout()'),
+                     self._slot_timeout)
 
         self._running = False
-        self._duration = None # duration as given to start()
-        self._remaining = None # what's pending, considering pauses()
-        self._start_time = None # time we last _started()
+        self._duration = None  # Duration as given to start().
+        self._remaining = None  # What's pending, considering pauses().
+        self._start_time = None  # Time we last _started().
         self._single_shot = False
 
     ##
@@ -372,14 +388,15 @@ class ThreadedWorker(QtCore.QThread):
     def __init__(self, function):
         """Create a worker.
 
-        :param function: The function to invoke on each item.
+        Args:
+          function: The function to invoke on each item.
         """
         QtCore.QThread.__init__(self)
 
         self._done = []
         self._queue = []
-        self._mutex = QtCore.QMutex() # for _queue
-        self._mutex2 = QtCore.QMutex() # for _done
+        self._mutex = QtCore.QMutex()  # For _queue.
+        self._mutex2 = QtCore.QMutex()  # For _done.
         self._pending = QtCore.QWaitCondition()
 
         self.function = function
@@ -436,7 +453,7 @@ class ThreadedWorker(QtCore.QThread):
                         # was not cleared in the meantime).
                         item = self._queue[0]
                     except IndexError:
-                        self._pending.wait(self._mutex) # unlocks and re-locks
+                        self._pending.wait(self._mutex)  # Unlocks and re-locks.
                     else:
                         break
             finally:
@@ -467,10 +484,10 @@ class SearchLineWithReturnKey(kdeui.KTreeWidgetSearchLine):
     """A search line that doesn't forward Return key to its QTreeWidget."""
 
     def event(self, event):
-        # Do not let KTreeWidgetSearchLine eat our return key
+        # Do not let KTreeWidgetSearchLine eat our Return key.
         if (event.type() == QtCore.QEvent.KeyPress
-                and (event.key() == QtCore.Qt.Key_Enter
-                    or event.key() == QtCore.Qt.Key_Return)):
+            and (event.key() == QtCore.Qt.Key_Enter
+                 or event.key() == QtCore.Qt.Key_Return)):
             return kdeui.KLineEdit.event(self, event)
         else:
             return kdeui.KTreeWidgetSearchLine.event(self, event)
@@ -484,7 +501,7 @@ class DelayedLineEdit(kdeui.KLineEdit):
     has passed since the last key press from the user.
     """
 
-    DELAY = 400 # ms
+    DELAY = 400  # In ms.
     SIGNAL = QtCore.SIGNAL('delayed_text_changed')
 
     def __init__(self, parent=None):
@@ -492,8 +509,9 @@ class DelayedLineEdit(kdeui.KLineEdit):
         self._queued_signals = 0
         self.setClearButtonShown(True)
 
-        self.connect(self, QtCore.SIGNAL('textChanged(const QString &)'),
-                self._queue_signal)
+        self.connect(self,
+                     QtCore.SIGNAL('textChanged(const QString &)'),
+                     self._queue_signal)
 
     def _queue_signal(self, text):
         self._queued_signals += 1

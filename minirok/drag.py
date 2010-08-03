@@ -1,17 +1,20 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import os
 import stat
 
 from PyKDE4 import kdecore
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtCore, QtGui
 
-import minirok
-from minirok import util
+from minirok import (
+    util,
+)
 
 ##
 
@@ -39,7 +42,7 @@ class FileListDrag(QtGui.QDrag):
             height = metrics.height()
             ascent = metrics.ascent()
 
-            self.pixmap = QtGui.QPixmap(width+4, height) # self needed
+            self.pixmap = QtGui.QPixmap(width+4, height)  # "self" needed here.
             self.pixmap.fill(parent, 0, 0)
             painter = QtGui.QPainter(self.pixmap)
             painter.drawText(2, ascent+1, text)

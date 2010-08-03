@@ -1,16 +1,20 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import re
 
 from PyKDE4 import kdeui
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtCore, QtGui
 
-import minirok
-from minirok import scrobble, util
+from minirok import (
+    scrobble,
+    util,
+)
 try:
     from minirok.ui import options1
 except ImportError:
@@ -26,7 +30,8 @@ class Preferences(kdeui.KConfigSkeleton):
         self.setCurrentGroup('Playlist')
         self._tag_regex_value = QtCore.QString()
         self._tags_from_regex = self.addItemBool('TagsFromRegex', False, False)
-        self._tag_regex = self.addItemString('TagRegex', self._tag_regex_value, '')
+        self._tag_regex = self.addItemString('TagRegex',
+                                             self._tag_regex_value, '')
         self._tag_regex_mode = self.addItemInt('TagRegexMode', 0, 0)
 
         self.lastfm = LastfmPreferences(self)
@@ -43,9 +48,9 @@ class Preferences(kdeui.KConfigSkeleton):
     @property
     def tag_regex_mode(self):
         _dict = {
-                0: 'Always',
-                1: 'OnRegexFail',
-                2: 'Never',
+            0: 'Always',
+            1: 'OnRegexFail',
+            2: 'Never',
         }
         key = self._tag_regex_mode.value()
 
@@ -53,7 +58,7 @@ class Preferences(kdeui.KConfigSkeleton):
             return _dict[key]
         except KeyError:
             minirok.logger.error('invalid value for TagRegexMode: %s',
-                    self._tag_regex_mode.property().toString())
+                                 self._tag_regex_mode.property().toString())
             return _dict[0]
 
 ##
@@ -120,10 +125,10 @@ class Dialog(kdeui.KConfigDialog):
     ##
 
     def slotButtonClicked(self, button):
-        if (button in (kdeui.KDialog.Ok, kdeui.KDialog.Apply)
-                and not hasattr(options1.Ui_Page, 'NO_UI')
-                and not self.check_valid_regex()):
-            pass # Don't let the button close the dialog.
+        if (button in [kdeui.KDialog.Ok, kdeui.KDialog.Apply]
+            and not hasattr(options1.Ui_Page, 'NO_UI')
+            and not self.check_valid_regex()):
+            pass  # Don't let the button close the dialog.
         else:
             kdeui.KConfigDialog.slotButtonClicked(self, button)
 
@@ -140,15 +145,17 @@ class GeneralPage(QtGui.QWidget, options1.Ui_Page):
 
         self.kcfg_LastfmServer.addItems(scrobble.Server.get_all_values())
 
-        self.connect(self.kcfg_TagsFromRegex, QtCore.SIGNAL('toggled(bool)'),
-                self.slot_tags_from_regex_toggled)
+        self.connect(self.kcfg_TagsFromRegex,
+                     QtCore.SIGNAL('toggled(bool)'),
+                     self.slot_tags_from_regex_toggled)
 
-        self.connect(self.kcfg_EnableLastfm, QtCore.SIGNAL('toggled(bool)'),
-                self.slot_enable_lastfm_toggled)
+        self.connect(self.kcfg_EnableLastfm,
+                     QtCore.SIGNAL('toggled(bool)'),
+                     self.slot_enable_lastfm_toggled)
 
         self.connect(self.kcfg_LastfmServer,
-                QtCore.SIGNAL('currentIndexChanged(const QString &)'),
-                self.slot_lastfm_server_changed)
+                     QtCore.SIGNAL('currentIndexChanged(const QString &)'),
+                     self.slot_lastfm_server_changed)
 
         self.slot_enable_lastfm_toggled(preferences.lastfm.enable)
         self.slot_tags_from_regex_toggled(preferences.tags_from_regex)

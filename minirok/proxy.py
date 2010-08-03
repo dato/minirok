@@ -1,14 +1,18 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import re
 
 from PyQt4 import QtGui
 
-from minirok import util
+from minirok import (
+    util,
+)
 
 ##
 
@@ -36,8 +40,8 @@ class Model(QtGui.QSortFilterProxyModel):
         if pystring:
             if pystring != self.pattern:
                 self.pattern = pystring
-                self.regexes = [ re.compile(re.escape(pat), re.I | re.U)
-                                               for pat in pystring.split() ]
+                self.regexes = [re.compile(re.escape(pat), re.I | re.U)
+                                for pat in pystring.split()]
         else:
             self.pattern = None
 
@@ -53,7 +57,7 @@ class Model(QtGui.QSortFilterProxyModel):
 
             c = self.filterKeyColumn()
             if c >= 0:
-                columns = [ c ]
+                columns = [c]
             else:
                 columns = range(model.columnCount(parent))
 
@@ -78,7 +82,8 @@ def _map(method):
     return wrapper
 
 def _map_many(method):
-    """Decorator to invoke a method in sourceModel(), mapping a list of indexes."""
+    """Decorator to invoke a method in sourceModel(), mapping a list of indexes.
+    """
     def wrapper(self, indexes):
         indexes = map(self.mapToSource, indexes)
         return getattr(self.sourceModel(), method.func_name)(indexes)
@@ -119,9 +124,11 @@ class Line(util.DelayedLineEdit):
         self._model = None
         util.DelayedLineEdit.__init__(self, parent)
 
-        self.connect(self, self.SIGNAL,
-                lambda text: self._model.setPattern(text))
+        self.connect(self,
+                     self.SIGNAL,
+                     lambda text: self._model.setPattern(text))
 
     def setProxyModel(self, model):
-        assert isinstance(model, Model), 'proxy.Line only works with proxy.Model'
+        assert isinstance(model, Model), \
+            'proxy.Line only works with proxy.Model'
         self._model = model

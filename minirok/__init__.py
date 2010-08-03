@@ -1,13 +1,13 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import logging
 import os
 import re
 import sys
-import logging
 
 ##
 
@@ -23,17 +23,20 @@ __copyright__   = 'Copyright (c) 2007-2009 Adeodato Simó'
 __homepage__    = 'http://chistera.yi.org/~dato/code/minirok'
 __bts__         = 'http://bugs.debian.org'
 __authors__     = [
-        ('Adeodato Simó', '', 'dato@net.com.org.es'),
+    ('Adeodato Simó', '', 'dato@net.com.org.es'),
 ]
 __thanksto__    = [
-        # ('Name', 'Task', 'Email', 'Webpage'),
-        ('The Amarok developers', 'For their design and ideas, which I copied.\n'
-         'And their code, which I frequently also copied.', '', 'http://amarok.kde.org'),
-        ('Pino Toscano', 'For saving me from KConfigDialogManager + QButtonGroup misery.',
-         'pino@kde.org', ''),
+    # ('Name', 'Task', 'Email', 'Webpage'),
+    ('The Amarok developers',
+     'For their design and ideas, which I copied.\n'
+     'And their code, which I frequently copied in the early days.',
+     '', 'http://amarok.kde.org'),
+    ('Pino Toscano',
+     'For saving me from KConfigDialogManager + QButtonGroup misery.',
+     'pino@kde.org', ''),
 ]
 
-__license__ = '''\
+__license__ = """\
 Minirok is Copyright (c) 2007-2009 Adeodato Simó, and licensed under the
 terms of the MIT license:
 
@@ -54,7 +57,7 @@ terms of the MIT license:
   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'''
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 ##
 
@@ -93,8 +96,8 @@ _not_found = []
 
 try:
     from PyQt4 import (
+        QtCore,  # This one is used below.
         QtGui,
-        QtCore, # used below
     )
 except ImportError:
     _do_exit = True
@@ -102,9 +105,9 @@ except ImportError:
 
 try:
     from PyKDE4 import (
-        kio,
-        kdeui, # used below
         kdecore,
+        kdeui,  # Used below.
+        kio,
     )
 except ImportError, e:
     _do_exit = True
@@ -117,7 +120,7 @@ except ImportError:
     _not_found.append('Mutagen')
 
 try:
-    # Do not import gst instead of pygst here, or gst will eat our --help
+    # Do not import gst instead of pygst here, or gst will eat our --help.
     import pygst
     pygst.require('0.10')
 except ImportError:
@@ -182,10 +185,10 @@ class Globals(object):
     """
 
     __slots__ = [
-            'engine',
-            'playlist',
-            'preferences',
-            'action_collection',
+        'action_collection',
+        'engine',
+        'playlist',
+        'preferences',
     ]
 
 Globals = Globals()

@@ -1,16 +1,20 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import os
 
-from PyQt4 import QtGui, QtCore
-from PyKDE4 import kio, kdeui, kdecore
+from PyKDE4 import kdecore, kdeui, kio
+from PyQt4 import QtCore, QtGui
 
-import minirok
-from minirok import tree_view, util
+from minirok import (
+    tree_view,
+    util,
+)
 
 ##
 
@@ -47,35 +51,41 @@ class LeftSide(QtGui.QWidget):
         self.combo_toolbar.addWidget(self.path_combo)
         self.combo_toolbar.setIconDimensions(16)
         self.combo_toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
-        # self.combo_toolbar.setItemAutoSized(0) # XXX-KDE4 should be stretchabe or however it's called
+        # XXX-KDE4: This should be "stretchabe" or however it's called.
+        # self.combo_toolbar.setItemAutoSized(0)
 
-        self.action_refresh = util.create_action('action_refresh_tree_view',
-                'Refresh tree view', self.tree_view.slot_refresh, 'view-refresh', 'F5')
+        self.action_refresh = util.create_action(
+            'action_refresh_tree_view', 'Refresh tree view',
+            self.tree_view.slot_refresh, 'view-refresh', 'F5')
         self.combo_toolbar.addAction(self.action_refresh)
 
-        self.action_focus_path_combo = util.create_action('action_path_combo_focus',
-                'Focus path combobox', self.path_combo.slot_focus, shortcut='Alt+O')
+        self.action_focus_path_combo = util.create_action(
+            'action_path_combo_focus', 'Focus path combobox',
+            self.path_combo.slot_focus, shortcut='Alt+O')
 
         ##
 
         self.search_widget.searchLine().setTreeWidget(self.tree_view)
 
-        self.connect(self.tree_view, QtCore.SIGNAL('scan_in_progress'),
-                self.slot_tree_view_does_scan)
+        self.connect(self.tree_view,
+                     QtCore.SIGNAL('scan_in_progress'),
+                     self.slot_tree_view_does_scan)
 
-        self.connect(self.search_button, QtCore.SIGNAL('clicked(bool)'),
-                self.slot_do_button)
-
-        self.connect(self.search_widget.searchLine(),
-                QtCore.SIGNAL('search_finished'),
-                self.tree_view.slot_search_finished)
+        self.connect(self.search_button,
+                     QtCore.SIGNAL('clicked(bool)'),
+                     self.slot_do_button)
 
         self.connect(self.search_widget.searchLine(),
-                QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.tree_view.slot_append_visible)
+                     QtCore.SIGNAL('search_finished'),
+                     self.tree_view.slot_search_finished)
 
-        self.connect(self.path_combo, QtCore.SIGNAL('new_directory_selected'),
-                self.tree_view.slot_show_directory)
+        self.connect(self.search_widget.searchLine(),
+                     QtCore.SIGNAL('returnPressed(const QString &)'),
+                     self.tree_view.slot_append_visible)
+
+        self.connect(self.path_combo,
+                     QtCore.SIGNAL('new_directory_selected'),
+                     self.tree_view.slot_show_directory)
 
         ##
 
@@ -87,7 +97,7 @@ class LeftSide(QtGui.QWidget):
             text = 'Enter a directory here'
             width = self.path_combo.fontMetrics().width(text)
             self.path_combo.setEditText(text)
-            self.path_combo.setMinimumWidth(width + 30) # add pixels for arrow
+            self.path_combo.setMinimumWidth(width + 30)  # Add pixels for arrow.
 
     ##
 
@@ -99,7 +109,8 @@ class LeftSide(QtGui.QWidget):
         self.button_action = self.tree_view.recurse and 'Stop scan' or 'Enable'
         self.search_button.setText(self.button_action)
         if scanning:
-            self.search_widget.setToolTip('Search disabled while reading directory contents')
+            self.search_widget.setToolTip(
+                'Search disabled while reading directory contents')
         else:
             self.search_widget.setToolTip('')
 
@@ -121,21 +132,26 @@ class MyComboBox(kio.KUrlComboBox):
     CONFIG_HISTORY_OPTION = 'History'
 
     def __init__(self, parent):
-        kio.KUrlComboBox.__init__(self, kio.KUrlComboBox.Directories, True, parent)
+        kio.KUrlComboBox.__init__(
+            self, kio.KUrlComboBox.Directories, True, parent)
         util.CallbackRegistry.register_save_config(self.save_config)
 
-        self.completion_object = kio.KUrlCompletion(kio.KUrlCompletion.DirCompletion)
+        self.completion_object = kio.KUrlCompletion(
+            kio.KUrlCompletion.DirCompletion)
         self.setCompletionObject(self.completion_object)
 
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-        urls = config.readPathEntry(self.CONFIG_HISTORY_OPTION, QtCore.QStringList())
+        urls = config.readPathEntry(self.CONFIG_HISTORY_OPTION,
+                                    QtCore.QStringList())
         self.setUrls(urls)
 
-        self.connect(self, QtCore.SIGNAL('urlActivated(const KUrl &)'),
-                self.slot_set_url)
+        self.connect(self,
+                     QtCore.SIGNAL('urlActivated(const KUrl &)'),
+                     self.slot_set_url)
 
-        self.connect(self, QtCore.SIGNAL('returnPressed(const QString &)'),
-                self.slot_set_url)
+        self.connect(self,
+                     QtCore.SIGNAL('returnPressed(const QString &)'),
+                     self.slot_set_url)
 
     def slot_focus(self):
         self.setFocus()
@@ -143,7 +159,7 @@ class MyComboBox(kio.KUrlComboBox):
 
     def slot_set_url(self, url):
         if isinstance(url, kdecore.KUrl):
-            # We can only store QStrings
+            # We can only store QStrings.
             url = url.pathOrUrl()
 
         directory = os.path.expanduser(util.kurl_to_path(url))

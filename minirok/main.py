@@ -1,15 +1,16 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
-import sys
-import errno
 import minirok
 
+import errno
+import sys
+
+from PyKDE4 import kdecore, kdeui
 from PyQt4 import QtGui
-from PyKDE4 import kdeui, kdecore
 
 ##
 
@@ -18,22 +19,23 @@ def main():
     emptyloc = kdecore.KLocalizedString()
 
     about_data = kdecore.KAboutData(
-            minirok.__appname__,
-            "", # catalog name
-            _(minirok.__progname__),
-            minirok.__version__,
-            _(minirok.__description__),
-            kdecore.KAboutData.License_Custom,
-            _(minirok.__copyright__),
-            emptyloc, # extra text
-            minirok.__homepage__,
-            minirok.__bts__)
+        minirok.__appname__,
+        "", # catalog name
+        _(minirok.__progname__),
+        minirok.__version__,
+        _(minirok.__description__),
+        kdecore.KAboutData.License_Custom,
+        _(minirok.__copyright__),
+        emptyloc, # extra text
+        minirok.__homepage__,
+        minirok.__bts__)
 
     about_data.setLicenseText(_(minirok.__license__))
-    about_data.setCustomAuthorText(emptyloc,
-            _('Please report bugs to <a href="%s">%s</a>.<br>'
-            'See README.Bugs for instructions.' %
-             (minirok.__bts__, minirok.__bts__)))
+    about_data.setCustomAuthorText(
+        emptyloc,
+        _('Please report bugs to <a href="%s">%s</a>.<br>'
+          'See README.Bugs for instructions.' % (
+              minirok.__bts__, minirok.__bts__)))
 
     for name, task, email in minirok.__authors__:
         about_data.addAuthor(_(name), _(task), email)
@@ -43,7 +45,8 @@ def main():
 
     options = kdecore.KCmdLineOptions()
     options.add('a')
-    options.add('append', _('Try to append files to an existing Minirok instance'))
+    options.add('append',
+                _('Try to append files to an existing Minirok instance'))
     options.add('+[files]', _('Files to load into the playlist'))
 
     kdecore.KCmdLineArgs.init(sys.argv, about_data)
@@ -90,7 +93,7 @@ def main():
     ##
 
     if main_window.canBeRestored(1):
-        main_window.restore(1, False) # False: do not force show()
+        main_window.restore(1, False)  # False: do not force show().
     else:
         main_window.show()
 
@@ -99,10 +102,10 @@ def main():
 ##
 
 def append_to_remote_minirok_successful(files):
-    # TODO Rewrite this function using the dbus module?
+    # TODO: Rewrite this function using the dbus module?
 
     from subprocess import Popen, PIPE
-    cmdline = [ 'qdbus', 'org.kde.minirok' ]
+    cmdline = ['qdbus', 'org.kde.minirok']
 
     try:
         p = Popen(cmdline, stdout=PIPE, stderr=PIPE)
@@ -116,9 +119,10 @@ def append_to_remote_minirok_successful(files):
         status = p.wait()
         if status != 0:
             minirok.logger.warn(
-                    'could not contact with an existing Minirok instance')
+                'could not contact with an existing Minirok instance')
             return False
         else:
-            cmdline.extend(['/Player',
-                'org.kde.minirok.AppendToPlaylist', '('] + files + [')'])
+            cmdline.extend(
+                ['/Player', 'org.kde.minirok.AppendToPlaylist', '('] +
+                files + [')'])
             return not Popen(cmdline, stdout=PIPE).wait()

@@ -1,16 +1,23 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2009 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
+
+import minirok
 
 import os
 
-from PyQt4 import QtGui, QtCore
-from PyKDE4 import kio, kdeui, kdecore
+from PyKDE4 import kdecore, kdeui, kio
+from PyQt4 import QtCore, QtGui
 
-import minirok
-from minirok import left_side, preferences, right_side, statusbar, util
+from minirok import (
+    left_side,
+    preferences,
+    right_side,
+    statusbar,
+    util,
+)
 
 ##
 
@@ -43,8 +50,9 @@ class MainWindow(kdeui.KXmlGuiWindow):
 
         # Restore splitter state
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-        sstate = config.readEntry(self.CONFIG_OPTION_SPLITTER_STATE,
-                                  QtCore.QVariant(QtCore.QByteArray())).toByteArray()
+        sstate = config.readEntry(
+            self.CONFIG_OPTION_SPLITTER_STATE,
+            QtCore.QVariant(QtCore.QByteArray())).toByteArray()
         if not sstate.isEmpty():
             self.main_view.restoreState(sstate)
 
@@ -53,12 +61,13 @@ class MainWindow(kdeui.KXmlGuiWindow):
 
         self.setHelpMenuEnabled(False)
         self.setCentralWidget(self.main_view)
-        # self.setAutoSaveSettings() # XXX-KDE4 I don't think this is needed anymore: Check
+        # XXX-KDE4: I don't think this is needed anymore: check.
+        # self.setAutoSaveSettings()
 
         setupGUI_args = [
-                QtCore.QSize(900, 540),
-                self.StandardWindowOption( # Skip StatusBar
-                    self.ToolBar | self.Keys | self.Save | self.Create)
+            QtCore.QSize(900, 540),
+            self.StandardWindowOption(self.ToolBar | self.Create |
+                                      self.Save | self.Keys)  # Skip StatusBar.
         ]
 
         # If a minirokui.rc file exists in the standard location, do
@@ -81,30 +90,33 @@ class MainWindow(kdeui.KXmlGuiWindow):
     def init_actions(self):
         actionCollection = self.actionCollection()
 
-        # File menu
-        self.action_open_directory = util.create_action('action_open_directory',
-                'Open directory...', self.slot_open_directory, 'document-open-folder', 'Ctrl+F')
+        # File menu.
+        self.action_open_directory = util.create_action(
+            'action_open_directory', 'Open directory...',
+            self.slot_open_directory, 'document-open-folder', 'Ctrl+F')
 
         self.action_quit = kdeui.KStandardAction.quit(self.slot_really_quit,
-                actionCollection)
+                                                      actionCollection)
 
-        # Help menu
+        # Help menu.
         self.action_about = kdeui.KStandardAction.aboutApp(
-                kdeui.KAboutApplicationDialog(None, self).show, actionCollection)
+            kdeui.KAboutApplicationDialog(None, self).show, actionCollection)
         self.action_about.setShortcutConfigurable(False)
 
-        # Other
-        self.action_toggle_window = util.create_action('action_toggle_window',
-                'Show/Hide window', self.systray.toggleActive, global_shortcut='Ctrl+Alt+M')
+        # Other.
+        self.action_toggle_window = util.create_action(
+            'action_toggle_window', 'Show/Hide window',
+            self.systray.toggleActive, global_shortcut='Ctrl+Alt+M')
 
         self.action_preferences = kdeui.KStandardAction.preferences(
-                self.slot_preferences, actionCollection)
+            self.slot_preferences, actionCollection)
         self.action_preferences.setShortcutConfigurable(False)
 
     def init_systray(self):
         self.systray = Systray(self)
-        self.systray.connect(self.systray, QtCore.SIGNAL('quitSelected()'),
-            self.slot_really_quit)
+        self.systray.connect(self.systray,
+                             QtCore.SIGNAL('quitSelected()'),
+                             self.slot_really_quit)
         self.systray.show()
 
     ##
@@ -132,22 +144,23 @@ class MainWindow(kdeui.KXmlGuiWindow):
             return
         else:
             dialog = preferences.Dialog(self, 'preferences dialog',
-                minirok.Globals.preferences)
+                                        minirok.Globals.preferences)
             self.connect(dialog,
-                    QtCore.SIGNAL('settingsChanged(const QString &)'),
-                    util.CallbackRegistry.apply_preferences_all)
+                         QtCore.SIGNAL('settingsChanged(const QString &)'),
+                         util.CallbackRegistry.apply_preferences_all)
             dialog.show()
 
     def save_config(self):
         config = kdecore.KGlobal.config().group(self.CONFIG_SECTION)
-        config.writeEntry(self.CONFIG_OPTION_SPLITTER_STATE, self.main_view.saveState())
+        config.writeEntry(self.CONFIG_OPTION_SPLITTER_STATE,
+                          self.main_view.saveState())
 
     ##
 
     def queryClose(self):
         finishing_session = kdeui.KApplication.kApplication().sessionSaving()
         if not finishing_session:
-            # We want to save the shown/hidden status on session quit
+            # We want to save the shown/hidden status on session quit.
             self.hide()
         return self._flag_really_quit or finishing_session
 
@@ -174,19 +187,21 @@ class Systray(kdeui.KSystemTrayIcon):
         self.setIcon(self.loadIcon('minirok'))
         self.installEventFilter(self)
 
-        self.connect(self,
-                QtCore.SIGNAL('activated(QSystemTrayIcon::ActivationReason)'),
-                self.slot_activated)
+        self.connect(
+            self,
+            QtCore.SIGNAL('activated(QSystemTrayIcon::ActivationReason)'),
+            self.slot_activated)
 
     def slot_activated(self, reason):
         # NB: Filtering for middle button clicks in eventFilter() below does
         # not seem to work.
         if reason == QtGui.QSystemTrayIcon.MiddleClick:
-            minirok.Globals.action_collection.action('action_play_pause').trigger()
+            (minirok.Globals.action_collection.action('action_play_pause')
+             .trigger())
 
     def eventFilter(self, object_, event):
         if (object_ == self
-                and event.type() == QtCore.QEvent.ToolTip):
+            and event.type() == QtCore.QEvent.ToolTip):
             tags = minirok.Globals.playlist.get_current_tags()
             if tags:
                 title = tags.get('Title') or ''

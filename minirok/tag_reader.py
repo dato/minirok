@@ -1,16 +1,19 @@
 #! /usr/bin/env python
 ## vim: fileencoding=utf-8
 #
-# Copyright (c) 2007-2008 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2008, 2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import minirok
+
 import mutagen
+import mutagen.easyid3
 import mutagen.id3
 import mutagen.mp3
-import mutagen.easyid3
 
-import minirok
-from minirok import util
+from minirok import (
+    util,
+)
 
 ##
 
@@ -27,7 +30,7 @@ class TagReader(util.ThreadedWorker):
         """Return a dict with the tags read from the given path.
 
         Tags that will be read: Track, Artist, Album, Title, Length. Any of
-        these may be not present in the returned dict.
+        these may be missing in the returned dict.
         """
         try:
             info = mutagen.File(path)
@@ -42,12 +45,12 @@ class TagReader(util.ThreadedWorker):
                     info = mutagen.easyid3.EasyID3()
                 info.info = dot_info
             elif info is None:
-                raise Exception, 'mutagen.File() returned None'
+                minirok.logger.warning(
+                    'could not read tags from %s: mutagen.File() returned None',
+                    path)
+                return {}
         except Exception, e:
-            # Er, note that not only the above raise is catched here, since
-            # mutagen.File() can raise exceptios as well. Wasn't obvious when I
-            # revisited this code.
-            if path in str(e): # mutagen normally includes the path itself
+            if path in str(e):  # Mutagen included the path in the exception.
                 msg = 'could not read tags: %s' % e
             else:
                 msg = 'could not read tags from %s: %s' % (path, e)
@@ -56,7 +59,7 @@ class TagReader(util.ThreadedWorker):
 
         tags = {}
 
-        for column in [ 'Track', 'Artist', 'Album', 'Title' ]:
+        for column in ['Track', 'Artist', 'Album', 'Title']:
             if column == 'Track':
                 tag = 'tracknumber'
             else:
@@ -67,8 +70,7 @@ class TagReader(util.ThreadedWorker):
             except ValueError:
                 minirok.logger.warn('invalid tag %r for %s', tag, type(info))
             except KeyError:
-                # tag is not present
-                pass
+                pass  # Tag is not present in the file.
 
         try:
             tags['Length'] = int(info.info.length)
