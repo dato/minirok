@@ -20,7 +20,7 @@ __progname__    = 'Minirok'
 __version__     = '2.2~dev'
 __description__ = 'A small music player written in Python'
 __copyright__   = 'Copyright (c) 2007-2009 Adeodato Simó'
-__homepage__    = 'http://chistera.yi.org/~adeodato/code/minirok'
+__homepage__    = 'http://chistera.yi.org/~dato/code/minirok'
 __bts__         = 'http://bugs.debian.org'
 __authors__     = [
         ('Adeodato Simó', '', 'dato@net.com.org.es'),

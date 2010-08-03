@@ -80,7 +80,7 @@ since it'll take care of installing everything necessary. For Debian and
 derivatives, you should be able to install directly with apt-get, and
 you can check if there's a more recent version here:
 
-    http://chistera.yi.org/~adeodato/code/minirok/packages
+    http://chistera.yi.org/~dato/code/minirok/packages
 
 For installing from source, here's a list of the *required* libraries
 for the program to run:
