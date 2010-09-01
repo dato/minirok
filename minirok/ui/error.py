@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-## vim: fileencoding=utf-8
+## Hey, Python: encoding=utf-8
 #
 # Copyright (c) 2008 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
