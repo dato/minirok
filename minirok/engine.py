@@ -29,6 +29,7 @@ class GStreamerEngine(QtCore.QObject):
     SINK = 'alsasink'
 
     PLUGINS = {
+        'faad': ['.m4a'],
         'flac': ['.flac'],
         'mad': ['.mp3'],
         'musepack': ['.mpc', '.mp+'],
