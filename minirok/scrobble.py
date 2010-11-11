@@ -175,13 +175,26 @@ class HandshakeFatalError(Exception):
 ##
 
 class Request(object):
+    """A request class, doing some error parsing.
+
+    Creating a Request object will immediately perform the request against the
+    specified URL. If it failed, the "failed" attribute will be True, and
+    "error" will contain any descriptive error message that could be obtained.
+
+    Error conditions include:
+
+      - socket.error
+      - HTTP errors (status codes other than 200)
+      - empty response from the server
+      - first word of the response not being "OK"
+    """
     def __init__(self, url, params):
         self.body = []
         self.error = None
         self.failed = False
 
         url = urlparse.urlparse(url)
-        conn = httplib.HTTPConnection(url.netloc)
+        conn = httplib.HTTPConnection(url.netloc)  # Includes host and port.
         try:
             conn.request(
                 'POST', url.path, urllib.urlencode(params),
@@ -198,7 +211,7 @@ class Request(object):
             else:
                 self.body = resp.read().rstrip('\n').split('\n')
 
-                if not self.body:
+                if not any(self.body):
                     self.failed = True
                     self.error = 'no response received from server'
                 elif self.body[0].split()[0] != 'OK':
@@ -207,6 +220,17 @@ class Request(object):
 
 
 class HandshakeRequest(Request):
+    """A class to perform the handshake, detecting fatal error.
+
+    In addition to all the possible failures in the part class, this subclass:
+
+      - raises HandshakeFatalError() if the response from the server starts with
+        the words BANNED or BADTIME. These are failure modes that cannot be
+        fixed without user intervention.
+
+      - sets "failed" to true if the response from the server is not exactly 4
+        lines long ("OK", session_key, scrobble_url, now_playing_url).
+    """
     def __init__(self, url, params):
         super(HandshakeRequest, self).__init__(url, params)
 
@@ -495,7 +519,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             ##
 
             while self.scrobble_queue:
-                params = { 's': self.session_key }
+                params = {'s': self.session_key}
 
                 with self.mutex:
                     tracks = self.scrobble_queue[0:MAX_TRACKS_AT_ONCE]
@@ -534,7 +558,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             ##
 
             if current_track is not None and self.session_key is not None:
-                params = { 's': self.session_key }
+                params = {'s': self.session_key}
                 params.update(current_track.get_now_playing_params())
 
                 req = Request(self.now_playing_url, params)

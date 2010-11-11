@@ -140,3 +140,186 @@ class SubmissionClassTest(tests.BaseTest):
 
         self.assertIsNone(scrobble.Submission.deserialize(
             '{"m": "", "r": "", "o": "", "l": "", "i": "", "n": ""}'))
+
+##
+
+class RequestClassTest(tests.BaseTest):
+
+    CONTENT_TYPE = {'Content-Type': 'application/x-www-form-urlencoded'}
+
+    def setUp(self):
+        super(RequestClassTest, self).setUp()
+        self.mox.StubOutClassWithMocks(scrobble.httplib, 'HTTPConnection')
+
+    def testPortInUrlAndPathHonored(self):
+        conn = scrobble.httplib.HTTPConnection('dev.example.org:8080')
+        (conn.request('POST', '/submit.cgi', '', self.CONTENT_TYPE).
+         AndRaise(self.TerminateEarly()))
+
+        self.mox.ReplayAll()
+        self.assertRaises(self.TerminateEarly, scrobble.Request,
+                          'http://dev.example.org:8080/submit.cgi', {})
+        self.mox.VerifyAll()
+
+    def testUrlParamsProperlyEncodedAndPassed(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        # This may be flaky, is it relying in dict keys order below?
+        (conn.request('POST', '', 'a=1+2%2F3&b=0', self.CONTENT_TYPE).
+         AndRaise(self.TerminateEarly()))
+
+        self.mox.ReplayAll()
+        self.assertRaises(self.TerminateEarly, scrobble.Request,
+                          'http://example.org', {'a': '1 2/3', 'b': 0})
+        self.mox.VerifyAll()
+
+    def testSocketErrorResultsInFailure(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        (conn.request('POST', '/', '', self.CONTENT_TYPE).
+         AndRaise(scrobble.socket.error(1, 'foo')))
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertEqual('foo', req.error)
+        self.mox.VerifyAll()
+
+    def testHttpErrorResultsInFailure(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.NOT_FOUND
+        response.reason = 'we could not find what you requested!'
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertEqual('we could not find what you requested!', req.error)
+        self.mox.VerifyAll()
+
+    def testEmptyBodyResultsInFailure(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn('')
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertEqual('no response received from server', req.error)
+        self.mox.VerifyAll()
+
+    def testOkInAnswerResultsInSuccess(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn(
+            'OK Submission processed successfully\nBYE')
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertFalse(req.failed)
+        self.assertEqual(['OK Submission processed successfully', 'BYE'],
+                         req.body)
+        self.mox.VerifyAll()
+
+    def testOnlyOkInAnswerResultsInSuccess(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn('OK')
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertFalse(req.failed)
+        self.assertEqual(['OK'], req.body)
+        self.mox.VerifyAll()
+
+    def testAnythingElseResultsInFailure(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn("FAILED We don't like you")
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertEqual(["FAILED We don't like you"], req.body)
+        self.assertEqual("We don't like you", req.error)
+        self.mox.VerifyAll()
+
+##
+
+class HandshakeRequestClassTest(RequestClassTest):
+
+    def setUp(self):
+        super(HandshakeRequestClassTest, self).setUp()
+
+        # We play nasty here, and we re-execute all tests in RequestClassTest
+        # against HandshakeRequest, since more of their semantics are shared and
+        # we want to ensure the subclassing has been done properly. Only the two
+        # tests noted below are skipped.
+        self.stubs.Set(scrobble, 'Request', scrobble.HandshakeRequest)
+
+    def testOkInAnswerResultsInSuccess(self):
+        """Do not inherit this test from base class."""
+        pass
+
+    def testOnlyOkInAnswerResultsInSuccess(self):
+        """Do not inherit this test from base class."""
+        pass
+
+    def testBannedInResponseResultsInFatalError(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn("BANNED We really don't like you")
+
+        self.mox.ReplayAll()
+        self.assertRaisesRegexp(
+            scrobble.HandshakeFatalError, r"BANNED We really don't like you",
+            scrobble.Request, 'http://example.org/', {})
+        self.mox.VerifyAll()
+
+    def testBadtimeInResponseResultsInFatalError(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn('BADTIME')
+
+        self.mox.ReplayAll()
+        self.assertRaisesRegexp(
+            scrobble.HandshakeFatalError, 'BADTIME',
+            scrobble.Request, 'http://example.org/', {})
+        self.mox.VerifyAll()
+
+    def testWrongNumberOfResponseLinesResultsInFailure(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndReturn("""OK
+                                     your_session_key
+                                     http://your.scrobble.url
+                                     http://your.now-playing.url
+                                     http://your.insidious.extra.url""")
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertRegexpMatches(req.error,
+            '^unexpected response from scrobbler server')
+        self.mox.VerifyAll()
