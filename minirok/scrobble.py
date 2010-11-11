@@ -4,6 +4,11 @@
 # Copyright (c) 2007-2010 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+"""Last.fm scrobbling support.
+
+See <http://www.last.fm/api/submissions>.
+"""
+
 from __future__ import with_statement
 
 import minirok
@@ -89,54 +94,75 @@ class Submission(object):
         Args:
           tag_dict: a dictionary as returned by Playlist.get_current_tags(),
             i.e., containing 'Title', 'Artist', etc.
+
+        Raises:
+          Submission.RequiredDataMissing: if any of Title, Artist, or Length are
+            not present or empty in tag_dict.
+          Submission.TrackTooShort: if tag_dict['Length'] is smaller than
+            scrobble.TRACK_MIN_LENGTH.
         """
-        if not all(tag_dict[x] for x in ['Title', 'Artist', 'Length']):
+        if not all(tag_dict.get(x) for x in ['Title', 'Artist', 'Length']):
             raise self.RequiredDataMissing()
         elif tag_dict['Length'] < TRACK_MIN_LENGTH:
             raise self.TrackTooShort()
 
-        self.path = None
         self.length = tag_dict['Length']
         self.start_time = int(time.time())
 
         self.param = {
-            'm': '',
-            'r': '',
+            'm': '',  # MusicBrainz ID, which we don't support.
+            'r': '',  # User rating (love/ban/skip), which we don't support.
             'o': SOURCE_USER,
             'l': str(self.length),
             'i': str(self.start_time),
-            'n': util.ensure_utf8(tag_dict['Track']),
             't': util.ensure_utf8(tag_dict['Title']),
-            'b': util.ensure_utf8(tag_dict['Album']),
             'a': util.ensure_utf8(tag_dict['Artist']),
+            'b': util.ensure_utf8(tag_dict.get('Album', '')),
+            'n': util.ensure_utf8(tag_dict.get('Track', '')),
         }
 
     def get_params(self, i=0):
+        """Return a dict suitable for a scrobbling submission to Last.fm.
+
+        Args:
+          i: the index to use for this track: m[i], r[i], etc.
+        """
         return dict(('%s[%d]' % (k, i), v) for k, v in self.param.items())
 
     def get_now_playing_params(self):
+        """Return a dict suitable for a "now playing" submission to Last.fm."""
         return dict((k, self.param[k]) for k in list('atblnm'))
 
     def serialize(self):
+        # TODO(dato): update this format to include a version number.
         return json.dumps(self.param, indent=4)
 
     @classmethod
-    def load_from_file(cls, path):
-        with open(path) as f:
-            try:
-                param = json.load(f)
-            except ValueError:
-                return None
-            else:
-                # TODO: could it be possible to get json to give us str objects?
-                param = dict((k, util.ensure_utf8(param[k])) for k in param)
+    def deserialize(cls, string):
+        """Construct a Submission object from a string returned by serialize().
 
-        if set(param.keys()) == set('mrolintba'):
+        Args:
+          string: a string previously returned by serialize(), typically in
+            JSON format.
+
+        Returns:
+          a Submission object mathing the originally serialized object, or None
+          if string could not be parsed as a valid serialization of a
+          Submission object.
+        """
+        try:
+            decoded_json = json.loads(string)
+        except ValueError, e:
+            return None
+        else:
+            decoded_json = dict((k.encode('utf-8'), v.encode('utf-8'))
+                                for k, v in decoded_json.iteritems())
+
+        if set(decoded_json.keys()) == set('mrolintba'):
             obj = cls.__new__(cls)
-            obj.path = path
-            obj.param = param
-            obj.length = int(param['l'])
-            obj.start_time = int(param['i'])
+            obj.param = decoded_json
+            obj.length = int(decoded_json['l'])
+            obj.start_time = int(decoded_json['i'])
             return obj
         else:
             return None
@@ -279,9 +305,10 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         self.now_playing_url = None
 
         self.failure_count = 0
-        self.pause_duration = 1 # minutes
+        self.pause_duration = 1  # minutes
         self.scrobble_queue = []
         self.current_track = None
+        self.track_to_spool_file = {}
 
         self.mutex = threading.Lock()
         self.event = threading.Event()
@@ -343,14 +370,19 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             with open(self.lock_file, 'w') as lock:
                 lock.write(ProcInfo().serialize())
 
-            files = [os.path.join(self.spool, x)
-                     for x in os.listdir(self.spool)]
-            tracks = sorted(
-                [t for t in map(Submission.load_from_file, files)
-                 if t is not None ], key=lambda t: t.start_time)
+            for fname in os.listdir(self.spool):
+                path = os.path.join(self.spool, fname)
+                try:
+                    track = Submission.deserialize(open(path).read())
+                except IOError, e:
+                    minirok.logger.warn(
+                        'could not read spooled track from %r', path)
+                else:
+                    if track is not None:
+                        self.scrobble_queue.append(track)
+                        self.track_to_spool_file[track] = path
 
-            if tracks:
-                self.scrobble_queue.extend(tracks)
+            self.scrobble_queue.sort(key=lambda t: t.start_time)
         else:
             self.lock_file = None
 
@@ -413,7 +445,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                     minirok.logger.warn(
                         'could not create file in scrobbling spool')
                 else:
-                    self.current_track.path = path
+                    self.track_to_spool_file[self.current_track] = path
 
             self.current_track = None
             minirok.logger.debug('track queued for scrobbling')  # XXX.
@@ -488,12 +520,13 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                                          len(tracks))  # XXX.
 
                     for t in tracks:
-                        if t.path is not None:
-                            try:
-                                os.unlink(t.path)
-                            except OSError, e:
-                                if e.errno != errno.ENOENT:
-                                    raise
+                        try:
+                            os.unlink(self.track_to_spool_file.pop(t))
+                        except KeyError:
+                            pass
+                        except OSError, e:
+                            if e.errno != errno.ENOENT:
+                                raise
 
                     with self.mutex:
                         self.scrobble_queue[0:len(tracks)] = []
