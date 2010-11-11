@@ -1,5 +1,8 @@
 *.pyc
 
+/coverage
+/.coverage
+
 /minirok.1
 /minirok/tags
 /minirok/ui/*.py
