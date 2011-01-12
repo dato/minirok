@@ -1,10 +1,14 @@
 #! /usr/bin/env python
 ## Hey, Python: encoding=utf-8
 #
-# Copyright (c) 2010 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2010, 2011 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
+import errno
 import itertools
+import os
+import StringIO
+import subprocess
 import time
 
 from minirok import (
@@ -323,3 +327,70 @@ class HandshakeRequestClassTest(RequestClassTest):
         self.assertRegexpMatches(req.error,
             '^unexpected response from scrobbler server')
         self.mox.VerifyAll()
+
+##
+
+class _ProcInfoCommonTest(tests.BaseTest):
+    """Common tests for ProcInfo tests."""
+
+    def setUp(self):
+        super(_ProcInfoCommonTest, self).setUp()
+        self.proc = subprocess.Popen(['sleep', '3600'])
+
+    def tearDown(self):
+        super(_ProcInfoCommonTest, self).tearDown()
+        try:
+            os.kill(self.proc.pid, 9)
+        except OSError, e:
+            if e.errno != errno.ESRCH:
+                raise
+
+    def testEndToEnd(self):
+        info = scrobble.ProcInfo(self.proc.pid)
+        json = info.serialize()
+        fileobj = StringIO.StringIO(json)
+        newinfo = scrobble.ProcInfo.load_from_fileobj(fileobj)
+
+        self.assertTrue(newinfo.isRunning())
+        self.proc.kill()
+        self.proc.wait()
+        self.assertFalse(newinfo.isRunning())
+
+    def testEndToEndPsutilGoesAway(self):
+        info = scrobble.ProcInfo(self.proc.pid)
+        json = info.serialize()
+        fileobj = StringIO.StringIO(json)
+        self.stubs.Set(scrobble, '_has_psutil', False)
+        newinfo = scrobble.ProcInfo.load_from_fileobj(fileobj)
+
+        self.assertTrue(newinfo.isRunning())
+        self.proc.kill()
+        self.proc.wait()
+        self.assertFalse(newinfo.isRunning())
+
+    def testSamePidDifferentCommandLine(self):
+        info = scrobble.ProcInfo()
+        info.data['pid'] = self.proc.pid
+        self.assertEqual(bool(info.isRunning()), not scrobble._has_psutil)
+
+    def testPidThatDoesNotExist(self):
+        info = scrobble.ProcInfo(0x7fffffff)
+        self.assertFalse(info.isRunning())
+
+    def testDeserializeErrorConditions(self):
+        for json in ['{ "bogus": "yes", ', '{ "version": "1.2" }',
+                     '{ "version": "1.0" }', '{ "version": 1.1", "pid": "1" }']:
+            self.assertIsNone(
+                scrobble.ProcInfo.load_from_fileobj(StringIO.StringIO(json)))
+
+
+class ProcInfoDefaultTest(_ProcInfoCommonTest):
+    """Test ProcInfo with the current value of scrobble._has_psutil."""
+
+
+class ProcessInfoOtherTest(_ProcInfoCommonTest):
+    """Test ProcInfo with the opposite value of scrobble._has_psutil."""
+
+    def setUp(self):
+        super(ProcessInfoOtherTest, self).setUp()
+        self.stubs.Set(scrobble, '_has_psutil', not scrobble._has_psutil)
