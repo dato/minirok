@@ -1,0 +1,32 @@
+Requirements
+============
+
+For running the test suite, the following packages are needed:
+
+  * The nose testing framework
+    Debian and Ubuntu: python-nose
+    Source: http://code.google.com/p/python-nose/
+
+  * The pymox stub/mock utilities (version 0.5.3 required)
+    Debian and Ubuntu: python-mox
+    Source: http://code.google.com/p/pymox/
+
+  * The unittest2 package (or Python >= 2.7)
+    Debian and Ubuntu: N/A
+    Source: http://pypi.python.org/pypi/unittest2
+
+  * For coverage reports, the Python coverage package
+    Debian and Ubuntu: python-coverage
+    Source: http://pypi.python.org/pypi/coverage
+
+And, to increase coverage of scrobble.py, please ensure "psutil" is
+available.
+
+
+Running tests
+=============
+
+Tests are run via the Makefile:
+
+  % make test      # Runs all unit tests
+  % make coverage  # Creates a coverage report in the "coverage" subdirectory
