@@ -388,9 +388,13 @@ class ProcInfoDefaultTest(_ProcInfoCommonTest):
     """Test ProcInfo with the current value of scrobble._has_psutil."""
 
 
-class ProcessInfoOtherTest(_ProcInfoCommonTest):
-    """Test ProcInfo with the opposite value of scrobble._has_psutil."""
+class ProcessInfoNoPsutilTest(_ProcInfoCommonTest):
+    """Test ProcInfo with scrobble._has_psutil set to False."""
 
     def setUp(self):
-        super(ProcessInfoOtherTest, self).setUp()
-        self.stubs.Set(scrobble, '_has_psutil', not scrobble._has_psutil)
+        super(ProcessInfoNoPsutilTest, self).setUp()
+        # We cannot force testing with _has_psutil set to its opposite value,
+        # since that would not work if psutil is in fact not installed. The best
+        # we can do is set it to False, increasing coverage when running the
+        # tests with psutil installed.
+        self.stubs.Set(scrobble, '_has_psutil', False)
