@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 ## Hey, Python: encoding=utf-8
 #
-# Copyright (c) 2007-2010 Adeodato Simó (dato@net.com.org.es)
+# Copyright (c) 2007-2011 Adeodato Simó (dato@net.com.org.es)
 # Licensed under the terms of the MIT license.
 
 """Last.fm scrobbling support.
@@ -337,11 +337,12 @@ class Scrobbler(QtCore.QObject, threading.Thread):
         self.mutex = threading.Lock()
         self.event = threading.Event()
         self.timer = util.QTimerWithPause()
-        self.configured = threading.Condition()
+        self.configured = threading.BoundedSemaphore()
         self.timer.setSingleShot(True)
 
         util.CallbackRegistry.register_apply_prefs(self.apply_preferences)
-        self.apply_preferences()  # Connect signals/slots, read user/passwd.
+        self.apply_preferences()   # Connect signals/slots, read user/passwd.
+        self.configured.acquire()  # Force block if initial config is faulty.
 
         appdata = str(kdecore.KGlobal.dirs().saveLocation('appdata'))
         do_queue = False
@@ -495,8 +496,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
     def run(self):
         if self.user is None:
             # We're not configured to run, so we hang on here.
-            with self.configured:
-                self.configured.wait()
+            self.configured.acquire()
 
         if self.scrobble_queue: # Any tracks loaded from spool?
             with self.mutex:
@@ -603,8 +603,7 @@ class Scrobbler(QtCore.QObject, threading.Thread):
                 if re.search(r'^BADAUTH', req.error):
                     minirok.logger.warn(
                         'scrobbler handshake failed: bad password')
-                    with self.configured:
-                        self.configured.wait()
+                    self.configured.acquire()
                 else:
                     minirok.logger.info(
                         'scrobbler handshake failed (%s), retrying in '
@@ -638,8 +637,10 @@ class Scrobbler(QtCore.QObject, threading.Thread):
             except KeyError:
                 self.handshake_url = prefs.handshake_url
             self.session_key = None
-            with self.configured:
-                self.configured.notify()
+            try:
+                self.configured.release()
+            except ValueError:
+                pass
         else:
             connect_or_disconnect = self.disconnect
 

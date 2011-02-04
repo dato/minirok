@@ -12,6 +12,9 @@ minirok.1: minirok.xml
 	docbook2x-man $<
 
 test:
+	nosetests -a '!large' minirok
+
+alltest:
 	nosetests minirok
 
 coverage:

@@ -29,4 +29,5 @@ Running tests
 Tests are run via the Makefile:
 
   % make test      # Runs all unit tests
+  % make alltest   # Runs all tests, including large tests
   % make coverage  # Creates a coverage report in the "coverage" subdirectory
