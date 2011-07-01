@@ -416,6 +416,11 @@ class _ProcInfoCommonTest(tests.BaseTest):
         info = scrobble.ProcInfo(self.proc.pid)
         json = info.serialize()
         fileobj = StringIO.StringIO(json)
+
+        # We now make it look as if psutil has been uninstalled by the time
+        # Minirok runs again and tries to deserialize the ProcInfo object: it
+        # should not fail.
+        self.stubs.Set(scrobble, 'psutil', None)
         self.stubs.Set(scrobble, '_has_psutil', False)
         newinfo = scrobble.ProcInfo.load_from_fileobj(fileobj)
 
@@ -453,6 +458,7 @@ class ProcessInfoNoPsutilTest(_ProcInfoCommonTest):
         # since that would not work if psutil is in fact not installed. The best
         # we can do is set it to False, increasing coverage when running the
         # tests with psutil installed.
+        self.stubs.Set(scrobble, 'psutil', None)
         self.stubs.Set(scrobble, '_has_psutil', False)
 
 ##
