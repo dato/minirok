@@ -232,6 +232,17 @@ class RequestClassTest(tests.BaseTest):
         self.assertEqual('we could not find what you requested!', req.error)
         self.mox.VerifyAll()
 
+    def testSocketErrorInGetResponseHandled(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        conn.getresponse().AndRaise(scrobble.socket.error(1, 'bar'))
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertEqual('bar', req.error)
+        self.mox.VerifyAll()
+
     def testEmptyBodyResultsInFailure(self):
         conn = scrobble.httplib.HTTPConnection('example.org')
         conn.request('POST', '/', '', self.CONTENT_TYPE)
@@ -244,6 +255,20 @@ class RequestClassTest(tests.BaseTest):
         req = scrobble.Request('http://example.org/', {})
         self.assertTrue(req.failed)
         self.assertEqual('no response received from server', req.error)
+        self.mox.VerifyAll()
+
+    def testSocketErrorInResponseReadHandled(self):
+        conn = scrobble.httplib.HTTPConnection('example.org')
+        conn.request('POST', '/', '', self.CONTENT_TYPE)
+        response = conn.getresponse().AndReturn(
+            self.mox.CreateMock(scrobble.httplib.HTTPResponse))
+        response.status = scrobble.httplib.OK
+        response.read().AndRaise(scrobble.socket.error(1, 'baz'))
+
+        self.mox.ReplayAll()
+        req = scrobble.Request('http://example.org/', {})
+        self.assertTrue(req.failed)
+        self.assertEqual('baz', req.error)
         self.mox.VerifyAll()
 
     def testOkInAnswerResultsInSuccess(self):

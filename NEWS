@@ -8,6 +8,11 @@
       "Remove track", for the benefit of displays without a keyboard.
       (Previously tracks could only be removed with the Delete key.)
 
+  BUGFIXES
+
+    * Handle network errors at all stages of communication with Last.fm;
+      previously, only errors when opening each connection where handled.
+
 
 2.1	2009-10-15
 

@@ -199,10 +199,7 @@ class Request(object):
             conn.request(
                 'POST', url.path, urllib.urlencode(params),
                 {'Content-Type': 'application/x-www-form-urlencoded'})
-        except socket.error, e:
-            self.failed = True
-            self.error = e.args[1]  # No e.message available.
-        else:
+
             resp = conn.getresponse()
 
             if resp.status != httplib.OK:
@@ -217,6 +214,9 @@ class Request(object):
                 elif self.body[0].split()[0] != 'OK':
                     self.failed = True
                     self.error = re.sub(r'^FAILED\s+', '', self.body[0])
+        except socket.error, e:
+            self.failed = True
+            self.error = e.args[1]  # No e.message available.
 
 
 class HandshakeRequest(Request):
