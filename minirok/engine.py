@@ -7,6 +7,7 @@
 import minirok
 
 import os
+import urllib
 
 import gobject
 import gst
@@ -86,7 +87,7 @@ class GStreamerEngine(QtCore.QObject):
     ##
 
     def play(self, path):
-        self.uri = 'file://' + os.path.abspath(path)
+        self.uri = 'file://' + urllib.quote(os.path.abspath(path), ' /')
         self.bin.set_property('uri', self.uri)
         self.bin.set_state(gst.STATE_NULL)
         self.bin.set_state(gst.STATE_PLAYING)

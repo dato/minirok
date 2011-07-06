@@ -11,6 +11,11 @@
     * MPEG 4 Audio files (extension .m4a) are now playable if the 'faad'
       plugin is installed.
 
+  BUGFIXES
+
+    * Property quote file paths when passing them to GStreamer, fixes
+      playing of routes with characters like '#' in them.
+
 
 2.1	2009-10-15
 
