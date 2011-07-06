@@ -8,6 +8,9 @@
       "Remove track", for the benefit of displays without a keyboard.
       (Previously tracks could only be removed with the Delete key.)
 
+    * MPEG 4 Audio files (extension .m4a) are now playable if the 'faad'
+      plugin is installed.
+
 
 2.1	2009-10-15
 
