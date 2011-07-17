@@ -29,6 +29,7 @@ from minirok import (
 ##
 
 def setup_package():
+    sys.argv[0] = 'minirok'  # saved_playlist_path() benefits from it.
     minirok.logger.setLevel(logging.DEBUG)
 
 ##
@@ -67,7 +68,7 @@ class BaseTest(unittest2.TestCase):
             atexit.register(shutil.rmtree, tmpdir)
 
             # This more or less mimics main() from:
-            #   http://websvn.kde.org/*checkout*/trunk/KDE/kdelibs/kdecore/util/qtest_kde.h?revision=1098959
+            #   http://quickgit.kde.org/?p=kdelibs.git&a=blob&hb=master&f=kdecore/util/qtest_kde.h
             os.environ['KDEHOME'] = os.path.join(tmpdir, 'kdehome')
             os.environ['XDG_DATA_HOME'] = os.path.join(tmpdir, 'xdg/local')
             os.environ['XDG_CONFIG_HOME'] = os.path.join(tmpdir, 'xdg/config')
@@ -75,13 +76,17 @@ class BaseTest(unittest2.TestCase):
             os.environ['LC_ALL'] = 'en_US.UTF-8'
             os.environ.pop('KDE_COLOR_DEBUG', None)
 
+            configdir = os.path.join(os.environ['KDEHOME'], 'share/config')
+            os.makedirs(configdir)
+
             # It seems this doesn't work (not in setup_package either).
-            #
-            # configdir = os.path.join(os.environ['KDEHOME'], 'share/config')
-            # os.makedirs(configdir)
-            #
             # with open(os.path.join(configdir, 'kdebugrc'), 'w') as f:
             #     f.write('DisableAll=false\n\n[129]\nInfoOutput=2\n')
+
+            # This doesn't work either:
+            # with open(os.path.join(configdir, 'kdeglobals'), 'w') as f:
+            #     f.write('[KDE]\n'
+            #             'SingleClick=false\n')
 
             BaseTest.QAPP = QtGui.QApplication(sys.argv)
 
@@ -106,7 +111,9 @@ class AssertOk(mox.Comparator):
 
 ##
 
-class MockActionCollection(QtCore.QObject):
+class MockActionCollection(dict):
 
-    def addAction(self, unused_name, unused_action):
-        pass
+    def addAction(self, name, action):
+        self[name] = action
+
+    action = dict.__getitem__
