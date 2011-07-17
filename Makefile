@@ -18,6 +18,7 @@ alltest:
 	nosetests minirok
 
 coverage:
+	rm -rf coverage .coverage
 	nosetests --with-coverage --cover-package=minirok \
 	  --cover-html --cover-html-dir=$(CURDIR)/coverage minirok
 
