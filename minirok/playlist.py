@@ -738,7 +738,7 @@ class Playlist(QtCore.QAbstractTableModel):
             try:
                 self._regex = re.compile(prefs.tag_regex)
             except re.error, e:
-                minirok.logger.error('invalid regular expresion %s: %s',
+                minirok.logger.error('invalid regular expression %s: %s',
                                      prefs.tag_regex, e)
                 self._regex = None
                 self._regex_mode = 'Always'
